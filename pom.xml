@@ -60,9 +60,9 @@
 		<junit.version>4.10</junit.version>
 	</properties>
 	<scm>
-		<connection>scm:svn:http://red5.googlecode.com/svn/java/server/trunk</connection>
-		<developerConnection>scm:svn:https://red5.googlecode.com/svn/java/server/trunk</developerConnection>
-		<tag>HEAD</tag>
+		<url>https://github.com/mondain/red5-io</url>
+		<connection>scm:git:git://github.com/mondain/red5-io.git</connection>
+		<developerConnection>scm:git:git@github.com:mondain/red5-io.git</developerConnection>		
 	</scm>
 	<build>
 		<defaultGoal>install</defaultGoal>
