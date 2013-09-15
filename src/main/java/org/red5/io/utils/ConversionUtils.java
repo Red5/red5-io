@@ -103,10 +103,10 @@ public class ConversionUtils {
 			// Don't convert NaN values
 			return source;
 		}
-		if (BaseConnection.class.isAssignableFrom(source.getClass()) && !target.equals(IConnection.class)) {
-			log.debug("Conversion failure - source: {} target: {}", source.getClass(), target);
-			throw new ConversionException("Source is not assignable and target is not equal to IConnection");
-		}
+//		if (BaseConnection.class.isAssignableFrom(source.getClass()) && !target.equals(IConnection.class)) {
+//			log.debug("Conversion failure - source: {} target: {}", source.getClass(), target);
+//			throw new ConversionException("Source is not assignable and target is not equal to IConnection");
+//		}
 		if (target.isInstance(source)) {
 			return source;
 		}
@@ -334,12 +334,12 @@ public class ConversionUtils {
 			for (int i = 0; i < source.length; i++) {
 				if (source[i] != null) {
 					// if the class is not an instance of IConnection use its class
-					if (!IConnection.class.isInstance(source[i])) {
+					//if (!IConnection.class.isInstance(source[i])) {
 						converted[i] = source[i].getClass();
-					} else {
+					//} else {
 						// if it does implement IConnection use the interface
-						converted[i] = IConnection.class;
-					}
+						//converted[i] = IConnection.class;
+					//}
 				} else {
 					converted[i] = null;
 				}
