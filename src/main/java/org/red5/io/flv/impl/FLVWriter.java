@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ClosedChannelException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -517,6 +518,29 @@ public class FLVWriter implements ITagWriter {
 		buf.clear();
 	}
 
+	/**
+	 * Finalizes the FLV file.
+	 * 
+	 * @return bytes transferred
+	 * @throws IOException
+	 */
+	private long finalizeFlv() throws IOException {
+		long bytesTransferred = 0L;
+		if (!append) {
+			// write the file header
+			writeHeader();
+			// write the metadata with the final duration
+			writeMetadataTag(duration * 0.001d, videoCodecId, audioCodecId);
+			// set the data file the beginning 
+			dataFile.seek(0);
+			bytesTransferred = file.getChannel().transferFrom(dataFile.getChannel(), bytesWritten, dataFile.length());
+		} else {
+			// TODO update duration
+
+		}	
+		return bytesTransferred;
+	}
+	
 	/** 
 	 * Ends the writing process, then merges the data file with the flv file header and metadata.
 	 */
@@ -527,18 +551,23 @@ public class FLVWriter implements ITagWriter {
 		long bytesTransferred = 0L;
 		try {
 			lock.acquire();
-			if (!append) {
-				// write the file header
-				writeHeader();
-				// write the metadata with the final duration
-				writeMetadataTag(duration * 0.001d, videoCodecId, audioCodecId);
-				// set the data file the beginning 
-				dataFile.seek(0);
-				bytesTransferred = file.getChannel().transferFrom(dataFile.getChannel(), bytesWritten, dataFile.length());
-			} else {
-				// TODO update duration
-
-			}
+			bytesTransferred = finalizeFlv();
+		} catch (ClosedByInterruptException cie) {	
+			log.warn("Write was interrupted, retrying..", cie);
+			try {
+				// clear incomplete files ref
+				file = null;
+				// create an instance of the incomplete file
+				File d = new File(filePath);
+				// delete the file
+				log.debug("Deleted ({}) incomplete file: {}", d.delete(), filePath);
+				// clear ref
+				d = null;
+				// retry the finalize
+				bytesTransferred = finalizeFlv();				
+			} catch (IOException e) {
+				log.error("IO error on close (retried)", e);
+			} 
 		} catch (IOException e) {
 			log.error("IO error on close", e);
 		} catch (InterruptedException e) {

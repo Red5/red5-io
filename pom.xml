@@ -7,7 +7,7 @@
 	<name>Red5 :: IO</name>
 	<description>The Red5 I/O library</description>
 	<groupId>org.red5</groupId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<url>https://code.google.com/p/red5/</url>
 	<inceptionYear>2005</inceptionYear>
 	<organization>
@@ -53,11 +53,11 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<red5-client.version>1.0.2-SNAPSHOT</red5-client.version>
-		<spring.version>3.1.1.RELEASE</spring.version>
-		<slf4j.version>1.7.5</slf4j.version>
+		<spring.version>4.0.0.RELEASE</spring.version>
 		<mina.version>2.0.7</mina.version>
+		<slf4j.version>1.7.5</slf4j.version>
 		<logback.version>1.0.13</logback.version>
-		<junit.version>4.10</junit.version>
+		<junit.version>4.11</junit.version>
 	</properties>
 	<scm>
 		<url>https://github.com/mondain/red5-io</url>
@@ -536,17 +536,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aop</artifactId>
-			<version>${spring.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-asm</artifactId>
 			<version>${spring.version}</version>
 			<exclusions>
 				<exclusion>
