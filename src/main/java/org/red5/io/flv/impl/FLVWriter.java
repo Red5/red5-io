@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ClosedChannelException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -33,7 +32,6 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.codec.AudioCodec;
 import org.red5.io.IStreamableFile;
 import org.red5.io.ITag;
-import org.red5.io.ITagReader;
 import org.red5.io.ITagWriter;
 import org.red5.io.amf.Input;
 import org.red5.io.amf.Output;
@@ -522,22 +520,54 @@ public class FLVWriter implements ITagWriter {
 	 * Finalizes the FLV file.
 	 * 
 	 * @return bytes transferred
-	 * @throws IOException
 	 */
-	private long finalizeFlv() throws IOException {
+	private long finalizeFlv() {
+		log.debug("Finalizing {}", filePath);
 		long bytesTransferred = 0L;
-		if (!append) {
-			// write the file header
-			writeHeader();
-			// write the metadata with the final duration
-			writeMetadataTag(duration * 0.001d, videoCodecId, audioCodecId);
-			// set the data file the beginning 
-			dataFile.seek(0);
-			bytesTransferred = file.getChannel().transferFrom(dataFile.getChannel(), bytesWritten, dataFile.length());
-		} else {
-			// TODO update duration
-
-		}	
+		try {
+			if (!append) {
+				// write the file header
+				writeHeader();
+				// write the metadata with the final duration
+				writeMetadataTag(duration * 0.001d, videoCodecId, audioCodecId);
+				// ensure we have the data file (*.ser)
+				if (dataFile == null) {
+					dataFile = new RandomAccessFile(filePath + ".ser", "r");
+				}
+				// set the data file the beginning 
+				dataFile.seek(0);
+				// transfer / write data file into final flv
+				bytesTransferred = file.getChannel().transferFrom(dataFile.getChannel(), bytesWritten, dataFile.length());
+			} else {
+				// TODO update duration
+				log.warn("Adjustment of duration on append is not supported at this time");
+			}	
+			// close and remove the ser file if write was successful
+			if (dataFile != null && bytesTransferred > 0) {
+				// close the file
+				dataFile.close();
+				dataFile = null;
+				// delete the data file only if the bytes were transferred to the flv destination
+				if (bytesTransferred > 0) {
+					File dat = new File(filePath + ".ser");
+					if (dat.exists()) {
+						dat.delete();
+					}
+				} else {
+					log.warn("FLV serial file not deleted due to transfer error");
+				}				
+			}
+		} catch (Exception e) {
+			log.warn("Finalization of flv file failed; new finalize job will be spawned", e);		
+		} finally {
+			if (file != null) {
+				// close the file
+				try {
+					file.close();
+				} catch (Exception e) {
+				} 
+			}
+		}
 		return bytesTransferred;
 	}
 	
@@ -550,79 +580,19 @@ public class FLVWriter implements ITagWriter {
 		log.debug("Meta tags: {}", metaTags);
 		long bytesTransferred = 0L;
 		try {
-			lock.acquire();
+			// wait 2s for a lock
+			lock.acquire(2000);
 			bytesTransferred = finalizeFlv();
-		} catch (ClosedByInterruptException cie) {	
-			log.warn("Write was interrupted, retrying..", cie);
-			try {
-				// clear incomplete files ref
-				file = null;
-				// create an instance of the incomplete file
-				File d = new File(filePath);
-				// delete the file
-				log.debug("Deleted ({}) incomplete file: {}", d.delete(), filePath);
-				// clear ref
-				d = null;
-				// retry the finalize
-				bytesTransferred = finalizeFlv();				
-			} catch (IOException e) {
-				log.error("IO error on close (retried)", e);
-			} 
-		} catch (IOException e) {
-			log.error("IO error on close", e);
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 		} finally {
-			try {
-				if (dataFile != null) {
-					// close the file
-					dataFile.close();
-					// delete the data file only if the bytes were transferred to the flv destination
-					if (bytesTransferred > 0) {
-						File dat = new File(filePath + ".ser");
-						if (dat.exists()) {
-							dat.delete();
-						}
-					} else {
-						log.warn("FLV serial file not deleted due to transfer error");
-					}
-				}
-			} catch (IOException e) {
-				log.error("", e);
-			}
-			try {
-				if (file != null) {
-					// run a test on the flv if debugging is on
-					if (log.isDebugEnabled()) {
-						// debugging
-						try {
-							ITagReader reader = null;
-							if (flv != null) {
-								reader = flv.getReader();
-							}
-							if (reader == null) {
-								file.seek(0);
-								reader = new FLVReader(file.getChannel());
-							}
-							log.trace("reader: {}", reader);
-							log.debug("Has more tags: {}", reader.hasMoreTags());
-							ITag tag = null;
-							while (reader.hasMoreTags()) {
-								tag = reader.readTag();
-								log.debug("\n{}", tag);
-							}
-						} catch (IOException e) {
-							log.warn("", e);
-						}
-					}
-					// close the file
-					file.close();
-				}
-			} catch (IOException e) {
-				log.error("", e);
-			}
 			lock.release();
 			log.debug("{} closed", filePath);
+			// if write failed, spawn a job to finish up
+			if (bytesTransferred == 0L) {
+				// spawn job to write the finalized FLV file based on the ser file
+				new Thread(new FLVFinalizer(), "FLVFinalizer#" + System.currentTimeMillis()).start();
+			}
 		}
 	}
 
@@ -665,4 +635,30 @@ public class FLVWriter implements ITagWriter {
 		return bytesWritten;
 	}
 
+	private final class FLVFinalizer implements Runnable {
+
+		public void run() {
+			log.debug("Finalizer run");
+			try {
+				// clear incomplete files ref
+				file = null;
+				// create an instance of the incomplete file
+				File tmp = new File(filePath);
+				// delete the file
+				boolean deleted = tmp.delete();
+				log.info("Deleted ({}) incomplete file: {}", deleted, filePath);
+				// clear ref
+				tmp = null;
+				// quick sleep, cheap delay
+				Thread.sleep(2000L);
+			} catch (Exception e) {
+				log.error("Error on cleanup of flv", e);
+			} 	
+			// attempt to finalize the flv
+			finalizeFlv();
+			log.debug("Finalizer exit");
+		}
+		
+	}
+	
 }
