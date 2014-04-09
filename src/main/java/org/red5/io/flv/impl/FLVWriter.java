@@ -163,6 +163,7 @@ public class FLVWriter implements ITagWriter {
 	 * @param filePath path to existing file
 	 */
 	public FLVWriter(String filePath) {
+		this.filePath = filePath;
 		log.debug("Writing to: {}", filePath);
 		try {
 			// temporary data file for storage of stream data
@@ -865,8 +866,15 @@ public class FLVWriter implements ITagWriter {
 						System.err.println("Info file was not found or could not be read, using dummy data");
 						// create a writer
 						writer = new FLVWriter(flvPath);
-						writer.setAudioCodecId(args[1] == null ? 11 : Integer.valueOf(args[1])); // default: speex
-						writer.setVideoCodecId(args[2] == null ? 7 : Integer.valueOf(args[2])); // default: h.264
+						int acid = 11, vcid = 7;
+						if (args.length > 1) {
+							acid = args[1] == null ? 11 : Integer.valueOf(args[1]);
+							if (args.length > 2) {
+								vcid = args[2] == null ? 7 : Integer.valueOf(args[2]);
+							}
+						}
+						writer.setAudioCodecId(acid); // default: speex
+						writer.setVideoCodecId(vcid); // default: h.264
 						writer.setDuration(Integer.MAX_VALUE);
 						writer.setSoundRate(16000);
 						writer.setSoundSize(16);
@@ -887,6 +895,7 @@ public class FLVWriter implements ITagWriter {
 				System.out.println("File repair completed");
 			}
 		}
+		System.exit(0);
 	}
 	
 }
