@@ -27,6 +27,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.codec.AudioCodec;
@@ -156,6 +157,22 @@ public class FLVWriter implements ITagWriter {
 
 	private final Semaphore lock = new Semaphore(1, true);
 
+	/**
+	 * Creates writer implementation with for a given file
+	 * 
+	 * @param filePath path to existing file
+	 */
+	public FLVWriter(String filePath) {
+		log.debug("Writing to: {}", filePath);
+		try {
+			// temporary data file for storage of stream data
+			File dat = new File(filePath + ".ser");
+			this.dataFile = new RandomAccessFile(dat, "rw");
+		} catch (Exception e) {
+			log.error("Failed to create FLV writer", e);
+		}
+	}	
+	
 	/**
 	 * Creates writer implementation with given file and last tag
 	 *
@@ -408,6 +425,9 @@ public class FLVWriter implements ITagWriter {
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 		} finally {
+			// update the file information
+			updateInfoFile();
+			// release lock
 			lock.release();
 		}
 		return false;
@@ -450,7 +470,9 @@ public class FLVWriter implements ITagWriter {
 		params.put("duration", (Number) duration);
 		if (videoCodecId != -1) {
 			params.put("videocodecid", videoCodecId);
-			params.put("videodatarate", 8 * videoDataSize / 1024 / duration); //from bytes to kilobits
+			if (videoDataSize > 0) {
+				params.put("videodatarate", 8 * videoDataSize / 1024 / duration); //from bytes to kilobits
+			}
 		} else {
 			// place holder
 			params.put("novideocodec", 0);
@@ -468,7 +490,9 @@ public class FLVWriter implements ITagWriter {
 				params.put("audiosamplesize", soundSize);
 			}
 			params.put("stereo", soundType);
-			params.put("audiodatarate", 8 * audioDataSize / 1024 / duration); //from bytes to kilobits			
+			if (audioDataSize > 0) {
+				params.put("audiodatarate", 8 * audioDataSize / 1024 / duration); //from bytes to kilobits		
+			}
 		} else {
 			// place holder
 			params.put("noaudiocodec", 0);
@@ -525,6 +549,38 @@ public class FLVWriter implements ITagWriter {
 		log.debug("Finalizing {}", filePath);
 		long bytesTransferred = 0L;
 		try {
+			// read file info if it exists
+			File tmpFile = new File(filePath + ".info");
+			if (tmpFile.exists()) {
+				int[] info = readInfoFile(tmpFile);
+				if (audioCodecId == -1 && info[0] > 0) {
+					audioCodecId = info[0];
+				}
+				if (videoCodecId == -1 && info[1] > 0) {
+					videoCodecId = info[1];
+				}
+				if (duration == 0 && info[2] > 0) {
+					duration = info[2];
+				}				
+				if (audioDataSize == 0 && info[3] > 0) {
+					audioDataSize = info[3];
+				}
+				if (soundRate == 0 && info[4] > 0) {
+					soundRate = info[4];
+				}
+				if (soundSize == 0 && info[5] > 0) {
+					soundSize = info[5];
+				}
+				if (!soundType && info[6] > 0) {
+					soundType = true;
+				}
+				if (videoDataSize == 0 && info[7] > 0) {
+					videoDataSize = info[7];
+				}
+			} else {
+				log.debug("Flv info file not found");
+			}
+			tmpFile = null;
 			if (!append) {
 				// write the file header
 				writeHeader();
@@ -547,11 +603,15 @@ public class FLVWriter implements ITagWriter {
 				// close the file
 				dataFile.close();
 				dataFile = null;
-				// delete the data file only if the bytes were transferred to the flv destination
+				// delete the data files only if the bytes were transferred to the flv destination
 				if (bytesTransferred > 0) {
 					File dat = new File(filePath + ".ser");
 					if (dat.exists()) {
 						dat.delete();
+					}
+					File inf = new File(filePath + ".info");
+					if (inf.exists()) {
+						inf.delete();
 					}
 				} else {
 					log.warn("FLV serial file not deleted due to transfer error");
@@ -571,6 +631,74 @@ public class FLVWriter implements ITagWriter {
 		return bytesTransferred;
 	}
 	
+	/**
+	 * Read flv file information from pre-finalization file.
+	 * 
+	 * @param tmpFile
+	 * @return array containing audio codec id, video codec id, and duration
+	 */
+	private int[] readInfoFile(File tmpFile) {
+		int[] info = new int[8];
+		RandomAccessFile infoFile = null;
+		try {
+			infoFile = new RandomAccessFile(tmpFile, "r");
+			// audio codec id
+			info[0] = infoFile.readInt();
+			// video codec id
+			info[1] = infoFile.readInt();
+			// duration
+			info[2] = infoFile.readInt();
+			// audio data size
+			info[3] = infoFile.readInt();
+			// audio sound rate
+			info[4] = infoFile.readInt();
+			// audio sound size
+			info[5] = infoFile.readInt();
+			// audio type
+			info[6] = infoFile.readInt();
+			// video data size
+			info[7] = infoFile.readInt();			
+		} catch (Exception e) {
+			log.warn("Exception reading flv file information data", e);
+		} finally {
+			if (infoFile != null) {
+				try {
+					infoFile.close();
+				} catch (IOException e) {
+				}		
+			}
+		}
+		return info;
+	}
+
+	/**
+	 * Write or update flv file information into the pre-finalization file.
+	 */
+	private void updateInfoFile() {
+		RandomAccessFile infoFile = null;
+		try {
+			infoFile = new RandomAccessFile(filePath + ".info", "rw");
+			infoFile.writeInt(audioCodecId);
+			infoFile.writeInt(videoCodecId);
+			infoFile.writeInt(duration);
+			// additional props
+			infoFile.writeInt(audioDataSize);
+			infoFile.writeInt(soundRate);
+			infoFile.writeInt(soundSize);
+			infoFile.writeInt(soundType ? 1 : 0);
+			infoFile.writeInt(videoDataSize);
+		} catch (Exception e) {
+			log.warn("Exception writing flv file information data", e);
+		} finally {
+			if (infoFile != null) {
+				try {
+					infoFile.close();
+				} catch (IOException e) {
+				}		
+			}
+		}
+	}	
+	
 	/** 
 	 * Ends the writing process, then merges the data file with the flv file header and metadata.
 	 */
@@ -578,22 +706,37 @@ public class FLVWriter implements ITagWriter {
 		log.debug("close");
 		// spawn a thread to finish up our flv writer work
 		log.debug("Meta tags: {}", metaTags);
+		boolean locked = false;
 		long bytesTransferred = 0L;
 		try {
-			// wait 2s for a lock
-			lock.acquire(2000);
-			bytesTransferred = finalizeFlv();
+			// try to get a lock within x time
+			locked = lock.tryAcquire(500L, TimeUnit.MILLISECONDS);
+			if (locked) {
+				bytesTransferred = finalizeFlv();
+			}
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 		} finally {
-			lock.release();
+			if (locked) {
+				lock.release();
+			}
 			log.debug("{} closed", filePath);
 			// if write failed, spawn a job to finish up
 			if (bytesTransferred == 0L) {
+				log.info("Spawning flv finalizer for {}", filePath);
 				// spawn job to write the finalized FLV file based on the ser file
-				new Thread(new FLVFinalizer(), "FLVFinalizer#" + System.currentTimeMillis()).start();
+				spawnFinalizer().start();
 			}
 		}
+	}
+
+	/**
+	 * Spawn a finalizer thread and return it (unstarted).
+	 * 
+	 * @return Thread containing finalizer
+	 */
+	Thread spawnFinalizer() {
+		return new Thread(new FLVFinalizer(), "FLVFinalizer#" + System.currentTimeMillis());
 	}
 
 	/** {@inheritDoc}
@@ -635,6 +778,38 @@ public class FLVWriter implements ITagWriter {
 		return bytesWritten;
 	}
 
+	public void setVideoCodecId(int videoCodecId) {
+		this.videoCodecId = videoCodecId;
+	}
+
+	public void setAudioCodecId(int audioCodecId) {
+		this.audioCodecId = audioCodecId;
+	}
+
+	public void setSoundRate(int soundRate) {
+		this.soundRate = soundRate;
+	}
+
+	public void setSoundSize(int soundSize) {
+		this.soundSize = soundSize;
+	}
+
+	public void setSoundType(boolean soundType) {
+		this.soundType = soundType;
+	}
+
+	public void setDuration(int duration) {
+		this.duration = duration;
+	}
+
+	public void setVideoDataSize(int videoDataSize) {
+		this.videoDataSize = videoDataSize;
+	}
+
+	public void setAudioDataSize(int audioDataSize) {
+		this.audioDataSize = audioDataSize;
+	}
+
 	private final class FLVFinalizer implements Runnable {
 
 		public void run() {
@@ -659,6 +834,59 @@ public class FLVWriter implements ITagWriter {
 			log.debug("Finalizer exit");
 		}
 		
+	}
+	
+	/**
+	 * Exposed to allow repair of flv files if .info and .ser files still exist.
+	 * 
+	 * @param args 0: path to .ser file 1: audio codec id 2: video codec id
+	 * @throws InterruptedException 
+	 */
+	public static void main(String[] args) throws InterruptedException {
+		if (args == null || args[0] == null) {
+			System.err.println("Provide the path to your .ser file");
+		} else {
+			FLVWriter writer = null;
+			String path = args[0];
+			System.out.println("Serial file path: " + path);
+			if (path.endsWith(".ser")) {
+				File ser = new File(path);
+				if (ser.exists() && ser.canRead()) {
+					ser = null;
+					String flvPath = path.substring(0, path.lastIndexOf('.'));
+					System.out.println("Flv file path: " + flvPath);
+					// check for .info and if it does not exist set dummy data
+					File inf = new File(flvPath + ".info");
+					if (inf.exists() && inf.canRead()) {
+						inf = null;
+						// create a writer
+						writer = new FLVWriter(flvPath);
+					} else {
+						System.err.println("Info file was not found or could not be read, using dummy data");
+						// create a writer
+						writer = new FLVWriter(flvPath);
+						writer.setAudioCodecId(args[1] == null ? 11 : Integer.valueOf(args[1])); // default: speex
+						writer.setVideoCodecId(args[2] == null ? 7 : Integer.valueOf(args[2])); // default: h.264
+						writer.setDuration(Integer.MAX_VALUE);
+						writer.setSoundRate(16000);
+						writer.setSoundSize(16);
+					}
+				} else {
+					System.err.println("Serial file was not found or could not be read");									
+				}
+			} else {
+				System.err.println("Provide the path to your .ser file");				
+			}
+			if (writer != null) {
+				// spawn a flv finalizer 
+				Thread job = writer.spawnFinalizer();
+				// start the work
+				job.start();
+				// wait for it to finish
+				job.join();		
+				System.out.println("File repair completed");
+			}
+		}
 	}
 	
 }
