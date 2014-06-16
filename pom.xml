@@ -7,7 +7,7 @@
 	<name>Red5 :: IO</name>
 	<description>The Red5 I/O library</description>
 	<groupId>org.red5</groupId>
-	<version>1.0.3-SNAPSHOT</version>
+	<version>1.0.4-SNAPSHOT</version>
 	<url>https://code.google.com/p/red5/</url>
 	<inceptionYear>2005</inceptionYear>
 	<organization>
