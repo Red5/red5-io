@@ -843,9 +843,11 @@ public class FLVWriter implements ITagWriter {
 	 * @param path: path to .ser file
 	 * @param audioId: audio codec id
 	 * @param videoId: video codec id
+	 * @return true if conversion was successful
 	 * @throws InterruptedException 
 	 */
-	public static void repair(String path, Integer audioId, Integer videoId) throws InterruptedException {
+	public static boolean repair(String path, Integer audioId, Integer videoId) throws InterruptedException {
+		boolean result = false;
 		FLVWriter writer = null;
 		log.debug("Serial file path: " + path);
 		System.out.println("Serial file path: " + path);
@@ -891,7 +893,9 @@ public class FLVWriter implements ITagWriter {
 			job.join();
 			log.debug("File repair completed");
 			System.out.println("File repair completed");
+			result = true;
 		}
+		return result;
 	}
 	
 	/**
