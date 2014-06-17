@@ -838,6 +838,67 @@ public class FLVWriter implements ITagWriter {
 	}
 	
 	/**
+	 * Allows repair of flv files if .info and .ser files still exist.
+	 * 
+	 * @param path: path to .ser file
+	 * @param audioId: audio codec id
+	 * @param videoId: video codec id
+	 * @return true if conversion was successful
+	 * @throws InterruptedException 
+	 */
+	public static boolean repair(String path, Integer audioId, Integer videoId) throws InterruptedException {
+		boolean result = false;
+		FLVWriter writer = null;
+		log.debug("Serial file path: " + path);
+		System.out.println("Serial file path: " + path);
+		if (path.endsWith(".ser")) {
+			File ser = new File(path);
+			if (ser.exists() && ser.canRead()) {
+				ser = null;
+				String flvPath = path.substring(0, path.lastIndexOf('.'));
+				log.debug("Flv file path: " + flvPath);
+				System.out.println("Flv file path: " + flvPath);
+				// check for .info and if it does not exist set dummy data
+				File inf = new File(flvPath + ".info");
+				if (inf.exists() && inf.canRead()) {
+					inf = null;
+					// create a writer
+					writer = new FLVWriter(flvPath);
+				} else {
+					log.debug("Info file was not found or could not be read, using dummy data");
+					System.err.println("Info file was not found or could not be read, using dummy data");
+					// create a writer
+					writer = new FLVWriter(flvPath);
+					int acid = audioId == null ? 11 : audioId, vcid = videoId == null ? 7 : videoId;
+					writer.setAudioCodecId(acid); // default: speex
+					writer.setVideoCodecId(vcid); // default: h.264
+					writer.setDuration(Integer.MAX_VALUE);
+					writer.setSoundRate(16000);
+					writer.setSoundSize(16);
+				}
+			} else {
+				log.error("Serial file was not found or could not be read");
+				System.err.println("Serial file was not found or could not be read");
+			}
+		} else {
+			log.error("Provide the path to your .ser file");
+			System.err.println("Serial file was not found or could not be read");
+		}
+		if (writer != null) {
+			// spawn a flv finalizer 
+			Thread job = writer.spawnFinalizer();
+			// start the work
+			job.start();
+			// wait for it to finish
+			job.join();
+			log.debug("File repair completed");
+			System.out.println("File repair completed");
+			result = true;
+		}
+		return result;
+	}
+	
+	/**
 	 * Exposed to allow repair of flv files if .info and .ser files still exist.
 	 * 
 	 * @param args 0: path to .ser file 1: audio codec id 2: video codec id
@@ -847,53 +908,8 @@ public class FLVWriter implements ITagWriter {
 		if (args == null || args[0] == null) {
 			System.err.println("Provide the path to your .ser file");
 		} else {
-			FLVWriter writer = null;
-			String path = args[0];
-			System.out.println("Serial file path: " + path);
-			if (path.endsWith(".ser")) {
-				File ser = new File(path);
-				if (ser.exists() && ser.canRead()) {
-					ser = null;
-					String flvPath = path.substring(0, path.lastIndexOf('.'));
-					System.out.println("Flv file path: " + flvPath);
-					// check for .info and if it does not exist set dummy data
-					File inf = new File(flvPath + ".info");
-					if (inf.exists() && inf.canRead()) {
-						inf = null;
-						// create a writer
-						writer = new FLVWriter(flvPath);
-					} else {
-						System.err.println("Info file was not found or could not be read, using dummy data");
-						// create a writer
-						writer = new FLVWriter(flvPath);
-						int acid = 11, vcid = 7;
-						if (args.length > 1) {
-							acid = args[1] == null ? 11 : Integer.valueOf(args[1]);
-							if (args.length > 2) {
-								vcid = args[2] == null ? 7 : Integer.valueOf(args[2]);
-							}
-						}
-						writer.setAudioCodecId(acid); // default: speex
-						writer.setVideoCodecId(vcid); // default: h.264
-						writer.setDuration(Integer.MAX_VALUE);
-						writer.setSoundRate(16000);
-						writer.setSoundSize(16);
-					}
-				} else {
-					System.err.println("Serial file was not found or could not be read");									
-				}
-			} else {
-				System.err.println("Provide the path to your .ser file");				
-			}
-			if (writer != null) {
-				// spawn a flv finalizer 
-				Thread job = writer.spawnFinalizer();
-				// start the work
-				job.start();
-				// wait for it to finish
-				job.join();		
-				System.out.println("File repair completed");
-			}
+			repair(args[0], args.length > 1 && args[1] != null ? Integer.valueOf(args[1]) : null
+				, args.length > 2 && args[2] != null ? Integer.valueOf(args[2]) : null);
 		}
 		System.exit(0);
 	}
