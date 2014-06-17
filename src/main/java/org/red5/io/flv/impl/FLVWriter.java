@@ -867,8 +867,7 @@ public class FLVWriter implements ITagWriter {
 					System.err.println("Info file was not found or could not be read, using dummy data");
 					// create a writer
 					writer = new FLVWriter(flvPath);
-					int acid = audioId == null ? 11 : Integer.valueOf(args[1])
-						, vcid = videoId == null ? 7 : Integer.valueOf(args[2]);
+					int acid = audioId == null ? 11 : audioId, vcid = videoId == null ? 7 : videoId;
 					writer.setAudioCodecId(acid); // default: speex
 					writer.setVideoCodecId(vcid); // default: h.264
 					writer.setDuration(Integer.MAX_VALUE);
@@ -906,7 +905,7 @@ public class FLVWriter implements ITagWriter {
 			System.err.println("Provide the path to your .ser file");
 		} else {
 			repair(args[0], args.length > 1 && args[1] != null ? Integer.valueOf(args[1]) : null
-				, args.length > 2 && args[2] != null ? Integer.valueOf(args[2]) : null)
+				, args.length > 2 && args[2] != null ? Integer.valueOf(args[2]) : null);
 		}
 		System.exit(0);
 	}
