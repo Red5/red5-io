@@ -9,3 +9,5 @@
 /log
 .project
 .classpath
+
+build.sh
