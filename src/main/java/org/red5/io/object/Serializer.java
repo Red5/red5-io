@@ -20,6 +20,7 @@ package org.red5.io.object;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -39,12 +40,12 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
- * The Serializer class writes data output and handles the data according to the
- * core data types
+ * The Serializer class writes data output and handles the data according to the core data types
  * 
  * @author The Red5 Project
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
  * @author Harald Radi (harald.radi@nme.at)
+ * @author Paul Gregoire (mondain@gmail.com)
  */
 public class Serializer {
 
@@ -132,8 +133,7 @@ public class Serializer {
 	 *            Output writer
 	 * @param basic
 	 *            Primitive
-	 * @return boolean true if object was successfully serialized, false
-	 *         otherwise
+	 * @return boolean true if object was successfully serialized, false otherwise
 	 */
 	@SuppressWarnings("rawtypes")
 	protected static boolean writeBasic(Output out, Object basic) {
@@ -160,8 +160,7 @@ public class Serializer {
 	 * 
 	 * @param out Output writer
 	 * @param complex Complex datatype object
-	 * @return boolean true if object was successfully serialized, false
-	 *         otherwise
+	 * @return boolean true if object was successfully serialized, false otherwise
 	 */
 	public static boolean writeComplex(Output out, Object complex) {
 		log.trace("writeComplex");
@@ -187,8 +186,7 @@ public class Serializer {
 	 *            Output write
 	 * @param listType
 	 *            List type
-	 * @return boolean true if object was successfully serialized, false
-	 *         otherwise
+	 * @return boolean true if object was successfully serialized, false otherwise
 	 */
 	protected static boolean writeListType(Output out, Object listType) {
 		log.trace("writeListType");
@@ -241,8 +239,7 @@ public class Serializer {
 	 *            Output object
 	 * @param arrType
 	 *            Array or collection type
-	 * @return <code>true</code> if the object has been written, otherwise
-	 *         <code>false</code>
+	 * @return <tt>true</tt> if the object has been written, otherwise <tt>false</tt>
 	 */
 	@SuppressWarnings("all")
 	protected static boolean writeArrayType(Output out, Object arrType) {
@@ -287,8 +284,7 @@ public class Serializer {
 	 *            Output writer
 	 * @param xml
 	 *            XML
-	 * @return boolean <code>true</code> if object was successfully written,
-	 *         <code>false</code> otherwise
+	 * @return boolean <tt>true</tt> if object was successfully written, <tt>false</tt> otherwise
 	 */
 	protected static boolean writeXMLType(Output out, Object xml) {
 		log.trace("writeXMLType");
@@ -320,8 +316,7 @@ public class Serializer {
 	 *            Output writer
 	 * @param obj
 	 *            Object type to write
-	 * @return <code>true</code> if the object has been written, otherwise
-	 *         <code>false</code>
+	 * @return <tt>true</tt> if the object has been written, otherwise <tt>false</tt>
 	 */
 	@SuppressWarnings("all")
 	protected static boolean writeObjectType(Output out, Object obj) {
@@ -354,8 +349,7 @@ public class Serializer {
 	 * 
 	 * @param out Output writer
 	 * @param obj Custom data
-	 * @return <code>true</code> if the object has been written, otherwise
-	 *         <code>false</code>
+	 * @return <tt>true</tt> if the object has been written, otherwise <tt>false</tt>
 	 */
 	protected static boolean writeCustomType(Output out, Object obj) {
 		if (out.isCustom(obj)) {
@@ -373,15 +367,24 @@ public class Serializer {
 	 * @param keyName key name
 	 * @param field The field to be serialized
 	 * @param getter Getter method for field
-	 * @return <code>true</code> if the field should be serialized, otherwise
-	 *         <code>false</code>
+	 * @return <tt>true</tt> if the field should be serialized, otherwise <tt>false</tt>
 	 */
 	public static boolean serializeField(String keyName, Field field, Method getter) {
 		log.trace("serializeField - keyName: {} field: {} method: {}", new Object[] { keyName, field, getter });
+		// if "field" is a class or is transient, skip it
 		if ("class".equals(keyName)) {
 			return false;
 		}
-		if ((field != null && field.isAnnotationPresent(DontSerialize.class)) || (getter != null && getter.isAnnotationPresent(DontSerialize.class))) {
+		if (field != null) {
+			if (Modifier.isTransient(field.getModifiers())) {
+				log.trace("Skipping {} because its transient", keyName);
+				return false;							
+			} else if (field.isAnnotationPresent(DontSerialize.class)) {
+				log.trace("Skipping {} because its marked with @DontSerialize", keyName);
+				return false;			
+			}
+		}
+		if (getter != null && getter.isAnnotationPresent(DontSerialize.class)) {
 			log.trace("Skipping {} because its marked with @DontSerialize", keyName);
 			return false;
 		}
