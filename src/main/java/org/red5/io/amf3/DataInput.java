@@ -46,7 +46,6 @@ public class DataInput implements IDataInput {
 	 * Create a new DataInput.
 	 * 
 	 * @param input			input to use
-	 * @param deserializer	the deserializer to use
 	 */
 	protected DataInput(Input input) {
 		this.input = input;

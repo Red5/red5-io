@@ -840,9 +840,9 @@ public class FLVWriter implements ITagWriter {
 	/**
 	 * Allows repair of flv files if .info and .ser files still exist.
 	 * 
-	 * @param path: path to .ser file
-	 * @param audioId: audio codec id
-	 * @param videoId: video codec id
+	 * @param path path to .ser file
+	 * @param audioId audio codec id
+	 * @param videoId video codec id
 	 * @return true if conversion was successful
 	 * @throws InterruptedException 
 	 */

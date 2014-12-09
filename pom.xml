@@ -201,8 +201,6 @@
 						<link>http://docs.spring.io/spring/docs/4.0.3.RELEASE/javadoc-api</link>
 						<link>http://www.slf4j.org/api</link>
 						<link>http://logging.apache.org/log4j/1.2/apidocs</link>
-						<link>http://quartz-scheduler.org/api/2.1.0</link>
-						<link>http://ehcache.org/apidocs</link>
 					</links>
 					<tags>
 						<tag>

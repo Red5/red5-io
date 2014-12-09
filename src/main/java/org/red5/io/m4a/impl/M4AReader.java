@@ -808,7 +808,7 @@ public class M4AReader implements IoConstants, ITagReader {
 	 * Search through the frames by offset / position to find the sample.
 	 * 
 	 * @param pos
-	 * @return
+	 * @return frame index
 	 */
 	private int getFrame(long pos) {
 		int sample = 1;

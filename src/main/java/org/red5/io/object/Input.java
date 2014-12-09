@@ -151,7 +151,6 @@ public interface Input {
 	/**
 	 * Read key - value pairs. This is required for the RecordSet deserializer.
 	 * 
-	 * @param deserializer deserializer
 	 * @return key-value pairs
 	 */
 	Map<String, Object> readKeyValues();
