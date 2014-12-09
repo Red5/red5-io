@@ -24,10 +24,11 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import net.sf.ehcache.Element;
 
@@ -66,7 +67,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 	/**
 	 * List of strings already written.
 	 * */
-	private Map<String, Integer> stringReferences;
+	private ConcurrentMap<String, Integer> stringReferences;
 
 	/**
 	 * Constructor of AMF3 output.
@@ -77,7 +78,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 	public Output(IoBuffer buf) {
 		super(buf);
 		amf3_mode = 0;
-		stringReferences = new HashMap<String, Integer>();
+		stringReferences = new ConcurrentHashMap<String, Integer>(8, 0.9f, 2);
 	}
 
 	/**

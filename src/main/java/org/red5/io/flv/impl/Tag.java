@@ -31,6 +31,7 @@ import org.red5.io.ITag;
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
  */
 public class Tag implements ITag {
+	
 	/**
 	 * Tag type
 	 */
@@ -59,7 +60,7 @@ public class Tag implements ITag {
 	/**
 	 * Previous tag size
 	 */
-	private int previuosTagSize;
+	private int previousTagSize;
 
 	/**
 	 * Bit flags
@@ -80,7 +81,7 @@ public class Tag implements ITag {
 		this.timestamp = timestamp;
 		this.bodySize = bodySize;
 		this.body = body;
-		this.previuosTagSize = previousTagSize;
+		this.previousTagSize = previousTagSize;
 	}
 
 	/** Constructs a new Tag. */
@@ -104,24 +105,6 @@ public class Tag implements ITag {
 	 */
 	public void setBitflags(byte bitflags) {
 		this.bitflags = bitflags;
-	}
-
-	/**
-	 * Getter for previous tag size
-	 *
-	 * @return Value for previous tag size
-	 */
-	public int getPreviuosTagSize() {
-		return previuosTagSize;
-	}
-
-	/**
-	 * Setter for previous tag size
-	 *
-	 * @param previuosTagSize Value to set for previous tag size
-	 */
-	public void setPreviuosTagSize(int previuosTagSize) {
-		this.previuosTagSize = previuosTagSize;
 	}
 
 	/** {@inheritDoc}
@@ -172,7 +155,7 @@ public class Tag implements ITag {
 	 * @return                Previous tag size
 	 */
 	public int getPreviousTagSize() {
-		return previuosTagSize;
+		return previousTagSize;
 	}
 
 	/**
@@ -183,7 +166,7 @@ public class Tag implements ITag {
 	@Override
 	public String toString() {
 		String ret = "Data Type\t=" + dataType + "\n";
-		ret += "Prev. Tag Size\t=" + previuosTagSize + "\n";
+		ret += "Prev. Tag Size\t=" + previousTagSize + "\n";
 		ret += "Body size\t=" + bodySize + "\n";
 		ret += "timestamp\t=" + timestamp + "\n";
 		ret += "Body Data\t=" + body + "\n";
@@ -236,7 +219,7 @@ public class Tag implements ITag {
 
 	/** {@inheritDoc} */
 	public void setPreviousTagSize(int size) {
-		this.previuosTagSize = size;
+		this.previousTagSize = size;
 	}
 
 }
