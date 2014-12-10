@@ -21,7 +21,8 @@ package org.red5.io;
 import java.util.List;
 import java.util.Vector;
 
-import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.junit.Test;
@@ -72,7 +73,7 @@ public class AMF3IOTest extends AbstractIOTest {
 		dumpOutput();
 		Object object = Deserializer.deserialize(in, StreamAction.class);
 		log.debug("Enums - {} {}", object.getClass().getName(), StreamAction.CONNECT.getClass().getName());
-		Assert.assertEquals(object.getClass().getName(), StreamAction.CONNECT.getClass().getName());
+		assertEquals(object.getClass().getName(), StreamAction.CONNECT.getClass().getName());
 		resetOutput();
 	}
 
@@ -86,8 +87,8 @@ public class AMF3IOTest extends AbstractIOTest {
 		Serializer.serialize(out, baIn);
 		dumpOutput();
 		ByteArray baOut = Deserializer.deserialize(in, ByteArray.class);
-		Assert.assertNotNull(baOut);
-		Assert.assertEquals(baIn.length(), baOut.length());
+		assertNotNull(baOut);
+		assertEquals(baIn.length(), baOut.length());
 		for (int i = 0; i < baOut.length(); i++) {
 			System.err.println("Byte: " + baOut.readByte());
 		}
@@ -104,8 +105,8 @@ public class AMF3IOTest extends AbstractIOTest {
 		// test fails without enforcing amf3 here
 		((org.red5.io.amf3.Input) in).enforceAMF3();
 		Vector<String> vOut = Deserializer.deserialize(in, Vector.class);
-		Assert.assertNotNull(vOut);
-		Assert.assertEquals(vIn.size(), vOut.size());
+		assertNotNull(vOut);
+		assertEquals(vIn.size(), vOut.size());
 		for (int i = 0; i < vOut.size(); i++) {
 			System.err.println("Element: " + vOut.elementAt(i));
 		}
@@ -122,8 +123,8 @@ public class AMF3IOTest extends AbstractIOTest {
 		in = new Input(IoBuffer.wrap(v));
 		List<Object> vectorOut = Deserializer.deserialize(in, null);
 		//[2, 2000, 2147483647, -2147483648]
-		Assert.assertNotNull(vectorOut);
-		Assert.assertEquals(vectorOut.size(), 4);
+		assertNotNull(vectorOut);
+		assertEquals(vectorOut.size(), 4);
 		for (int i = 0; i < vectorOut.size(); i++) {
 			System.err.println("Vector: " + vectorOut.get(i));
 		}
@@ -139,8 +140,8 @@ public class AMF3IOTest extends AbstractIOTest {
 		in = new Input(IoBuffer.wrap(v));
 		List<Object> vectorOut = Deserializer.deserialize(in, null);
 		//[2, 2000, 4294967295, 0]
-		Assert.assertNotNull(vectorOut);
-		Assert.assertEquals(vectorOut.size(), 4);
+		assertNotNull(vectorOut);
+		assertEquals(vectorOut.size(), 4);
 		for (int i = 0; i < vectorOut.size(); i++) {
 			System.err.println("Vector: " + vectorOut.get(i));
 		}
@@ -161,8 +162,8 @@ public class AMF3IOTest extends AbstractIOTest {
 		((org.red5.io.amf3.Input) in).enforceAMF3();
 		List<Double> vectorOut = Deserializer.deserialize(in, null);
 		//[1.1, -1.1, 1.7976931348623157E308, 4.9E-324, NaN, -Infinity, Infinity]
-		Assert.assertNotNull(vectorOut);
-		Assert.assertEquals(vectorOut.size(), 7);
+		assertNotNull(vectorOut);
+		assertEquals(vectorOut.size(), 7);
 		for (int i = 0; i < vectorOut.size(); i++) {
 			System.err.println("Vector: " + vectorOut.get(i));
 		}
@@ -181,8 +182,8 @@ public class AMF3IOTest extends AbstractIOTest {
 		in = new Input(IoBuffer.wrap(v2));
 		((org.red5.io.amf3.Input) in).enforceAMF3();
 		List<Object> vectorOut = Deserializer.deserialize(in, null);
-		Assert.assertNotNull(vectorOut);
-		Assert.assertEquals(vectorOut.size(), 3);
+		assertNotNull(vectorOut);
+		assertEquals(vectorOut.size(), 3);
 		for (int i = 0; i < vectorOut.size(); i++) {
 			System.err.println("Vector: " + vectorOut.get(i));
 		}
@@ -219,8 +220,8 @@ public class AMF3IOTest extends AbstractIOTest {
 		((org.red5.io.amf3.Input) in).enforceAMF3();
 		List<Object> vectorOut = Deserializer.deserialize(in, null);
 		//[Paul, ]
-		Assert.assertNotNull(vectorOut);
-		//Assert.assertEquals(vectorOut.size(), 4);
+		assertNotNull(vectorOut);
+		//assertEquals(vectorOut.size(), 4);
 		for (int i = 0; i < vectorOut.size(); i++) {
 			System.err.println("Vector: " + vectorOut.get(i));
 		}

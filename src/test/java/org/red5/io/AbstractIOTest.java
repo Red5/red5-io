@@ -18,6 +18,10 @@
 
 package org.red5.io;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,10 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
 import org.apache.commons.beanutils.BeanMap;
+import org.junit.Before;
+import org.junit.Test;
 import org.red5.io.model.CircularRefBean;
 import org.red5.io.model.SimpleJavaBean;
 import org.red5.io.object.Deserializer;
@@ -43,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * @author The Red5 Project
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
  */
-public abstract class AbstractIOTest extends TestCase {
+public abstract class AbstractIOTest {
 
 	protected Logger log = LoggerFactory.getLogger(AbstractIOTest.class);
 
@@ -56,13 +59,14 @@ public abstract class AbstractIOTest extends TestCase {
 	abstract void resetOutput();
 
 	/** {@inheritDoc} */
-	@Override
-	protected void setUp() {
+	@Before
+	public void setUp() {
 		setupIO();
 	}
 
 	abstract void setupIO();
 
+	@Test
 	public void testArray() {
 		log.debug("Testing array");
 		String[] strArrIn = new String[] { "This", "Is", "An", "Array", "Of", "Strings" };
@@ -70,11 +74,12 @@ public abstract class AbstractIOTest extends TestCase {
 		dumpOutput();
 		Object[] objArrayOut = Deserializer.deserialize(in, Object[].class);
 		for (int i = 0; i < strArrIn.length; i++) {
-			Assert.assertEquals(strArrIn[i], objArrayOut[i]);
+			assertEquals(strArrIn[i], objArrayOut[i]);
 		}
 		resetOutput();
 	}
 
+	@Test
 	public void testArrayReference() {
 		log.debug("Testing array reference");
 		TestVO mytest = new TestVO();
@@ -83,25 +88,27 @@ public abstract class AbstractIOTest extends TestCase {
 		dumpOutput();
 		TestVO[] objArrayOut = Deserializer.deserialize(in, TestVO[].class);
 		for (int i = 0; i < strArrIn.length; i++) {
-			Assert.assertEquals(strArrIn[i], objArrayOut[i]);
+			assertEquals(strArrIn[i], objArrayOut[i]);
 		}
 		resetOutput();
 	}
 
+	@Test
 	public void testBoolean() {
 		log.debug("Testing boolean");
 		Serializer.serialize(out, Boolean.TRUE);
 		dumpOutput();
 		Boolean val = Deserializer.deserialize(in, Boolean.class);
-		Assert.assertEquals(Boolean.TRUE, val);
+		assertEquals(Boolean.TRUE, val);
 		resetOutput();
 		Serializer.serialize(out, Boolean.FALSE);
 		dumpOutput();
 		val = Deserializer.deserialize(in, Boolean.class);
-		Assert.assertEquals(Boolean.FALSE, val);
+		assertEquals(Boolean.FALSE, val);
 		resetOutput();
 	}
 
+	@Test
 	public void testCircularReference() {
 		CircularRefBean beanIn = new CircularRefBean();
 		beanIn.setRefToSelf(beanIn);
@@ -109,23 +116,25 @@ public abstract class AbstractIOTest extends TestCase {
 
 		dumpOutput();
 		CircularRefBean beanOut = Deserializer.deserialize(in, CircularRefBean.class);
-		Assert.assertNotNull(beanOut);
-		Assert.assertEquals(beanOut, beanOut.getRefToSelf());
-		Assert.assertEquals(beanIn.getNameOfBean(), beanOut.getNameOfBean());
+		assertNotNull(beanOut);
+		assertEquals(beanOut, beanOut.getRefToSelf());
+		assertEquals(beanIn.getNameOfBean(), beanOut.getNameOfBean());
 		resetOutput();
 
 	}
 
+	@Test
 	public void testDate() {
 		log.debug("Testing date");
 		Date dateIn = new Date();
 		Serializer.serialize(out, dateIn);
 		dumpOutput();
 		Date dateOut = Deserializer.deserialize(in, Date.class);
-		Assert.assertEquals(dateIn, dateOut);
+		assertEquals(dateIn, dateOut);
 		resetOutput();
 	}
 
+	@Test
 	@SuppressWarnings({ "rawtypes" })
 	public void testJavaBean() {
 		log.debug("Testing list");
@@ -137,22 +146,23 @@ public abstract class AbstractIOTest extends TestCase {
 		Serializer.serialize(out, beanIn);
 		dumpOutput();
 		Object mapOrBean = Deserializer.deserialize(in, Object.class);
-		Assert.assertEquals(beanIn.getClass().getName(), mapOrBean.getClass().getName());
+		assertEquals(beanIn.getClass().getName(), mapOrBean.getClass().getName());
 		Map<?, ?> map = (mapOrBean instanceof Map) ? (Map<?, ?>) mapOrBean : new BeanMap(mapOrBean);
 		Set<?> entrySet = map.entrySet();
 		Iterator<?> it = entrySet.iterator();
 		Map beanInMap = new BeanMap(beanIn);
-		Assert.assertEquals(beanInMap.size(), map.size());
+		assertEquals(beanInMap.size(), map.size());
 		while (it.hasNext()) {
 			Map.Entry entry = (Map.Entry) it.next();
 			String propOut = (String) entry.getKey();
 			Object valueOut = entry.getValue();
-			Assert.assertTrue(beanInMap.containsKey(propOut));
-			Assert.assertEquals(valueOut, beanInMap.get(propOut));
+			assertTrue(beanInMap.containsKey(propOut));
+			assertEquals(valueOut, beanInMap.get(propOut));
 		}
 		resetOutput();
 	}
 
+	@Test
 	public void testList() {
 		log.debug("Testing list");
 		List<Comparable<?>> listIn = new LinkedList<Comparable<?>>();
@@ -165,14 +175,15 @@ public abstract class AbstractIOTest extends TestCase {
 		Serializer.serialize(out, listIn);
 		dumpOutput();
 		List<?> listOut = Deserializer.deserialize(in, List.class);
-		Assert.assertNotNull(listOut);
-		Assert.assertEquals(listIn.size(), listOut.size());
+		assertNotNull(listOut);
+		assertEquals(listIn.size(), listOut.size());
 		for (int i = 0; i < listIn.size(); i++) {
-			Assert.assertEquals(listOut.get(i), listIn.get(i));
+			assertEquals(listOut.get(i), listIn.get(i));
 		}
 		resetOutput();
 	}
 
+	@Test
 	public void testMap() {
 		Map<String, Object> mapIn = new HashMap<String, Object>();
 		mapIn.put("testNumber", Integer.valueOf(34));
@@ -182,8 +193,8 @@ public abstract class AbstractIOTest extends TestCase {
 
 		dumpOutput();
 		Map<?, ?> mapOut = Deserializer.deserialize(in, Map.class);
-		Assert.assertNotNull(mapOut);
-		Assert.assertEquals(mapIn.size(), mapOut.size());
+		assertNotNull(mapOut);
+		assertEquals(mapIn.size(), mapOut.size());
 
 		Set<?> entrySet = mapOut.entrySet();
 		Iterator<?> it = entrySet.iterator();
@@ -192,43 +203,47 @@ public abstract class AbstractIOTest extends TestCase {
 			String propOut = (String) entry.getKey();
 			Object valueOut = entry.getValue();
 
-			Assert.assertTrue(mapIn.containsKey(propOut));
+			assertTrue(mapIn.containsKey(propOut));
 			Object valueIn = mapIn.get(propOut);
-			Assert.assertEquals(valueOut, valueIn);
+			assertEquals(valueOut, valueIn);
 		}
 		resetOutput();
 
 	}
 
+	@Test
 	public void testNull() {
 		log.debug("Testing null");
 		Serializer.serialize(out, null);
 		dumpOutput();
 		Object val = Deserializer.deserialize(in, Object.class);
-		Assert.assertEquals(val, null);
+		assertEquals(val, null);
 		resetOutput();
 	}
 
+	@Test
 	public void testNumber() {
 		log.debug("Testing number");
 		int num = 1000;
 		Serializer.serialize(out, Integer.valueOf(num));
 		dumpOutput();
 		Number n = Deserializer.deserialize(in, Number.class);
-		Assert.assertEquals(n.intValue(), num);
+		assertEquals(n.intValue(), num);
 		resetOutput();
 	}
 
+	@Test
 	public void testInteger() {
 		log.debug("Testing integer");
 		int num = 129;
 		Serializer.serialize(out, Integer.valueOf(num));
 		dumpOutput();
 		Integer n = Deserializer.deserialize(in, Integer.class);
-		Assert.assertEquals(n.intValue(), num);
+		assertEquals(n.intValue(), num);
 		resetOutput();
 	}
 
+	@Test
 	public void testNegativeInteger() {
 		log.debug("Testing negative integer");
 		int num = -129;
@@ -236,10 +251,11 @@ public abstract class AbstractIOTest extends TestCase {
 		dumpOutput();
 		Integer n = Deserializer.deserialize(in, Integer.class);
 		log.debug("Integer: {} {}", n, num);
-		Assert.assertEquals(n.intValue(), num);
+		assertEquals(n.intValue(), num);
 		resetOutput();
 	}
 
+	@Test
 	@SuppressWarnings({})
 	public void testSimpleReference() {
 		Map<String, Object> mapIn = new HashMap<String, Object>();
@@ -251,8 +267,8 @@ public abstract class AbstractIOTest extends TestCase {
 
 		dumpOutput();
 		Map<?, ?> mapOut = Deserializer.deserialize(in, Map.class);
-		Assert.assertNotNull(mapOut);
-		Assert.assertEquals(mapIn.size(), mapOut.size());
+		assertNotNull(mapOut);
+		assertEquals(mapIn.size(), mapOut.size());
 
 		Set<?> entrySet = mapOut.entrySet();
 		Iterator<?> it = entrySet.iterator();
@@ -260,24 +276,25 @@ public abstract class AbstractIOTest extends TestCase {
 			Map.Entry<?, ?> entry = (Map.Entry<?, ?>) it.next();
 			String propOut = (String) entry.getKey();
 			SimpleJavaBean valueOut = (SimpleJavaBean) entry.getValue();
-			Assert.assertNotNull("couldn't get output bean", valueOut);
+			assertNotNull("couldn't get output bean", valueOut);
 
-			Assert.assertTrue(mapIn.containsKey(propOut));
+			assertTrue(mapIn.containsKey(propOut));
 			SimpleJavaBean valueIn = (SimpleJavaBean) mapIn.get(propOut);
-			Assert.assertNotNull("couldn't get input bean", valueIn);
-			Assert.assertEquals(valueOut.getNameOfBean(), valueIn.getNameOfBean());
+			assertNotNull("couldn't get input bean", valueIn);
+			assertEquals(valueOut.getNameOfBean(), valueIn.getNameOfBean());
 		}
 		resetOutput();
 
 	}
 
+	@Test
 	public void testString() {
 		log.debug("Testing string");
 		String inStr = "hello world";
 		Serializer.serialize(out, inStr);
 		dumpOutput();
 		String outStr = Deserializer.deserialize(in, String.class);
-		Assert.assertEquals(inStr, outStr);
+		assertEquals(inStr, outStr);
 		resetOutput();
 	}
 
