@@ -374,7 +374,7 @@ public class ConversionUtils {
 	 * @return                      Bean of that class
 	 * @throws ConversionException on failure
 	 */
-	public static Object convertMapToBean(Map<?, ?> source, Class<?> target) throws ConversionException {
+	public static Object convertMapToBean(Map<String, ? extends Object> source, Class<?> target) throws ConversionException {
 		Object bean = newInstance(target);
 		if (bean == null) {
 			//try with just the target name as specified in Trac #352

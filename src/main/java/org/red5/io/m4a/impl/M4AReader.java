@@ -19,10 +19,8 @@
 package org.red5.io.m4a.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -72,6 +70,7 @@ import com.coremedia.iso.boxes.apple.AppleWaveBox;
 import com.coremedia.iso.boxes.mdat.MediaDataBox;
 import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
 import com.coremedia.iso.boxes.sampleentry.SampleEntry;
+import com.googlecode.mp4parser.FileDataSourceImpl;
 import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
 import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
@@ -94,14 +93,9 @@ public class M4AReader implements IoConstants, ITagReader {
 	private static Logger log = LoggerFactory.getLogger(M4AReader.class);
 
 	/**
-	 * Input stream
+	 * File dataSource / channel
 	 */
-	private FileInputStream fis;
-
-	/**
-	 * File channel
-	 */
-	private FileChannel channel;
+	private FileDataSourceImpl dataSource;
 
 	/**
 	 * Provider of boxes
@@ -173,11 +167,10 @@ public class M4AReader implements IoConstants, ITagReader {
 			log.warn("Reader was passed a null file");
 			log.debug("{}", ToStringBuilder.reflectionToString(this));
 		}
-		this.fis = new FileInputStream(f);
-		// create a channel
-		channel = fis.getChannel();
+		// create a datasource / channel
+		dataSource = new FileDataSourceImpl(f);
 		// instance an iso file from mp4parser
-		isoFile = new IsoFile(channel);
+		isoFile = new IsoFile(dataSource);
 		//decode all the info that we want from the atoms
 		decodeHeader();
 		//analyze the samples/chunks and build the keyframe meta data
@@ -303,7 +296,7 @@ public class M4AReader implements IoConstants, ITagReader {
 				log.debug("mdat count: {}", mdats.size());
 				MediaDataBox mdat = mdats.get(0);
 				if (mdat != null) {
-					mdatOffset = mdat.getDataStartPosition();
+					mdatOffset = mdat.getOffset();
 				}
 			}
 			log.debug("Offset - mdat: {}", mdatOffset);
@@ -484,7 +477,7 @@ public class M4AReader implements IoConstants, ITagReader {
 
 	public long getTotalBytes() {
 		try {
-			return channel.size();
+			return dataSource.size();
 		} catch (Exception e) {
 			log.error("Error getTotalBytes", e);
 			return 0;
@@ -499,11 +492,11 @@ public class M4AReader implements IoConstants, ITagReader {
 	private long getCurrentPosition() {
 		try {
 			//if we are at the end of the file drop back to mdat offset
-			if (channel.position() == channel.size()) {
+			if (dataSource.position() == dataSource.size()) {
 				log.debug("Reached end of file, going back to data offset");
-				channel.position(mdatOffset);
+				dataSource.position(mdatOffset);
 			}
-			return channel.position();
+			return dataSource.position();
 		} catch (Exception e) {
 			log.error("Error getCurrentPosition", e);
 			return 0;
@@ -668,8 +661,8 @@ public class M4AReader implements IoConstants, ITagReader {
 				//log.debug("Writing audio prefix");
 				data.put(MP4Reader.PREFIX_AUDIO_FRAME);
 				//do we need to add the mdat offset to the sample position?
-				channel.position(samplePos);
-				channel.read(data);
+				dataSource.position(samplePos);
+				dataSource.read(data);
 			} catch (IOException e) {
 				log.error("Error on channel position / read", e);
 			}
@@ -731,17 +724,17 @@ public class M4AReader implements IoConstants, ITagReader {
 							if (size == 6) {
 								try {
 									// get current pos
-									long position = channel.position();
+									long position = dataSource.position();
 									// jump to data position
-									channel.position(pos);
+									dataSource.position(pos);
 									// create buffer to store bytes so we can check them
 									ByteBuffer dst = ByteBuffer.allocate(6);
 									// read the data
-									channel.read(dst);
+									dataSource.read(dst);
 									// flip it
 									dst.flip();
 									// reset the position
-									channel.position(position);
+									dataSource.position(position);
 									byte[] tmp = dst.array();
 									log.trace("Audio bytes: {} equal: {}", HexDump.byteArrayToHexString(tmp), Arrays.equals(MP4Reader.EMPTY_AAC, tmp));
 									if (Arrays.equals(MP4Reader.EMPTY_AAC, tmp)) {
@@ -828,11 +821,9 @@ public class M4AReader implements IoConstants, ITagReader {
 	 */
 	public void close() {
 		log.debug("Close");
-		if (channel != null) {
+		if (dataSource != null) {
 			try {
-				channel.close();
-				fis.close();
-				fis = null;
+				dataSource.close();
 			} catch (IOException e) {
 				log.error("Channel close {}", e);
 			} finally {
