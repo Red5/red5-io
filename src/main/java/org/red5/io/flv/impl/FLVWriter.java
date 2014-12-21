@@ -156,6 +156,9 @@ public class FLVWriter implements ITagWriter {
 	private String filePath;
 
 	private final Semaphore lock = new Semaphore(1, true);
+	
+	// the size of the last tag written, which includes the tag header length
+	private volatile int lastTagSize; 
 
 	/**
 	 * Creates writer implementation with for a given file
@@ -175,7 +178,7 @@ public class FLVWriter implements ITagWriter {
 	}	
 	
 	/**
-	 * Creates writer implementation with given file and last tag
+	 * Creates writer implementation with given file and flag indicating whether or not to append.
 	 *
 	 * FLV.java uses this constructor so we have access to the file object
 	 *
@@ -275,6 +278,12 @@ public class FLVWriter implements ITagWriter {
 			// skip tags with no data
 			int bodySize = tag.getBodySize();
 			log.debug("Tag body size: {}", bodySize);
+			// verify previous tag size stored in incoming tag
+			int previousTagSize = tag.getPreviousTagSize();
+			if (previousTagSize != lastTagSize) {
+				// use the last tag size
+				log.debug("Incoming previous tag size: {} does not match current value for last tag size: {}", previousTagSize, lastTagSize);
+			}			
 			// ensure that the channel is still open
 			if (dataFile != null) {
 				log.debug("Current file position: {}", dataFile.getChannel().position());
@@ -390,15 +399,21 @@ public class FLVWriter implements ITagWriter {
 				IOUtils.writeExtendedMediumInt(tagBuffer, timestamp); //4
 				// Stream id
 				tagBuffer.put(DEFAULT_STREAM_ID); //3
-				log.trace("Tag buffer (after tag header) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+				if (log.isTraceEnabled()) {
+					log.trace("Tag buffer (after tag header) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+				}
 				// get the body if we have one
 				if (bodyBuf != null) {
 					tagBuffer.put(bodyBuf);
-					log.trace("Tag buffer (after body) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+					if (log.isTraceEnabled()) {
+						log.trace("Tag buffer (after body) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+					}
 				}
 				// we add the tag size
 				tagBuffer.putInt(TAG_HEADER_LENGTH + bodySize);
-				log.trace("Tag buffer (after prev tag size) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+				if (log.isTraceEnabled()) {
+					log.trace("Tag buffer (after prev tag size) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+				}
 				// flip so we can process from the beginning
 				tagBuffer.flip();
 				if (log.isDebugEnabled()) {
@@ -409,7 +424,11 @@ public class FLVWriter implements ITagWriter {
 				// write the tag
 				dataFile.write(tagBuffer.array());
 				bytesWritten = dataFile.length();
-				log.trace("Tag written, check value: {} (should be 0)", (bytesWritten - prevBytesWritten) - totalTagSize);
+				if (log.isTraceEnabled()) {
+					log.trace("Tag written, check value: {} (should be 0)", (bytesWritten - prevBytesWritten) - totalTagSize);
+				}
+				// store new previous tag size
+				lastTagSize = TAG_HEADER_LENGTH + bodySize;
 				tagBuffer.clear();
 				// update the duration
 				duration = Math.max(duration, timestamp);
@@ -434,9 +453,124 @@ public class FLVWriter implements ITagWriter {
 		return false;
 	}
 
-	/** {@inheritDoc}
+	/** 
+	 * {@inheritDoc}
 	 */
-	public boolean writeTag(byte type, IoBuffer data) throws IOException {
+	public boolean writeTag(byte dataType, IoBuffer data) throws IOException {
+		if (timeOffset == 0) {
+			timeOffset = (int) System.currentTimeMillis();
+		}
+		try {
+			lock.acquire();
+			/*
+			 * Tag header = 11 bytes
+			 * |-|---|----|---|
+			 *    0 = type
+			 *  1-3 = data size
+			 *  4-7 = timestamp
+			 * 8-10 = stream id (always 0)
+			 * Tag data = variable bytes
+			 * Previous tag = 4 bytes (tag header size + tag data size)
+			 */
+			if (log.isTraceEnabled()) {
+				log.trace("writeTag - type: {} data: {}", dataType, data);
+			}
+			long prevBytesWritten = bytesWritten;
+			log.trace("Previous bytes written: {}", prevBytesWritten);
+			// skip tags with no data
+			int bodySize = data.limit();
+			log.debug("Tag body size: {}", bodySize);
+			// ensure that the channel is still open
+			if (dataFile != null) {
+				log.debug("Current file position: {}", dataFile.getChannel().position());
+				// if we're writing non-meta tags do seeking and tag size update
+				if (dataType != ITag.TYPE_METADATA) {
+					// get the current file offset
+					long fileOffset = dataFile.getFilePointer();
+					log.debug("Current file offset: {} expected offset: {}", fileOffset, prevBytesWritten);
+					if (fileOffset < prevBytesWritten) {
+						log.debug("Seeking to expected offset");
+						// it's necessary to seek to the length of the file
+						// so that we can append new tags
+						dataFile.seek(prevBytesWritten);
+						log.debug("New file position: {}", dataFile.getChannel().position());
+					}
+				} else {
+					data.mark();
+					// get input data
+					Input metadata = new Input(data);
+					// initialize type so that readString knows what to do
+					metadata.readDataType();
+					String metaType = metadata.readString(String.class);
+					log.debug("Metadata tag type: {}", metaType);
+					data.reset();
+					if (!"onCuePoint".equals(metaType)) {
+						// store any incoming onMetaData tags until we close the file, allow onCuePoint tags to continue
+						//metaTags.put(System.currentTimeMillis(), tag);
+						return true;
+					}
+				}
+				// set a var holding the entire tag size including the previous tag length
+				int totalTagSize = TAG_HEADER_LENGTH + bodySize + 4;
+				// resize
+				dataFile.setLength(dataFile.length() + totalTagSize);
+				// create a buffer for this tag
+				ByteBuffer tagBuffer = ByteBuffer.allocate(totalTagSize);
+				// Data Type
+				IOUtils.writeUnsignedByte(tagBuffer, dataType); //1
+				// Body Size - Length of the message. Number of bytes after StreamID to end of tag 
+				// (Equal to length of the tag - 11) 
+				IOUtils.writeMediumInt(tagBuffer, bodySize); //3
+				// Timestamp
+				int timestamp = (int) (System.currentTimeMillis() - timeOffset);
+				IOUtils.writeExtendedMediumInt(tagBuffer, timestamp); //4
+				// Stream id
+				tagBuffer.put(DEFAULT_STREAM_ID); //3
+				log.trace("Tag buffer (after tag header) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+				// get the body if we have one
+				if (data.hasArray()) {
+					tagBuffer.put(data.array());
+					log.trace("Tag buffer (after body) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+				}
+				// we add the tag size
+				tagBuffer.putInt(TAG_HEADER_LENGTH + bodySize);
+				log.trace("Tag buffer (after prev tag size) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+				// flip so we can process from the beginning
+				tagBuffer.flip();
+				if (log.isDebugEnabled()) {
+					//StringBuilder sb = new StringBuilder();
+					//HexDump.dumpHex(sb, tagBuffer.array());
+					//log.debug("\n{}", sb);
+				}
+				// write the tag
+				dataFile.write(tagBuffer.array());
+				bytesWritten = dataFile.length();
+				if (log.isTraceEnabled()) {
+					log.trace("Tag written, check value: {} (should be 0)", (bytesWritten - prevBytesWritten) - totalTagSize);
+				}
+				// store new previous tag size
+				lastTagSize = TAG_HEADER_LENGTH + bodySize;
+				tagBuffer.clear();
+				// update the duration
+				duration = Math.max(duration, timestamp);
+				log.debug("Writer duration: {}", duration);
+				// validate written amount
+				if ((bytesWritten - prevBytesWritten) != totalTagSize) {
+					log.debug("Not all of the bytes appear to have been written, prev-current: {}", (bytesWritten - prevBytesWritten));
+				}
+				return true;
+			} else {
+				// throw an exception and let them know the cause
+				throw new IOException("FLV write channel has been closed", new ClosedChannelException());
+			}
+		} catch (InterruptedException e) {
+			log.warn("Exception acquiring lock", e);
+		} finally {
+			// update the file information
+			updateInfoFile();
+			// release lock
+			lock.release();
+		}
 		return false;
 	}
 
@@ -470,7 +604,7 @@ public class FLVWriter implements ITagWriter {
 		params.put("creationdate", GregorianCalendar.getInstance().getTime().toString());
 		params.put("duration", (Number) duration);
 		if (videoCodecId != -1) {
-			params.put("videocodecid", videoCodecId);
+			params.put("videocodecid", (videoCodecId == 7 ? "avc1" : videoCodecId));
 			if (videoDataSize > 0) {
 				params.put("videodatarate", 8 * videoDataSize / 1024 / duration); //from bytes to kilobits
 			}
@@ -479,7 +613,7 @@ public class FLVWriter implements ITagWriter {
 			params.put("novideocodec", 0);
 		}
 		if (audioCodecId != -1) {
-			params.put("audiocodecid", audioCodecId);
+			params.put("audiocodecid", (audioCodecId == 10 ? "mp4a" : audioCodecId));
 			if (audioCodecId == AudioCodec.AAC.getId()) {
 				params.put("audiosamplerate", 44100);
 				params.put("audiosamplesize", 16);
@@ -525,13 +659,19 @@ public class FLVWriter implements ITagWriter {
 		IOUtils.writeExtendedMediumInt(tagBuffer, timestamp); //4
 		// Stream id
 		tagBuffer.put(DEFAULT_STREAM_ID); //3
-		log.trace("Tag buffer (after tag header) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+    	if (log.isTraceEnabled()) {
+    		log.trace("Tag buffer (after tag header) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+    	}
 		// get the body
 		tagBuffer.put(bodyBuf);
-		log.trace("Tag buffer (after body) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+		if (log.isTraceEnabled()) {
+			log.trace("Tag buffer (after body) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+		}
 		// we add the tag size
 		tagBuffer.putInt(TAG_HEADER_LENGTH + bodySize);
-		log.trace("Tag buffer (after prev tag size) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+		if (log.isTraceEnabled()) {
+			log.trace("Tag buffer (after prev tag size) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+		}
 		// flip so we can process from the beginning
 		tagBuffer.flip();
 		// write the tag
