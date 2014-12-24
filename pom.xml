@@ -56,14 +56,15 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <red5-client.version>1.0.2-SNAPSHOT</red5-client.version>
-        <spring.version>4.0.7.RELEASE</spring.version>
+        <red5-client.version>1.0.4-SNAPSHOT</red5-client.version>
+        <spring.version>4.0.8.RELEASE</spring.version>
         <mina.version>2.0.8</mina.version>
-        <slf4j.version>1.7.7</slf4j.version>
+        <slf4j.version>1.7.9</slf4j.version>
         <logback.version>1.1.2</logback.version>
         <quartz.version>2.1.7</quartz.version>
-        <junit.version>4.11</junit.version>
         <bc.version>1.51</bc.version>
+        <junit.version>4.12</junit.version>
+        <isoparser.version>1.0.4.2</isoparser.version>
     </properties>
     <repositories>
         <repository>
@@ -504,8 +505,8 @@
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.0.4.2</version>
-            <!-- <scope>system</scope> <systemPath>${basedir}/lib/isoparser-1.0-RC-19-SNAPSHOT.jar</systemPath> -->
+            <version>${isoparser.version}</version>
+            <!-- <scope>system</scope> <systemPath>${basedir}/lib/isoparser-1.0.5.4.jar</systemPath> -->
         </dependency>
         <dependency>
             <groupId>aopalliance</groupId>
