@@ -161,6 +161,7 @@ public class M4AReader implements IoConstants, ITagReader {
 	 * Creates M4A reader from file input stream, sets up metadata generation flag.
 	 *
 	 * @param f                    File input stream
+	 * @throws IOException on IO error
 	 */
 	public M4AReader(File f) throws IOException {
 		if (null == f) {

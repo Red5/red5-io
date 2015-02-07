@@ -84,8 +84,8 @@ public class HexDump {
 	/**
 	 * Dumps a byte array as hex.
 	 * 
-	 * @param sb
-	 * @param b
+	 * @param sb string builder
+	 * @param b bytes
 	 */
 	public static void dumpHex(StringBuilder sb, byte[] b) {
 		for (int i = 0; i < b.length; ++i) {
@@ -427,7 +427,7 @@ public class HexDump {
 	}
 
 	/**
-	 * converts String to Hex String. Example: niko ->6E696B6F
+	 * converts String to Hex String. Example: niko == 6E696B6F
 	 * 
 	 * @param ba byte array
 	 * @param offset offset in array

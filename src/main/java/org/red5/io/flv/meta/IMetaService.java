@@ -84,7 +84,7 @@ public interface IMetaService {
 	/**
 	 * Media file to be accessed
 	 * 
-	 * @param file
+	 * @param file file
 	 */
 	public void setFile(File file);
 

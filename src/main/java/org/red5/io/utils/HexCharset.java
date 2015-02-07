@@ -63,7 +63,7 @@ public class HexCharset extends Charset {
 	}
 
 	/**
-	 * Constructs a new encoder for this charset. </p>
+	 * Constructs a new encoder for this charset.
 	 * 
 	 * @return  A new encoder for this charset
 	 */
@@ -72,7 +72,7 @@ public class HexCharset extends Charset {
 	}
 
 	/**
-	 * Constructs a new decoder for this charset. </p>
+	 * Constructs a new decoder for this charset.
 	 * 
 	 * @return  A new decoder for this charset
 	 */

@@ -46,8 +46,8 @@ public class ByteArray implements IDataInput, IDataOutput {
 	/**
 	 * Internal constructor used to create ByteArray during deserialization.
 	 * 
-	 * @param buffer
-	 * @param length
+	 * @param buffer io buffer
+	 * @param length length
 	 */
 	protected ByteArray(IoBuffer buffer, int length) {
 		data = IoBuffer.allocate(length);

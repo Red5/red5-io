@@ -36,6 +36,8 @@ public @interface DeclareProtected {
 
 	/**
 	 * Permission required to execute method.
+	 * 
+	 * @return permission required
 	 */
 	String permission();
 	

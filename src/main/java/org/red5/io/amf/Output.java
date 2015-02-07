@@ -524,7 +524,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
 	/**
 	 * Encode string.
 	 *
-	 * @param string
+	 * @param string string to encode
 	 * @return encoded string
 	 */
 	protected static byte[] encodeString(String string) {

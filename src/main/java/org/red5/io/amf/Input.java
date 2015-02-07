@@ -54,6 +54,7 @@ import org.w3c.dom.Document;
  *
  * @author The Red5 Project
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
+ * @author Paul Gregoire (mondain@gmail.com)
  */
 @SuppressWarnings("serial")
 public class Input extends BaseInput implements org.red5.io.object.Input {
@@ -641,36 +642,36 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
 	}
 
 	/**
-	 * Read Vector<int> object. This is not supported by the AMF0 deserializer.
+	 * Read Vector&lt;int&gt; object. This is not supported by the AMF0 deserializer.
 	 *
-	 * @return	Vector<Integer> object
+	 * @return	Vector&lt;Integer&gt; object
 	 */
 	public Vector<Integer> readVectorInt() {
 		throw new RuntimeException("Vector objects not supported with AMF0");
 	}
 
 	/**
-	 * Read Vector<Long> object. This is not supported by the AMF0 deserializer.
+	 * Read Vector&lt;Long&gt; object. This is not supported by the AMF0 deserializer.
 	 *
-	 * @return	Vector<Long> object
+	 * @return	Vector&lt;Long&gt; object
 	 */
 	public Vector<Long> readVectorUInt() {
 		throw new RuntimeException("Vector objects not supported with AMF0");
 	}
 
 	/**
-	 * Read Vector<Number> object. This is not supported by the AMF0 deserializer.
+	 * Read Vector&lt;Number&gt; object. This is not supported by the AMF0 deserializer.
 	 *
-	 * @return	Vector<Double> object
+	 * @return	Vector&lt;Double&gt; object
 	 */
 	public Vector<Double> readVectorNumber() {
 		throw new RuntimeException("Vector objects not supported with AMF0");
 	}
 
 	/**
-	 * Read Vector<Object> object. This is not supported by the AMF0 deserializer.
+	 * Read Vector&lt;Object&gt; object. This is not supported by the AMF0 deserializer.
 	 *
-	 * @return	Vector<Object> object
+	 * @return	Vector&lt;Object&gt; object
 	 */
 	public Vector<Object> readVectorObject() {
 		throw new RuntimeException("Vector objects not supported with AMF0");

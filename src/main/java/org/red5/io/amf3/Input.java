@@ -802,9 +802,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 	}
 
 	/**
-	 * Read Vector<Integer> object.
+	 * Read Vector&lt;Integer&gt; object.
 	 *
-	 * @return	Vector<Integer> object
+	 * @return	Vector&lt;Integer&gt; object
 	 */
 	@SuppressWarnings("unchecked")
 	public Vector<Integer> readVectorInt() {
@@ -825,9 +825,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 	}
 
 	/**
-	 * Read Vector<uint> object.
+	 * Read Vector&lt;uint&gt; object.
 	 *
-	 * @return	Vector<Long> object
+	 * @return	Vector&lt;Long&gt; object
 	 */
 	@SuppressWarnings("unchecked")
 	public Vector<Long> readVectorUInt() {
@@ -852,9 +852,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 	}
 
 	/**
-	 * Read Vector<Number> object.
+	 * Read Vector&lt;Number&gt; object.
 	 *
-	 * @return	Vector<Double> object
+	 * @return	Vector&lt;Double&gt; object
 	 */
 	@SuppressWarnings("unchecked")
 	public Vector<Double> readVectorNumber() {
@@ -879,9 +879,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 	}
 
 	/**
-	 * Read Vector<Object> object.
+	 * Read Vector&lt;Object&gt; object.
 	 *
-	 * @return	Vector<Object> object
+	 * @return	Vector&lt;Object&gt; object
 	 */
 	@SuppressWarnings("unchecked")
 	public Vector<Object> readVectorObject() {

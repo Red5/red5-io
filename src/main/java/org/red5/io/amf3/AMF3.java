@@ -84,7 +84,7 @@ public class AMF3 {
 
 	/**
 	 * XML document marker
-	 * <br />
+	 * <br>
 	 * This is for the legacy XMLDocument type is retained in the language 
 	 * as flash.xml.XMLDocument. Similar to AMF 0, the structure of an 
 	 * XMLDocument needs to be flattened into a string representation for 
@@ -122,22 +122,22 @@ public class AMF3 {
     public static final byte TYPE_BYTEARRAY = 0x0C;
 
     /**
-     * Vector<int> marker
+     * Vector&lt;int&gt; marker
      */
     public static final byte TYPE_VECTOR_INT = 0x0D;
     
     /**
-     * Vector<uint> marker
+     * Vector&lt;uint&gt; marker
      */
     public static final byte TYPE_VECTOR_UINT = 0x0E;
     
     /**
-     * Vector<Number> marker
+     * Vector&lt;Number&gt; marker
      */
     public static final byte TYPE_VECTOR_NUMBER = 0x0F;
 
     /**
-     * Vector<Object> marker
+     * Vector&lt;Object&gt; marker
      */
     public static final byte TYPE_VECTOR_OBJECT = 0x10;
     

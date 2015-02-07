@@ -160,7 +160,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Creates FLV reader from file channel.
 	 *
-	 * @param channel
+	 * @param channel file channel
 	 * @throws IOException on error
 	 */
 	public FLVReader(FileChannel channel) throws IOException {
@@ -864,7 +864,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Returns the last tag's timestamp as the files duration.
 	 * 
-	 * @param flvFile
+	 * @param flvFile FLV file
 	 * @return duration
 	 */
 	public static int getDuration(File flvFile) {

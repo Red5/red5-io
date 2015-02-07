@@ -540,9 +540,9 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 	}
 
 	/**
-	 * Write a Vector<int>.
+	 * Write a Vector&lt;int&gt;.
 	 * 
-	 * @param vector
+	 * @param vector vector
 	 */
 	@Override
 	public void writeVectorInt(Vector<Integer> vector) {
@@ -571,9 +571,9 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 	}
 
 	/**
-	 * Write a Vector<uint>.
+	 * Write a Vector&lt;uint&gt;.
 	 * 
-	 * @param vector
+	 * @param vector vector
 	 */
 	@Override
 	public void writeVectorUInt(Vector<Long> vector) {
@@ -596,9 +596,9 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 	}
 
 	/**
-	 * Write a Vector<Number>.
+	 * Write a Vector&lt;Number&gt;.
 	 * 
-	 * @param vector
+	 * @param vector vector
 	 */
 	@Override
 	public void writeVectorNumber(Vector<Double> vector) {
@@ -618,9 +618,9 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 	}
 
 	/**
-	 * Write a Vector<Object>.
+	 * Write a Vector&lt;Object&gt;.
 	 * 
-	 * @param vector
+	 * @param vector vector
 	 */
 	@Override
 	public void writeVectorObject(Vector<Object> vector) {

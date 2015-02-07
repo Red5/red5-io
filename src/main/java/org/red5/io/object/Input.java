@@ -156,30 +156,30 @@ public interface Input {
 	Map<String, Object> readKeyValues();
 
 	/**
-	 * Read Vector<int> object.
+	 * Read Vector&lt;int&gt; object.
 	 * 
-	 * @return Vector<Integer>
+	 * @return Vector&lt;Integer&gt;
 	 */
 	Vector<Integer> readVectorInt();
 
 	/**
-	 * Read Vector<uint> object.
+	 * Read Vector&lt;uint&gt; object.
 	 * 
-	 * @return Vector<Long>
+	 * @return Vector&lt;Long&gt;
 	 */
 	Vector<Long> readVectorUInt();
 
 	/**
-	 * Read Vector<Number> object.
+	 * Read Vector&lt;Number&gt; object.
 	 * 
-	 * @return Vector<Double>
+	 * @return Vector&lt;Double&gt;
 	 */
 	Vector<Double> readVectorNumber();
 
 	/**
-	 * Read Vector<Object> object.
+	 * Read Vector&lt;Object&gt; object.
 	 * 
-	 * @return Vector<Object>
+	 * @return Vector&lt;Object&gt;
 	 */
 	Vector<Object> readVectorObject();
 

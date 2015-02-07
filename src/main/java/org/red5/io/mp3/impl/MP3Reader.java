@@ -139,7 +139,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
 	 * Creates reader from file input stream
 	 * 
 	 * @param file file input
-	 * @throws IOException 
+	 * @throws IOException on IO error
 	 */
 	public MP3Reader(File file) throws IOException {
 		this.file = file;

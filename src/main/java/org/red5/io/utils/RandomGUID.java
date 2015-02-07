@@ -28,7 +28,7 @@ public class RandomGUID extends Object {
 	/**
 	 * Returns a byte array for the given uuid or guid.
 	 * 
-	 * @param uid
+	 * @param uid unique id
 	 * @return array of bytes containing the id
 	 */
 	public final static byte[] toByteArray(String uid) {

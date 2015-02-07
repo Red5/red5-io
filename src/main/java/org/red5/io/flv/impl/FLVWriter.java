@@ -984,7 +984,7 @@ public class FLVWriter implements ITagWriter {
 	 * @param audioId audio codec id
 	 * @param videoId video codec id
 	 * @return true if conversion was successful
-	 * @throws InterruptedException 
+	 * @throws InterruptedException Exception on interruption
 	 */
 	public static boolean repair(String path, Integer audioId, Integer videoId) throws InterruptedException {
 		boolean result = false;
@@ -1042,7 +1042,7 @@ public class FLVWriter implements ITagWriter {
 	 * Exposed to allow repair of flv files if .info and .ser files still exist.
 	 * 
 	 * @param args 0: path to .ser file 1: audio codec id 2: video codec id
-	 * @throws InterruptedException 
+	 * @throws InterruptedException Exception on interruption 
 	 */
 	public static void main(String[] args) throws InterruptedException {
 		if (args == null || args[0] == null) {

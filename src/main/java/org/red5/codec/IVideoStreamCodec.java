@@ -83,7 +83,7 @@ public interface IVideoStreamCodec {
 		/**
 		 * Makes a copy of the incoming bytes and places them in an IoBuffer. No flip or rewind is performed on the source data.
 		 * 
-		 * @param data
+		 * @param data data
 		 */
 		public void setData(IoBuffer data) {
 			if (frame == null) {

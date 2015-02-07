@@ -41,8 +41,10 @@ public class BaseInput {
     protected int refId;
     
 	/**
-	 * Store an object into a map
-	 * @param obj  Object to store
+	 * Store an object into a map.
+	 * 
+	 * @param obj Object to store
+	 * @return reference id
 	 */
 	protected int storeReference(Object obj) {
 		int newRefId = refId++;
@@ -54,8 +56,8 @@ public class BaseInput {
 	 * Replace a referenced object with another one. This is used
 	 * by the AMF3 deserializer to handle circular references.
 	 * 
-	 * @param refId
-	 * @param newRef
+	 * @param refId reference id
+	 * @param newRef replacement object
 	 */
 	protected void storeReference(int refId, Object newRef) {
 		refMap.put(Integer.valueOf(refId), newRef);

@@ -98,12 +98,11 @@ import com.mp4parser.iso14496.part15.AvcDecoderConfigurationRecord;
 
 /**
  * This reader is used to read the contents of an MP4 file.
- * 
- * NOTE: This class is not implemented as thread-safe, the caller
- * should ensure the thread-safety.
- * <p>
+ * <br>
+ * NOTE: This class is not implemented as thread-safe, the caller should ensure the thread-safety.
+ * <br>
  * New NetStream notifications
- * <br />
+ * <br>
  * Two new notifications facilitate the implementation of the playback components:
  * <ul>
  * <li>NetStream.Play.FileStructureInvalid: This event is sent if the player detects 
@@ -113,7 +112,6 @@ import com.mp4parser.iso14496.part15.AvcDecoderConfigurationRecord;
  * detect any supported tracks. If there aren't any supported video, audio or data 
  * tracks found, Flash Player does not play the file.</li>
  * </ul>
- * </p>
  * 
  * @author The Red5 Project
  * @author Paul Gregoire (mondain@gmail.com)
@@ -271,6 +269,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	 * Creates MP4 reader from file input stream, sets up metadata generation flag.
 	 *
 	 * @param f                    File input stream
+	 * @throws IOException on IO exception
 	 */
 	public MP4Reader(File f) throws IOException {
 		if (null == f) {
@@ -542,7 +541,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Dumps the children of a container box.
 	 * 
-	 * @param box
+	 * @param box mp4 box
 	 */
 	public static void dumpBox(Container box) {
 		log.debug("Dump box: {}", box);

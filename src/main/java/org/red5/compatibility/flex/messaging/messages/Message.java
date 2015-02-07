@@ -72,7 +72,7 @@ public interface Message {
 	/**
 	 * Returns a header value corresponding to the passed header name.
 	 * 
-	 * @param name
+	 * @param name header name
 	 * @return header value
 	 */
 	Object getHeader(String name);
@@ -108,7 +108,7 @@ public interface Message {
 	/**
 	 * Tests whether a header with the passed name exists.
 	 * 
-	 * @param name
+	 * @param name header name
 	 * @return true if header exists, false otherwise
 	 */
 	boolean headerExists(String name);
@@ -116,57 +116,57 @@ public interface Message {
 	/**
 	 * Sets the body of the message.
 	 * 
-	 * @param value
+	 * @param value body
 	 */
 	void setBody(Object value);
 
 	/**
 	 * Sets the client id indicating the client that sent the message.
 	 * 
-	 * @param value
+	 * @param value client id
 	 */
 	void setClientId(String value);
 
 	/**
 	 * Sets the destination that the message targets.
 	 * 
-	 * @param value
+	 * @param value destination
 	 */
 	void setDestination(String value);
 
 	/**
 	 * Sets a header on the message.
 	 * 
-	 * @param name
-	 * @param value
+	 * @param name header name
+	 * @param value header value
 	 */
 	void setHeader(String name, Object value);
 
 	/**
 	 * Sets the headers for the message.
 	 * 
-	 * @param value
+	 * @param values header values
 	 */
-	void setHeaders(Map<String, Object> value);
+	void setHeaders(Map<String, Object> values);
 
 	/**
 	 * Sets the unique message id.
 	 * 
-	 * @param value
+	 * @param value message id
 	 */
 	void setMessageId(String value);
 
 	/**
 	 * Sets the timestamp for the message.
 	 * 
-	 * @param value
+	 * @param value timestamp
 	 */
 	void setTimestamp(long value);
 
 	/**
 	 * Sets the time to live for the message.
 	 * 
-	 * @param value
+	 * @param value ttl
 	 */
 	void setTimeToLive(long value);
 

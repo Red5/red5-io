@@ -395,7 +395,7 @@ public class Serializer {
 	/**
 	 * Handles classes by name, also provides "shortened" class aliases where appropriate.
 	 * 
-	 * @param objectClass
+	 * @param objectClass class
 	 * @return class name for given object
 	 */
 	public static String getClassName(Class<?> objectClass) {
