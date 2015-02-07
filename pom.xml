@@ -75,11 +75,6 @@
             <id>sonatype-releases</id>
             <name>Sonatype Releases</name>
             <url>http://oss.sonatype.org/content/repositories/releases</url>
-        </repository>    
-        <repository>
-            <id>osgeo</id>
-            <name>OSGeo repo - mainly for groboutils-core resolution</name>
-            <url>http://download.osgeo.org/webdav/geotools</url>
         </repository>
         <repository>
             <id>maven2-repository.dev.java.net</id>
@@ -451,12 +446,6 @@
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.groboutils</groupId>
-            <artifactId>groboutils-core</artifactId>
-            <version>5</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org</groupId>
             <artifactId>jaudiotagger</artifactId>
             <version>2.0.4-SNAPSHOT</version>
@@ -475,7 +464,6 @@
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
             <version>${isoparser.version}</version>
-            <!-- <scope>system</scope> <systemPath>${basedir}/lib/isoparser-1.0.5.4.jar</systemPath> -->
         </dependency>
         <dependency>
             <groupId>aopalliance</groupId>
