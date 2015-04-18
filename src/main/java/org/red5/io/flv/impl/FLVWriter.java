@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.InvalidMarkException;
 import java.nio.channels.ClosedChannelException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -309,7 +310,14 @@ public class FLVWriter implements ITagWriter {
 					metadata.readDataType();
 					String metaType = metadata.readString(String.class);
 					log.debug("Metadata tag type: {}", metaType);
-					tag.getBody().reset();
+					
+					try{
+						tag.getBody().reset();
+					} catch (InvalidMarkException e) {
+						//TDJ: this error is probably caused by the setter of limit on readString method
+						log.debug("Exception reseting position of buffer: " + e.getMessage(), e);
+					}
+					
 					if (!"onCuePoint".equals(metaType)) {
 						// store any incoming onMetaData tags until we close the file, allow onCuePoint tags to continue
 						metaTags.put(System.currentTimeMillis(), tag);
