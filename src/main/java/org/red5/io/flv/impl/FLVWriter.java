@@ -290,6 +290,13 @@ public class FLVWriter implements ITagWriter {
 				log.debug("Current file position: {}", dataFile.getChannel().position());
 				// get the data type
 				byte dataType = tag.getDataType();
+				
+				/**
+				 * when tag is ImmutableTag which is in red5-server-common.jar, tag.getBody().reset() will throw InvalidMarkException 
+				 * because ImmutableTag.getBody() returns a new IoBuffer instance everytime.
+				 */
+				IoBuffer tagBody = tag.getBody();
+				
 				// if we're writing non-meta tags do seeking and tag size update
 				if (dataType != ITag.TYPE_METADATA) {
 					// get the current file offset
@@ -303,16 +310,16 @@ public class FLVWriter implements ITagWriter {
 						log.debug("New file position: {}", dataFile.getChannel().position());
 					}
 				} else {
-					tag.getBody().mark();
+				    tagBody.mark();
 					// get input data
-					Input metadata = new Input(tag.getBody());
+					Input metadata = new Input(tagBody);
 					// initialize type so that readString knows what to do
 					metadata.readDataType();
 					String metaType = metadata.readString(String.class);
 					log.debug("Metadata tag type: {}", metaType);
 					
 					try{
-						tag.getBody().reset();
+					    tagBody.reset();
 					} catch (InvalidMarkException e) {
 						//TDJ: this error is probably caused by the setter of limit on readString method
 						log.debug("Exception reseting position of buffer: " + e.getMessage(), e);
@@ -338,7 +345,7 @@ public class FLVWriter implements ITagWriter {
 					// create an array big enough
 					bodyBuf = new byte[bodySize];
 					// put the bytes into the array
-					tag.getBody().get(bodyBuf);
+					tagBody.get(bodyBuf);
 					// get the audio or video codec identifier
 					if (dataType == ITag.TYPE_AUDIO) {
 						audioDataSize += bodySize;
@@ -688,6 +695,103 @@ public class FLVWriter implements ITagWriter {
 		tagBuffer.clear();
 		buf.clear();
 	}
+	
+	/**
+	 * update flv file meta data tag
+	 * @param flvFile
+	 * @param duration
+	 * @param videoCodecId
+	 * @param audioCodecId
+	 * @throws IOException
+	 */
+	private void updateMetadataTag(RandomAccessFile flvFile, double duration, int videoCodecId, int audioCodecId) throws IOException {
+		log.debug("updateMetadataTag - duration: {} video codec: {} audio codec: {}", new Object[] { duration, videoCodecId, audioCodecId });
+		IoBuffer buf = IoBuffer.allocate(512);
+		buf.setAutoExpand(true);
+		Output out = new Output(buf);
+		out.writeString("onMetaData");
+		Map<Object, Object> params = new HashMap<Object, Object>();
+		params.put("server", "Red5");
+		params.put("creationdate", GregorianCalendar.getInstance().getTime().toString());
+		params.put("duration", (Number) duration);
+		if (videoCodecId != -1) {
+			params.put("videocodecid", (videoCodecId == 7 ? "avc1" : videoCodecId));
+			if (videoDataSize > 0) {
+				params.put("videodatarate", 8 * videoDataSize / 1024 / duration); //from bytes to kilobits
+			}
+		} else {
+			// place holder
+			params.put("novideocodec", 0);
+		}
+		if (audioCodecId != -1) {
+			params.put("audiocodecid", (audioCodecId == 10 ? "mp4a" : audioCodecId));
+			if (audioCodecId == AudioCodec.AAC.getId()) {
+				params.put("audiosamplerate", 44100);
+				params.put("audiosamplesize", 16);
+			} else if (audioCodecId == AudioCodec.SPEEX.getId()) {
+				params.put("audiosamplerate", 16000);
+				params.put("audiosamplesize", 16);
+			} else {
+				params.put("audiosamplerate", soundRate);
+				params.put("audiosamplesize", soundSize);
+			}
+			params.put("stereo", soundType);
+			if (audioDataSize > 0) {
+				params.put("audiodatarate", 8 * audioDataSize / 1024 / duration); //from bytes to kilobits		
+			}
+		} else {
+			// place holder
+			params.put("noaudiocodec", 0);
+		}
+		// this is actual only supposed to be true if the last video frame is a keyframe
+		params.put("canSeekToEnd", true);
+		out.writeMap(params);
+		buf.flip();
+		int bodySize = buf.limit();
+		log.debug("Metadata size: {}", bodySize);
+		// set a var holding the entire tag size including the previous tag length
+		int totalTagSize = TAG_HEADER_LENGTH + bodySize + 4;
+
+		// create a buffer for this tag
+		ByteBuffer tagBuffer = ByteBuffer.allocate(totalTagSize);
+		// get the timestamp
+		int timestamp = 0;
+		// create an array big enough
+		byte[] bodyBuf = new byte[bodySize];
+		// put the bytes into the array
+		buf.get(bodyBuf);
+		// Data Type
+		IOUtils.writeUnsignedByte(tagBuffer, ITag.TYPE_METADATA); //1
+		// Body Size - Length of the message. Number of bytes after StreamID to end of tag 
+		// (Equal to length of the tag - 11) 
+		IOUtils.writeMediumInt(tagBuffer, bodySize); //3
+		// Timestamp
+		IOUtils.writeExtendedMediumInt(tagBuffer, timestamp); //4
+		// Stream id
+		tagBuffer.put(DEFAULT_STREAM_ID); //3
+    	if (log.isTraceEnabled()) {
+    		log.trace("Tag buffer (after tag header) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+    	}
+		// get the body
+		tagBuffer.put(bodyBuf);
+		if (log.isTraceEnabled()) {
+			log.trace("Tag buffer (after body) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+		}
+		// we add the tag size
+		tagBuffer.putInt(TAG_HEADER_LENGTH + bodySize);
+		if (log.isTraceEnabled()) {
+			log.trace("Tag buffer (after prev tag size) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+		}
+		// flip so we can process from the beginning
+		tagBuffer.flip();
+		
+		// override the meta tag
+		flvFile.seek(META_POSITION);
+		flvFile.write(tagBuffer.array());
+
+		tagBuffer.clear();
+		buf.clear();
+	}
 
 	/**
 	 * Finalizes the FLV file.
@@ -744,8 +848,8 @@ public class FLVWriter implements ITagWriter {
 				// transfer / write data file into final flv
 				bytesTransferred = file.getChannel().transferFrom(dataFile.getChannel(), bytesWritten, dataFile.length());
 			} else {
-				// TODO update duration
-				log.warn("Adjustment of duration on append is not supported at this time");
+				updateMetadataTag(dataFile, duration * 0.001d, videoCodecId, audioCodecId);
+				bytesTransferred = 1;//avoid to start a job to finish up on close() method 
 			}	
 			// close and remove the ser file if write was successful
 			if (dataFile != null && bytesTransferred > 0) {
@@ -759,6 +863,7 @@ public class FLVWriter implements ITagWriter {
 						dat.delete();
 					}
 					File inf = new File(filePath + ".info");
+					
 					if (inf.exists()) {
 						inf.delete();
 					}
@@ -779,7 +884,7 @@ public class FLVWriter implements ITagWriter {
 		}
 		return bytesTransferred;
 	}
-	
+		
 	/**
 	 * Read flv file information from pre-finalization file.
 	 * 
