@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.io.BufferType;
@@ -119,7 +119,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/** The header of this FLV file. */
 	private FLVHeader header;
 
-	private final Semaphore lock = new Semaphore(2, true);
+	private final ReentrantLock lock = new ReentrantLock();
 
 	/** Constructs a new FLVReader. */
 	FLVReader() {
@@ -516,13 +516,13 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	 */
 	public boolean hasMoreTags() {
 		try {
-			lock.acquire();
+			lock.lockInterruptibly();
 			return getRemainingBytes() > 4;
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 			return false;
 		} finally {
-			lock.release();
+			lock.unlock();
 		}
 	}
 
@@ -575,7 +575,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	public ITag readTag() {
 		ITag tag = null;
 		try {
-			lock.acquire();
+			lock.lockInterruptibly();
 			long oldPos = getCurrentPosition();
 			tag = readTagHeader();
 			if (tag != null) {
@@ -616,7 +616,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 		} finally {
-			lock.release();
+			lock.unlock();
 		}
 		return tag;
 	}
@@ -626,8 +626,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	public void close() {
 		log.debug("Reader close: {}", file.getName());
 		try {
-			// acquire both permits before we close
-			lock.acquire(2);
+			lock.lockInterruptibly();
 			if (in != null) {
 				in.free();
 				in = null;
@@ -643,7 +642,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 		} finally {
-			lock.release(2);
+			lock.unlock();
 		}
 	}
 
