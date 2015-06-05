@@ -746,6 +746,13 @@ public class FLVWriter implements ITagWriter {
 			} else {
 				// TODO update duration
 				log.warn("Adjustment of duration on append is not supported at this time");
+
+				if (dataFile != null) {
+					// If it is append mode we should change do bytesTransferred != 0
+					// because bytesTransferred == 0 means an error
+					// FIXME should be set only last recorded part as bytesTransferred
+					bytesTransferred = dataFile.getChannel().size();
+				}
 			}	
 			// close and remove the ser file if write was successful
 			if (dataFile != null && bytesTransferred > 0) {
