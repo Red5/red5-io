@@ -657,7 +657,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 			return keyframeMeta;
 		}
 		try {
-			lock.acquire();
+			lock.lockInterruptibly();
 			// check for cached keyframe informations
 			if (keyframeCache != null) {
 				keyframeMeta = keyframeCache.loadKeyFrameMeta(file);
@@ -777,7 +777,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 		} finally {
-			lock.release();
+			lock.unlock();
 		}
 		return keyframeMeta;
 	}
