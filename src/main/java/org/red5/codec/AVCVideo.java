@@ -18,6 +18,10 @@
 
 package org.red5.codec;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.mina.core.buffer.IoBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +46,16 @@ public class AVCVideo implements IVideoStreamCodec {
 	
 	/** Video decoder configuration data */
 	private FrameData decoderConfiguration;
+
+	/**
+	 * Storage for frames buffered since last key frame
+	 */
+	private final List<FrameData> interframes = new ArrayList<FrameData>(50);
+
+	/**
+	 * Number of frames buffered since last key frame
+	 */
+	private final AtomicInteger numInterframes = new AtomicInteger(0);
 
 	/** Constructs a new AVCVideo. */
 	public AVCVideo() {
@@ -88,6 +102,7 @@ public class AVCVideo implements IVideoStreamCodec {
     		// check for keyframe
     		if ((frameType & 0xf0) == FLV_FRAME_KEY) {
     			log.trace("Key frame found");
+				numInterframes.set(0);
 				byte AVCPacketType = data.get();
 				// rewind
 				data.rewind();
@@ -102,6 +117,19 @@ public class AVCVideo implements IVideoStreamCodec {
 				}
    				// store last keyframe
    				keyframe.setData(data);
+    		} else {
+    			data.rewind();
+    			try {
+        			int lastInterframe = numInterframes.getAndIncrement();
+        			log.trace("Buffering interframe #{}", lastInterframe);
+        			if (interframes.size() < lastInterframe + 1) {
+        				interframes.add(new FrameData());
+        			}
+                    FrameData lastInerframeData = interframes.get(lastInterframe);
+        			lastInerframeData.setData(data);
+    			} catch (Throwable e) {
+    				log.error("Failed to buffer interframe", e);
+    			}
     		}
     		// finished with the data, rewind one last time
     		data.rewind();
@@ -118,5 +146,14 @@ public class AVCVideo implements IVideoStreamCodec {
 	public IoBuffer getDecoderConfiguration() {
 		return decoderConfiguration.getFrame();
 	}
-	
+
+	/** {@inheritDoc} */
+	public int getNumInterframes() {
+		return numInterframes.get();
+	}
+
+	/** {@inheritDoc} */
+	public FrameData getInterframe(int index) {
+		return interframes.get(index);
+	}
 }

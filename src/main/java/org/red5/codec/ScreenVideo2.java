@@ -275,4 +275,14 @@ public class ScreenVideo2 implements IVideoStreamCodec {
 		return null;
 	}
     
+	/** {@inheritDoc} */
+	public int getNumInterframes() {
+		return 0;
+	}
+
+	/** {@inheritDoc} */
+	public FrameData getInterframe(int idx) {
+		return null;
+	}
+
 }
