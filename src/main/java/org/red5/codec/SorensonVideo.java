@@ -121,7 +121,7 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
 			// Not a keyframe
 			try {
     			int lastInterframe = numInterframes.getAndIncrement();
-                if (lastInterframe != 0 || frameType != FLAG_FRAMETYPE_DISPOSABLE) {
+                if (frameType != FLAG_FRAMETYPE_DISPOSABLE) {
                     log.trace("Buffering interframe #{}", lastInterframe);
                     if (interframes.size() < lastInterframe + 1) {
                         interframes.add(new FrameData());
