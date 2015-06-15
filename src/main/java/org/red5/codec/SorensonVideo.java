@@ -68,7 +68,7 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
 	private final AtomicInteger numInterframes = new AtomicInteger(0);
 
 	/** Constructs a new SorensonVideo. */
-    public SorensonVideo() {
+	public SorensonVideo() {
 		this.reset();
 	}
 
@@ -120,20 +120,20 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
 		if (frameType != FLAG_FRAMETYPE_KEYFRAME) {
 			// Not a keyframe
 			try {
-    			int lastInterframe = numInterframes.getAndIncrement();
-                if (frameType != FLAG_FRAMETYPE_DISPOSABLE) {
-                    log.trace("Buffering interframe #{}", lastInterframe);
-                    if (interframes.size() < lastInterframe + 1) {
-                        interframes.add(new FrameData());
-                    }
-                    interframes.get(lastInterframe).setData(data);
-                } else {
-                    numInterframes.set(lastInterframe);
-                }
+				int lastInterframe = numInterframes.getAndIncrement();
+				if (frameType != FLAG_FRAMETYPE_DISPOSABLE) {
+					log.trace("Buffering interframe #{}", lastInterframe);
+					if (interframes.size() < lastInterframe + 1) {
+						interframes.add(new FrameData());
+					}
+					interframes.get(lastInterframe).setData(data);
+				} else {
+					numInterframes.set(lastInterframe);
+				}
 			} catch (Throwable e) {
 				log.error("Failed to buffer interframe", e);
 			}
-            data.rewind();
+			data.rewind();
 			return true;
 		}
 
