@@ -74,6 +74,19 @@ public interface IVideoStreamCodec {
 	public IoBuffer getDecoderConfiguration();
 
 	/**
+	 * @return the number of interframes collected from last keyframe.
+	 */
+	public int getNumInterframes();
+
+	/**
+	 * Gets data of interframe with the specified index.
+	 *
+	 * @param index the index of interframe.
+	 * @return data of the interframe.
+	 */
+	public FrameData getInterframe(int index);
+
+	/**
 	 * Holder for video frame data.
 	 */
 	public final static class FrameData {
@@ -86,12 +99,10 @@ public interface IVideoStreamCodec {
 		 * @param data data
 		 */
 		public void setData(IoBuffer data) {
-			if (frame == null) {
-				frame = new byte[data.limit()];
-			} else {
+			if (frame != null) {
 				frame = null;
-				frame = new byte[data.limit()];
 			}
+			frame = new byte[data.limit()];
 			data.get(frame);
 		}
 
@@ -100,5 +111,4 @@ public interface IVideoStreamCodec {
 		}
 
 	}
-
 }
