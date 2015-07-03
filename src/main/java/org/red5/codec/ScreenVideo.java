@@ -247,5 +247,15 @@ public class ScreenVideo implements IVideoStreamCodec {
 	public IoBuffer getDecoderConfiguration() {
 		return null;
 	}
-    
+
+	/** {@inheritDoc} */
+	public int getNumInterframes() {
+		return 0;
+	}
+
+	/** {@inheritDoc} */
+	public FrameData getInterframe(int index) {
+		return null;
+	}
+
 }

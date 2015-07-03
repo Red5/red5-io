@@ -18,7 +18,13 @@
 
 package org.red5.codec;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.mina.core.buffer.IoBuffer;
+import org.red5.io.IoConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Red5 video codec for the sorenson video format.
@@ -29,7 +35,9 @@ import org.apache.mina.core.buffer.IoBuffer;
  * @author Joachim Bauch (jojo@struktur.de)
  * @author Paul Gregoire (mondain@gmail.com) 
  */
-public class SorensonVideo implements IVideoStreamCodec {
+public class SorensonVideo implements IVideoStreamCodec, IoConstants {
+
+	private Logger log = LoggerFactory.getLogger(SorensonVideo.class);
 
     /**
      * Sorenson video codec constant
@@ -49,8 +57,18 @@ public class SorensonVideo implements IVideoStreamCodec {
      */
 	private int blockSize;
 
+	/**
+	 * Storage for frames buffered since last key frame
+	 */
+	private final List<FrameData> interframes = new ArrayList<FrameData>(50);
+
+	/**
+	 * Number of frames buffered since last key frame
+	 */
+	private final AtomicInteger numInterframes = new AtomicInteger(0);
+
 	/** Constructs a new SorensonVideo. */
-    public SorensonVideo() {
+	public SorensonVideo() {
 		this.reset();
 	}
 
@@ -97,10 +115,29 @@ public class SorensonVideo implements IVideoStreamCodec {
 
 		byte first = data.get();
 		data.rewind();
-		if ((first & 0xf0) != FLV_FRAME_KEY) {
+
+		int frameType = (first & MASK_VIDEO_FRAMETYPE) >> 4;
+		if (frameType != FLAG_FRAMETYPE_KEYFRAME) {
 			// Not a keyframe
+			try {
+				int lastInterframe = numInterframes.getAndIncrement();
+				if (frameType != FLAG_FRAMETYPE_DISPOSABLE) {
+					log.trace("Buffering interframe #{}", lastInterframe);
+					if (interframes.size() < lastInterframe + 1) {
+						interframes.add(new FrameData());
+					}
+					interframes.get(lastInterframe).setData(data);
+				} else {
+					numInterframes.set(lastInterframe);
+				}
+			} catch (Throwable e) {
+				log.error("Failed to buffer interframe", e);
+			}
+			data.rewind();
 			return true;
 		}
+
+		numInterframes.set(0);
 
 		// Store last keyframe
 		this.dataCount = data.limit();
@@ -128,6 +165,15 @@ public class SorensonVideo implements IVideoStreamCodec {
     
 	public IoBuffer getDecoderConfiguration() {
 		return null;
-	}    
-    
+	}
+
+	/** {@inheritDoc} */
+	public int getNumInterframes() {
+		return numInterframes.get();
+	}
+
+	/** {@inheritDoc} */
+	public FrameData getInterframe(int index) {
+		return interframes.get(index);
+	}
 }
