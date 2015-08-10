@@ -80,6 +80,10 @@
             <id>maven2-repository.dev.java.net</id>
             <url>http://download.java.net/maven/2</url>
         </repository>
+        <repository>
+            <id>maven2-repository.jfrog</id>
+	    <url>http://repo.jfrog.org/artifactory/libs-releases/</url>
+        </repository>
     </repositories>
     <build>
         <defaultGoal>install</defaultGoal>
