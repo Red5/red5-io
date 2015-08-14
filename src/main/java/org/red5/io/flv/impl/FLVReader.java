@@ -522,7 +522,9 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 			log.warn("Exception acquiring lock", e);
 			return false;
 		} finally {
-			lock.unlock();
+			if (lock.isLocked()) {
+				lock.unlock();
+			}
 		}
 	}
 
@@ -616,7 +618,9 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 		} finally {
-			lock.unlock();
+			if (lock.isLocked()) {
+				lock.unlock();
+			}
 		}
 		return tag;
 	}
@@ -626,7 +630,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	public void close() {
 		log.debug("Reader close: {}", file.getName());
 		try {
-			lock.lockInterruptibly();
+			lock.lock();
 			if (in != null) {
 				in.free();
 				in = null;
@@ -639,10 +643,11 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 					log.error("FLVReader :: close ::>\n", e);
 				}
 			}
-		} catch (InterruptedException e) {
-			log.warn("Exception acquiring lock", e);
+			log.debug("Reader closed: {}", file.getName());
 		} finally {
-			lock.unlock();
+			if (lock.isLocked()) {
+				lock.unlock();
+			}
 		}
 	}
 
@@ -777,7 +782,9 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		} catch (InterruptedException e) {
 			log.warn("Exception acquiring lock", e);
 		} finally {
-			lock.unlock();
+			if (lock.isLocked()) {
+				lock.unlock();
+			}
 		}
 		return keyframeMeta;
 	}
