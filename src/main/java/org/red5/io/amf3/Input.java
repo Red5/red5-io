@@ -87,7 +87,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 		 * @param attributeNames attributes
 		 */
 		public ClassReference(String className, int type, List<String> attributeNames) {
-			log.debug("Pending property - className: {} type: {} attributeNames: {}", new Object[] { className, type, attributeNames });
+			if (log.isDebugEnabled()) {
+				log.debug("Class reference - className: {} type: {} attributeNames: {}", new Object[] { className, type, attributeNames });
+			}
 			this.className = className;
 			this.type = type;
 			this.attributeNames = attributeNames;
@@ -101,7 +103,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 	protected static class PendingObject {
 
 		public PendingObject() {
-			log.debug("PendingObject");
+			if (log.isDebugEnabled()) {
+				log.debug("PendingObject");
+			}
 		}
 
 		static final class PendingProperty {
@@ -112,7 +116,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 			String name;
 
 			PendingProperty(Object obj, Class<?> klass, String name) {
-				log.debug("Pending property - obj: {} class: {} name: {}", new Object[] { obj, klass, name });
+				if (log.isDebugEnabled()) {
+					log.debug("Pending property - obj: {} class: {} name: {}", new Object[] { obj, klass, name });					
+				}
 				this.obj = obj;
 				this.klass = klass;
 				this.name = name;
@@ -137,7 +143,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 						try {
 							BeanUtils.setProperty(prop.obj, prop.name, result);
 						} catch (Exception ex) {
-							log.error("Error mapping property: {} ({})", prop.name, result);
+							log.warn("Error mapping property: {} ({})", prop.name, result);
 						}
 					}
 				}
@@ -654,40 +660,57 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 				((IExternalizable) result).readExternal(new DataInput(this));
 				break;
 			case AMF3.TYPE_OBJECT_VALUE:
-				log.debug("Detected: Object value type");
+				if (log.isDebugEnabled()) {
+					log.debug("Detected: Object value type");
+				}
 				// First, we should read typed (non-dynamic) properties ("sealed traits" according to AMF3 specification).
 				// Property names are stored in the beginning, then values are stored.
 				count = type >> 2;
-				log.debug("Count: {}", count);
+				if (log.isDebugEnabled()) {
+					log.debug("Count: {}", count);
+				}
 				if (attributes == null) {
 					attributes = new ArrayList<String>(count);
 					for (int i = 0; i < count; i++) {
 						attributes.add(readString(String.class));
 					}
-					refStorage.classReferences.add(new ClassReference(className, AMF3.TYPE_OBJECT_VALUE, attributes));
 				}
-				//use the size of the attributes if we have no count
+				// use the size of the attributes if we have no count
 				if (count == 0 && attributes != null) {
 					count = attributes.size();
-					log.debug("Using class attribute size for property count: {}", count);
+					if (log.isDebugEnabled()) {
+						log.debug("Using class attribute size for property count: {}", count);
+					}
 					//read the attributes from the stream and log if count doesnt match
 					List<String> tmpAttributes = new ArrayList<String>(count);
 					for (int i = 0; i < count; i++) {
 						tmpAttributes.add(readString(String.class));
 					}
-					if (count != tmpAttributes.size()) {
-						log.debug("Count and attributes length does not match!");
+					if (log.isDebugEnabled()) {
+    					if (count != tmpAttributes.size()) {
+    						log.debug("Count and attributes length does not match!");
+    					}
 					}
-					refStorage.classReferences.add(new ClassReference(className, AMF3.TYPE_OBJECT_VALUE, attributes));
 				}
+				// create a single reference for attributes
+				if (attributes != null) {
+					refStorage.classReferences.add(new ClassReference(className, AMF3.TYPE_OBJECT_VALUE, attributes));					
+				}
+				// create props
 				properties = new ObjectMap<String, Object>();
 				for (String key : attributes) {
-					log.debug("Looking for property: {}", key);
+					if (log.isDebugEnabled()) {
+						log.debug("Looking for property: {}", key);
+					}
 					Object value = Deserializer.deserialize(this, getPropertyType(instance, key));
-					log.debug("Key: {} Value: {}", key, value);
+					if (log.isDebugEnabled()) {
+						log.debug("Key: {} Value: {}", key, value);
+					}
 					properties.put(key, value);
 				}
-				log.trace("Buffer - position: {} limit: {}", buf.position(), buf.limit());
+				if (log.isTraceEnabled()) {
+					log.trace("Buffer - position: {} limit: {}", buf.position(), buf.limit());
+				}
 				//no more items to read if we are at the end of the buffer
 				if (buf.position() < buf.limit()) {
 					// Now we should read dynamic properties which are stored as name-value pairs.
@@ -702,11 +725,15 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 				break;
 			default:
 			case AMF3.TYPE_OBJECT_PROXY:
-				log.debug("Detected: Object proxy type");
+				if (log.isDebugEnabled()) {
+					log.debug("Detected: Object proxy type");
+				}
 				if ("".equals(className)) {
 					throw new RuntimeException("Classname is required to load an Externalizable object");
 				}
-				log.debug("Externalizable class: {}", className);
+				if (log.isDebugEnabled()) {
+					log.debug("Externalizable class: {}", className);
+				}
 				result = newInstance(className);
 				if (result == null) {
 					throw new RuntimeException(String.format("Could not instantiate class: %s", className));
@@ -776,7 +803,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 								}
 							}
 						} else {
-							log.debug("Skipping null property: {}", key);
+							if (log.isDebugEnabled()) {
+								log.debug("Skipping null property: {}", key);
+							}
 						}
 					}
 				} // else fall through
