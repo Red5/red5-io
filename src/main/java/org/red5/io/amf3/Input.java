@@ -693,9 +693,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 					}
 				}
 				// create a single reference for attributes
-				if (attributes != null) {
-					refStorage.classReferences.add(new ClassReference(className, AMF3.TYPE_OBJECT_VALUE, attributes));					
-				}
+				refStorage.classReferences.add(new ClassReference(className, AMF3.TYPE_OBJECT_VALUE, attributes));					
 				// create props
 				properties = new ObjectMap<String, Object>();
 				for (String key : attributes) {
