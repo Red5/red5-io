@@ -663,15 +663,18 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 			log.debug("Chunk count: {}", videoChunkOffsets.length);
 		} else {
 			// co64 - has Chunks
-			ChunkOffset64BitBox co64 = stbl.getBoxes(ChunkOffset64BitBox.class).get(0);
-			if (co64 != null) {
-				log.debug("Chunk offset (64) atom found");
-				videoChunkOffsets = co64.getChunkOffsets();
-				log.debug("Chunk count: {}", videoChunkOffsets.length);
-				// double the timescale for video, since it seems to run at
-				// half-speed when co64 is used (seems hacky)
-				//videoTimeScale = scale * 2.0;
-				//log.debug("Video time scale: {}", videoTimeScale);
+			List<ChunkOffset64BitBox> stblBoxes = stbl.getBoxes(ChunkOffset64BitBox.class);
+			if(stblBoxes != null && !stblBoxes.isEmpty()){
+				ChunkOffset64BitBox co64 = stblBoxes.get(0);
+				if (co64 != null) {
+					log.debug("Chunk offset (64) atom found");
+					videoChunkOffsets = co64.getChunkOffsets();
+					log.debug("Chunk count: {}", videoChunkOffsets.length);
+					// double the timescale for video, since it seems to run at
+					// half-speed when co64 is used (seems hacky)
+					//videoTimeScale = scale * 2.0;
+					//log.debug("Video time scale: {}", videoTimeScale);
+				}
 			}
 		}
 		// stss - has Sync - no sync means all samples are keyframes
