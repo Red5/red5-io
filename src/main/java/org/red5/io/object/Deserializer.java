@@ -48,10 +48,14 @@ public class Deserializer {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <T> T deserialize(Input in, Type target) {
 		byte type = in.readDataType();
-		log.trace("Type: {} target: {}", type, (target != null ? target.toString() : "Target not specified"));
+		if (log.isTraceEnabled()) {
+			log.trace("Type: {} target: {}", type, (target != null ? target.toString() : "Target not specified"));
+		}
 		while (type == DataTypes.CORE_SKIP) {
 			type = in.readDataType();
-			log.trace("Type (skip): {}", type);
+			if (log.isTraceEnabled()) {
+				log.trace("Type (skip): {}", type);
+			}
 		}
 		log.debug("Datatype: {}", DataTypes.toStringValue(type));
 		Object result;
@@ -75,7 +79,7 @@ public class Deserializer {
 						result = in.readString(target);
 					}
 				} catch (RuntimeException e) {
-					log.error("failed to deserialize " + target, e);
+					log.error("failed to deserialize {}", target, e);
 					throw e;
 				}
 				break;

@@ -331,31 +331,49 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 	@Override
 	public Number readNumber(Type target) {
 		log.debug("readNumber - target: {}", target);
-		Number v;
-		if (currentDataType == AMF3.TYPE_NUMBER) {
-			v = buf.getDouble();
-		} else {
-			// we are decoding an int
-			v = readAMF3Integer();
-		}
-		log.debug("readNumber - value: {}", v);
-		if (target instanceof Class && Number.class.isAssignableFrom((Class<?>) target)) {
-			Class cls = (Class) target;
-			if (!cls.isAssignableFrom(v.getClass())) {
-				String value = v.toString();
-				log.debug("readNumber - value class: {} str: {}", v.getClass(), value);
-				if (value.indexOf(".") > 0) {
-					if (Float.class == v.getClass()) {
-						v = (Number) convertUtilsBean.convert(value, Float.class);
-					} else {
-						v = (Number) convertUtilsBean.convert(value, Double.class);
-					}
+		if (buf.hasRemaining()) {
+			int remaining = buf.remaining();
+			if (log.isTraceEnabled()) {
+				log.trace("Remaining bytes for Number: {}", remaining);
+			}
+			Number v;
+			if (currentDataType == AMF3.TYPE_NUMBER) {
+				// prevent buffer underrun if we dont have 8 bytes for the expected double
+				if (remaining >= 8) {
+					v = buf.getDouble();				
 				} else {
-					v = (Number) convertUtilsBean.convert(value, cls);
+					v = buf.getInt();
+				}
+			} else {
+				// we are decoding an int
+				v = readAMF3Integer();
+			}
+			if (log.isTraceEnabled()) {
+				log.trace("readNumber - value: {}", v);
+			}
+			if (target instanceof Class && Number.class.isAssignableFrom((Class<?>) target)) {
+				Class cls = (Class) target;
+				if (!cls.isAssignableFrom(v.getClass())) {
+					String value = v.toString();
+					if (log.isTraceEnabled()) {
+						log.trace("readNumber - value class: {} str: {}", v.getClass(), value);
+					}
+					if (value.indexOf(".") > 0) {
+						if (Float.class == v.getClass()) {
+							v = (Number) convertUtilsBean.convert(value, Float.class);
+						} else {
+							v = (Number) convertUtilsBean.convert(value, Double.class);
+						}
+					} else {
+						v = (Number) convertUtilsBean.convert(value, cls);
+					}
 				}
 			}
+			return v;			
+		} else {
+			log.warn("No remaining bytes for buffer readNumber");
 		}
-		return v;
+		return null;
 	}
 
 	/**
