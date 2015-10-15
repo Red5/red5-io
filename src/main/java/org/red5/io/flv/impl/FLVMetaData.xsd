@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/FLVMetaData" xmlns:tns="http://www.example.org/FLVMetaData">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/FLVMetaData"
+	xmlns:tns="http://www.example.org/FLVMetaData">
 	<element name="flashvideo">
 		<annotation>
 			<documentation>Root element</documentation>
 		</annotation>
 		<complexType>
 			<sequence>
-			
+
 				<element name="file" maxOccurs="unbounded" minOccurs="0">
 					<complexType>
 						<sequence>
@@ -17,11 +18,9 @@
 							<element name="meta" maxOccurs="unbounded">
 								<complexType>
 									<sequence>
-										<element name="position"
-											type="string">
+										<element name="position" type="string">
 										</element>
-										<element name="timestamp"
-											type="string">
+										<element name="timestamp" type="string">
 										</element>
 									</sequence>
 								</complexType>

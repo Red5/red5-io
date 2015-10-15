@@ -1,102 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tns:flashvideo xmlns:tns="http://www.example.org/FLVMetaData"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.example.org/FLVMetaData FLVMetaData.xsd " >
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.example.org/FLVMetaData FLVMetaData.xsd ">
 
-    <file>
+	<file>
 
-        <name>
+		<name>
   		FLV File One
         </name>
 
-        <size>
+		<size>
   		333333333333
         </size>
 
-        <modified>
+		<modified>
   		modified time
         </modified>
 
-        <meta>
+		<meta>
 
-            <position>
+			<position>
 Position1
             </position>
 
-            <timestamp>
+			<timestamp>
 TimeStamp1
             </timestamp>
-        </meta>
+		</meta>
 
-        <meta>
+		<meta>
 
-            <position>
+			<position>
 Position2
             </position>
 
-            <timestamp>
+			<timestamp>
 TimeStamp2
             </timestamp>
-        </meta>
+		</meta>
 
-        <meta>
+		<meta>
 
-            <position>
+			<position>
 Position3
             </position>
 
-            <timestamp>
+			<timestamp>
 TimeStamp3
             </timestamp>
-        </meta>
+		</meta>
 
-        <meta>
+		<meta>
 
-            <position>
+			<position>
 Position4
             </position>
 
-            <timestamp>
+			<timestamp>
 TimeStamp4
             </timestamp>
-        </meta>
+		</meta>
 
-        <meta>
+		<meta>
 
-            <position>
+			<position>
 Position5
             </position>
 
-            <timestamp>
+			<timestamp>
 TimeStamp5
             </timestamp>
-        </meta>
-    </file>
+		</meta>
+	</file>
 
-    <file>
+	<file>
 
-        <name>
+		<name>
   		FLV File Two
         </name>
 
-        <size>
+		<size>
   		333333333333333
         </size>
 
-        <modified>
+		<modified>
   		modified time
         </modified>
 
-        <meta>
+		<meta>
 
-            <position>
+			<position>
 Position
             </position>
 
-            <timestamp>
+			<timestamp>
 TimeStamp
             </timestamp>
-        </meta>
-    </file>
+		</meta>
+	</file>
 
 </tns:flashvideo>

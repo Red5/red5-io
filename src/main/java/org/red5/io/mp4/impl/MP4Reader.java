@@ -1,7 +1,7 @@
 /*
  * RED5 Open Source Flash Server - https://github.com/Red5/
  * 
- * Copyright 2006-2013 by respective authors (see below). All rights reserved.
+ * Copyright 2006-2015 by respective authors (see below). All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,20 +97,13 @@ import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import com.mp4parser.iso14496.part15.AvcDecoderConfigurationRecord;
 
 /**
- * This reader is used to read the contents of an MP4 file.
- * <br>
- * NOTE: This class is not implemented as thread-safe, the caller should ensure the thread-safety.
- * <br>
- * New NetStream notifications
- * <br>
+ * This reader is used to read the contents of an MP4 file. <br>
+ * NOTE: This class is not implemented as thread-safe, the caller should ensure the thread-safety. <br>
+ * New NetStream notifications <br>
  * Two new notifications facilitate the implementation of the playback components:
  * <ul>
- * <li>NetStream.Play.FileStructureInvalid: This event is sent if the player detects 
- * an MP4 with an invalid file structure. Flash Player cannot play files that have 
- * invalid file structures.</li>
- * <li>NetStream.Play.NoSupportedTrackFound: This event is sent if the player does not 
- * detect any supported tracks. If there aren't any supported video, audio or data 
- * tracks found, Flash Player does not play the file.</li>
+ * <li>NetStream.Play.FileStructureInvalid: This event is sent if the player detects an MP4 with an invalid file structure. Flash Player cannot play files that have invalid file structures.</li>
+ * <li>NetStream.Play.NoSupportedTrackFound: This event is sent if the player does not detect any supported tracks. If there aren't any supported video, audio or data tracks found, Flash Player does not play the file.</li>
  * </ul>
  * 
  * @author The Red5 Project
@@ -121,8 +114,8 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	private static Logger log = LoggerFactory.getLogger(MP4Reader.class);
 
 	/** Audio packet prefix for the decoder frame */
-	public final static byte[] PREFIX_AUDIO_CONFIG_FRAME = new byte[] { (byte) 0xaf, (byte) 0 };	
-	
+	public final static byte[] PREFIX_AUDIO_CONFIG_FRAME = new byte[] { (byte) 0xaf, (byte) 0 };
+
 	/** Audio packet prefix */
 	public final static byte[] PREFIX_AUDIO_FRAME = new byte[] { (byte) 0xaf, (byte) 0x01 };
 
@@ -238,24 +231,20 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 
 	private List<MP4Frame> frames = new ArrayList<MP4Frame>();
 
-	@SuppressWarnings("unused")
 	private long audioCount;
 
-	@SuppressWarnings("unused")
 	private long videoCount;
 
 	// composition time to sample entries
 	private List<CompositionTimeToSample.Entry> compositionTimes;
 
 	/**
-	 * Container for metadata and any other tags that should
-	 * be sent prior to media data.
+	 * Container for metadata and any other tags that should be sent prior to media data.
 	 */
 	private LinkedList<ITag> firstTags = new LinkedList<ITag>();
 
 	/**
-	 * Container for seek points in the video. These are the time stamps
-	 * for the key frames or samples.
+	 * Container for seek points in the video. These are the time stamps for the key frames or samples.
 	 */
 	private LinkedList<Integer> seekPoints;
 
@@ -268,8 +257,10 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Creates MP4 reader from file input stream, sets up metadata generation flag.
 	 *
-	 * @param f                    File input stream
-	 * @throws IOException on IO exception
+	 * @param f
+	 *            File input stream
+	 * @throws IOException
+	 *             on IO exception
 	 */
 	public MP4Reader(File f) throws IOException {
 		if (null == f) {
@@ -295,8 +286,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	}
 
 	/**
-	 * This handles the moov atom being at the beginning or end of the file, so the mdat may also
-	 * be before or after the moov atom.
+	 * This handles the moov atom being at the beginning or end of the file, so the mdat may also be before or after the moov atom.
 	 */
 	public void decodeHeader() {
 		try {
@@ -504,7 +494,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 						}
 					}
 					// SampleToChunkBox.Entry
-					
+
 					log.info("Video duration: {}", videoSampleDuration);
 					videoSamples = new long[sampleSizes.size()];
 					for (int i = 0; i < videoSamples.length; i++) {
@@ -541,7 +531,8 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Dumps the children of a container box.
 	 * 
-	 * @param box mp4 box
+	 * @param box
+	 *            mp4 box
 	 */
 	public static void dumpBox(Container box) {
 		log.debug("Dump box: {}", box);
@@ -554,8 +545,10 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	 * Process the video information contained in the atoms.
 	 * 
 	 * @param stbl
-	 * @param vse VisualSampleEntry
-	 * @param scale timescale
+	 * @param vse
+	 *            VisualSampleEntry
+	 * @param scale
+	 *            timescale
 	 */
 	private void processVideoBox(SampleTableBox stbl, VisualSampleEntry vse, long scale) {
 		// get codec
@@ -610,7 +603,8 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	 * Process the video information contained in the atoms.
 	 * 
 	 * @param stbl
-	 * @param scale timescale
+	 * @param scale
+	 *            timescale
 	 */
 	private void processVideoBox(SampleTableBox stbl, long scale) {
 		AvcConfigurationBox avcC = (AvcConfigurationBox) Path.getPath(isoFile, "/moov/trak/mdia/minf/stbl/stsd/drmi/avcC");
@@ -664,7 +658,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		} else {
 			// co64 - has Chunks
 			List<ChunkOffset64BitBox> stblBoxes = stbl.getBoxes(ChunkOffset64BitBox.class);
-			if(stblBoxes != null && !stblBoxes.isEmpty()){
+			if (stblBoxes != null && !stblBoxes.isEmpty()) {
 				ChunkOffset64BitBox co64 = stblBoxes.get(0);
 				if (co64 != null) {
 					log.debug("Chunk offset (64) atom found");
@@ -730,8 +724,10 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	 * Process the audio information contained in the atoms.
 	 * 
 	 * @param stbl
-	 * @param ase AudioSampleEntry
-	 * @param scale timescale
+	 * @param ase
+	 *            AudioSampleEntry
+	 * @param scale
+	 *            timescale
 	 */
 	private void processAudioBox(SampleTableBox stbl, AudioSampleEntry ase, long scale) {
 		// get codec
@@ -843,7 +839,8 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	 * Process the audio information contained in the atoms.
 	 * 
 	 * @param stbl
-	 * @param scale timescale
+	 * @param scale
+	 *            timescale
 	 */
 	private void processAudioBox(SampleTableBox stbl, long scale) {
 
@@ -914,7 +911,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Get the total readable bytes in a file or IoBuffer.
 	 *
-	 * @return          Total readable bytes
+	 * @return Total readable bytes
 	 */
 	public long getTotalBytes() {
 		try {
@@ -928,7 +925,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Get the current position in a file or IoBuffer.
 	 *
-	 * @return           Current position in a file
+	 * @return Current position in a file
 	 */
 	private long getCurrentPosition() {
 		try {
@@ -952,7 +949,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Returns the file buffer.
 	 * 
-	 * @return  File contents as byte buffer
+	 * @return File contents as byte buffer
 	 */
 	public IoBuffer getFileData() {
 		// TODO as of now, return null will disable cache
@@ -962,21 +959,24 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		return null;
 	}
 
-	/** {@inheritDoc}
+	/**
+	 * {@inheritDoc}
 	 */
 	public IStreamableFile getFile() {
 		// TODO wondering if we need to have a reference
 		return null;
 	}
 
-	/** {@inheritDoc}
+	/**
+	 * {@inheritDoc}
 	 */
 	public int getOffset() {
 		// XXX what's the difference from getBytesRead
 		return 0;
 	}
 
-	/** {@inheritDoc}
+	/**
+	 * {@inheritDoc}
 	 */
 	public long getBytesRead() {
 		// XXX should summarize the total bytes read or
@@ -997,7 +997,8 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		return audioCodecId;
 	}
 
-	/** {@inheritDoc}
+	/**
+	 * {@inheritDoc}
 	 */
 	public boolean hasMoreTags() {
 		return currentFrame < frames.size();
@@ -1007,42 +1008,43 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	 * Create tag for metadata event.
 	 *
 	 * Information mostly from http://www.kaourantin.net/2007/08/what-just-happened-to-video-on-web_20.html
+	 * 
 	 * <pre>
-		width: Display width in pixels.
-		height: Display height in pixels.
-		duration: Duration in seconds. But unlike for FLV files this field will always be present.
-		videocodecid: Usually a string such as "avc1" or "VP6F", for H.264 we report 'avc1'.
-		audiocodecid: Usually a string such as ".mp3" or "mp4a", for AAC we report 'mp4a' and MP3 we report '.mp3'.
-	    avcprofile: AVC profile number, values of 66, 77, 88, 100, 110, 122 or 144; which correspond to the H.264 profiles.
-	    avclevel: AVC IDC level number, values between 10 and 51.
-	    aottype: Either 0, 1 or 2. This corresponds to AAC Main, AAC LC and SBR audio types.
-	    moovposition: The offset in bytes of the moov atom in a file.
-	    trackinfo: An array of objects containing various infomation about all the tracks in a file
-	      ex.
-	    	trackinfo[0].length: 7081
-	    	trackinfo[0].timescale: 600
-	    	trackinfo[0].sampledescription.sampletype: avc1
-	    	trackinfo[0].language: und
-	    	trackinfo[1].length: 525312
-	    	trackinfo[1].timescale: 44100
-	    	trackinfo[1].sampledescription.sampletype: mp4a
-	    	trackinfo[1].language: und
-	    
-	    chapters: As mentioned above information about chapters in audiobooks.
-		seekpoints: Array that lists the available keyframes in a file as time stamps in milliseconds. 
-				This is optional as the MP4 file might not contain this information. Generally speaking, 
-				most MP4 files will include this by default. You can directly feed the values into NetStream.seek();
-	    videoframerate: The frame rate of the video if a monotone frame rate is used. 
-	    		Most videos will have a monotone frame rate.
-	    audiosamplerate: The original sampling rate of the audio track.
-	    audiochannels: The original number of channels of the audio track.
-		progressivedownloadinfo: Object that provides information from the "pdin" atom. This is optional 
-				and many files will not have this field.
-		tags: Array of key value pairs representing the information present in the "ilst" atom, which is 
-				the equivalent of ID3 tags for MP4 files. These tags are mostly used by iTunes. 
+	 * 		width: Display width in pixels.
+	 * 		height: Display height in pixels.
+	 * 		duration: Duration in seconds. But unlike for FLV files this field will always be present.
+	 * 		videocodecid: Usually a string such as "avc1" or "VP6F", for H.264 we report 'avc1'.
+	 * 		audiocodecid: Usually a string such as ".mp3" or "mp4a", for AAC we report 'mp4a' and MP3 we report '.mp3'.
+	 * 	    avcprofile: AVC profile number, values of 66, 77, 88, 100, 110, 122 or 144; which correspond to the H.264 profiles.
+	 * 	    avclevel: AVC IDC level number, values between 10 and 51.
+	 * 	    aottype: Either 0, 1 or 2. This corresponds to AAC Main, AAC LC and SBR audio types.
+	 * 	    moovposition: The offset in bytes of the moov atom in a file.
+	 * 	    trackinfo: An array of objects containing various infomation about all the tracks in a file
+	 * 	      ex.
+	 * 	    	trackinfo[0].length: 7081
+	 * 	    	trackinfo[0].timescale: 600
+	 * 	    	trackinfo[0].sampledescription.sampletype: avc1
+	 * 	    	trackinfo[0].language: und
+	 * 	    	trackinfo[1].length: 525312
+	 * 	    	trackinfo[1].timescale: 44100
+	 * 	    	trackinfo[1].sampledescription.sampletype: mp4a
+	 * 	    	trackinfo[1].language: und
+	 * 	    
+	 * 	    chapters: As mentioned above information about chapters in audiobooks.
+	 * 		seekpoints: Array that lists the available keyframes in a file as time stamps in milliseconds. 
+	 * 				This is optional as the MP4 file might not contain this information. Generally speaking, 
+	 * 				most MP4 files will include this by default. You can directly feed the values into NetStream.seek();
+	 * 	    videoframerate: The frame rate of the video if a monotone frame rate is used. 
+	 * 	    		Most videos will have a monotone frame rate.
+	 * 	    audiosamplerate: The original sampling rate of the audio track.
+	 * 	    audiochannels: The original number of channels of the audio track.
+	 * 		progressivedownloadinfo: Object that provides information from the "pdin" atom. This is optional 
+	 * 				and many files will not have this field.
+	 * 		tags: Array of key value pairs representing the information present in the "ilst" atom, which is 
+	 * 				the equivalent of ID3 tags for MP4 files. These tags are mostly used by iTunes.
 	 * </pre>
 	 *
-	 * @return         Metadata event tag
+	 * @return Metadata event tag
 	 */
 	ITag createFileMeta() {
 		log.debug("Creating onMetaData");
@@ -1130,22 +1132,11 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	}
 
 	/**
-	 * Tag sequence
-	 * MetaData, Video config, Audio config, remaining audio and video 
+	 * Tag sequence MetaData, Video config, Audio config, remaining audio and video
 	 * 
-	 * Packet prefixes:
-	 * 17 00 00 00 00 = Video extra data (first video packet)
-	 * 17 01 00 00 00 = Video keyframe
-	 * 27 01 00 00 00 = Video interframe
-	 * af 00 ...   06 = Audio extra data (first audio packet)
-	 * af 01          = Audio frame
+	 * Packet prefixes: 17 00 00 00 00 = Video extra data (first video packet) 17 01 00 00 00 = Video keyframe 27 01 00 00 00 = Video interframe af 00 ... 06 = Audio extra data (first audio packet) af 01 = Audio frame
 	 * 
-	 * Audio extra data(s): 
-	 * af 00                = Prefix
-	 * 11 90 4f 14          = AAC Main   = aottype 0 // 11 90
-	 * 12 10                = AAC LC     = aottype 1
-	 * 13 90 56 e5 a5 48 00 = HE-AAC SBR = aottype 2
-	 * 06                   = Suffix
+	 * Audio extra data(s): af 00 = Prefix 11 90 4f 14 = AAC Main = aottype 0 // 11 90 12 10 = AAC LC = aottype 1 13 90 56 e5 a5 48 00 = HE-AAC SBR = aottype 2 06 = Suffix
 	 * 
 	 * Still not absolutely certain about this order or the bytes - need to verify later
 	 */
@@ -1204,95 +1195,101 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	 */
 	public ITag readTag() {
 		ITag tag = null;
-		try {
-			lock.acquire();
-			//log.debug("Read tag");
-			//empty-out the pre-streaming tags first
-			if (!firstTags.isEmpty()) {
-				//log.debug("Returning pre-tag");
-				// Return first tags before media data
-				return firstTags.removeFirst();
-			}
-			//log.debug("Read tag - sample {} prevFrameSize {} audio: {} video: {}", new Object[]{currentSample, prevFrameSize, audioCount, videoCount});
-			//get the current frame
-			MP4Frame frame = frames.get(currentFrame);
-			if (frame != null) {
-				log.debug("Playback #{} {}", currentFrame, frame);
-				int sampleSize = frame.getSize();
-				int time = (int) Math.round(frame.getTime() * 1000.0);
-				//log.debug("Read tag - dst: {} base: {} time: {}", new Object[]{frameTs, baseTs, time});
-				long samplePos = frame.getOffset();
-				//log.debug("Read tag - samplePos {}", samplePos);
-				//determine frame type and packet body padding
-				byte type = frame.getType();
-				//assume video type
-				int pad = 5;
-				if (type == TYPE_AUDIO) {
-					pad = 2;
+		if (log.isTraceEnabled()) {
+			log.trace("Read tag - prevFrameSize {} audio: {} video: {}", new Object[] { prevFrameSize, audioCount, videoCount });
+		}
+		// ensure there are frames before proceeding
+		if (!frames.isEmpty()) {
+			try {
+				lock.acquire();
+				//log.debug("Read tag");
+				//empty-out the pre-streaming tags first
+				if (!firstTags.isEmpty()) {
+					//log.debug("Returning pre-tag");
+					// Return first tags before media data
+					return firstTags.removeFirst();
 				}
-				//create a byte buffer of the size of the sample
-				ByteBuffer data = ByteBuffer.allocate(sampleSize + pad);
-				try {
-					//prefix is different for keyframes
-					if (type == TYPE_VIDEO) {
-						if (frame.isKeyFrame()) {
-							//log.debug("Writing keyframe prefix");
-							data.put(PREFIX_VIDEO_KEYFRAME);
-						} else {
-							//log.debug("Writing interframe prefix");
-							data.put(PREFIX_VIDEO_FRAME);
-						}
-						// match the sample with its ctts / mdhd adjustment time
-						int timeOffset = prevVideoTS != -1 ? time - prevVideoTS : 0;
-						data.put((byte) ((timeOffset >>> 16) & 0xff));
-						data.put((byte) ((timeOffset >>> 8) & 0xff));
-						data.put((byte) (timeOffset & 0xff));
-						if (log.isTraceEnabled()) {
-							byte[] prefix = new byte[5];
-							int p = data.position();
-							data.position(0);
-							data.get(prefix);
-							data.position(p);
-							log.trace("{}", prefix);
-						}
-						// track video frame count
-						videoCount++;
-						prevVideoTS = time;
-					} else {
-						//log.debug("Writing audio prefix");
-						data.put(PREFIX_AUDIO_FRAME);
-						// track audio frame count
-						audioCount++;
+				//get the current frame
+				MP4Frame frame = frames.get(currentFrame);
+				if (frame != null) {
+					log.debug("Playback #{} {}", currentFrame, frame);
+					int sampleSize = frame.getSize();
+					int time = (int) Math.round(frame.getTime() * 1000.0);
+					//log.debug("Read tag - dst: {} base: {} time: {}", new Object[]{frameTs, baseTs, time});
+					long samplePos = frame.getOffset();
+					//log.debug("Read tag - samplePos {}", samplePos);
+					//determine frame type and packet body padding
+					byte type = frame.getType();
+					//assume video type
+					int pad = 5;
+					if (type == TYPE_AUDIO) {
+						pad = 2;
 					}
-					// do we need to add the mdat offset to the sample position?
-					dataSource.position(samplePos);
-					// read from the channel
-					dataSource.read(data);
-				} catch (IOException e) {
-					log.error("Error on channel position / read", e);
+					//create a byte buffer of the size of the sample
+					ByteBuffer data = ByteBuffer.allocate(sampleSize + pad);
+					try {
+						//prefix is different for keyframes
+						if (type == TYPE_VIDEO) {
+							if (frame.isKeyFrame()) {
+								//log.debug("Writing keyframe prefix");
+								data.put(PREFIX_VIDEO_KEYFRAME);
+							} else {
+								//log.debug("Writing interframe prefix");
+								data.put(PREFIX_VIDEO_FRAME);
+							}
+							// match the sample with its ctts / mdhd adjustment time
+							int timeOffset = prevVideoTS != -1 ? time - prevVideoTS : 0;
+							data.put((byte) ((timeOffset >>> 16) & 0xff));
+							data.put((byte) ((timeOffset >>> 8) & 0xff));
+							data.put((byte) (timeOffset & 0xff));
+							if (log.isTraceEnabled()) {
+								byte[] prefix = new byte[5];
+								int p = data.position();
+								data.position(0);
+								data.get(prefix);
+								data.position(p);
+								log.trace("{}", prefix);
+							}
+							// track video frame count
+							videoCount++;
+							prevVideoTS = time;
+						} else {
+							//log.debug("Writing audio prefix");
+							data.put(PREFIX_AUDIO_FRAME);
+							// track audio frame count
+							audioCount++;
+						}
+						// do we need to add the mdat offset to the sample position?
+						dataSource.position(samplePos);
+						// read from the channel
+						dataSource.read(data);
+					} catch (IOException e) {
+						log.error("Error on channel position / read", e);
+					}
+					// chunk the data
+					IoBuffer payload = IoBuffer.wrap(data.array());
+					// create the tag
+					tag = new Tag(type, time, payload.limit(), payload, prevFrameSize);
+					//log.debug("Read tag - type: {} body size: {}", (type == TYPE_AUDIO ? "Audio" : "Video"), tag.getBodySize());
+					// increment the frame number
+					currentFrame++;
+					// set the frame / tag size
+					prevFrameSize = tag.getBodySize();
 				}
-				// chunk the data
-				IoBuffer payload = IoBuffer.wrap(data.array());
-				// create the tag
-				tag = new Tag(type, time, payload.limit(), payload, prevFrameSize);
-				//log.debug("Read tag - type: {} body size: {}", (type == TYPE_AUDIO ? "Audio" : "Video"), tag.getBodySize());
-				// increment the frame number
-				currentFrame++;
-				// set the frame / tag size
-				prevFrameSize = tag.getBodySize();
+			} catch (InterruptedException e) {
+				log.warn("Exception acquiring lock", e);
+			} finally {
+				lock.release();
 			}
-		} catch (InterruptedException e) {
-			log.warn("Exception acquiring lock", e);
-		} finally {
-			lock.release();
+		} else {
+			log.warn("No frames are available for the requested item");
 		}
 		//log.debug("Tag: {}", tag);
 		return tag;
 	}
 
 	/**
-	 * Performs frame analysis and generates metadata for use in seeking. All the frames
-	 * are analyzed and sorted together based on time and offset.
+	 * Performs frame analysis and generates metadata for use in seeking. All the frames are analyzed and sorted together based on time and offset.
 	 */
 	public void analyzeFrames() {
 		log.debug("Analyzing frames - video samples/chunks: {}", videoSamplesToChunks);
@@ -1491,7 +1488,8 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 	/**
 	 * Put the current position to pos. The caller must ensure the pos is a valid one.
 	 *
-	 * @param pos position to move to in file / channel
+	 * @param pos
+	 *            position to move to in file / channel
 	 */
 	public void position(long pos) {
 		log.debug("Position: {}", pos);
@@ -1520,7 +1518,8 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 		log.debug("Setting current frame: {}", currentFrame);
 	}
 
-	/** {@inheritDoc}
+	/**
+	 * {@inheritDoc}
 	 */
 	public void close() {
 		log.debug("Close");

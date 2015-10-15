@@ -1,14 +1,14 @@
 /*
  * RED5 Open Source Flash Server - https://github.com/Red5/
- * 
- * Copyright 2006-2013 by respective authors (see below). All rights reserved.
- * 
+ *
+ * Copyright 2006-2015 by respective authors (see below). All rights reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,8 +38,20 @@ public class CachingFileKeyFrameMetaCache extends FileKeyFrameMetaCache {
 
 	private Random random = new Random();
 
-	public void setMaxCacheEntry(int maxCacheEntry) {
-		this.maxCacheEntry = maxCacheEntry;
+	private void freeCachingMetadata() {
+		int cacheSize = inMemoryMetaCache.size();
+		int randomIndex = random.nextInt(cacheSize);
+		Map.Entry<String, KeyFrameMeta> entryToRemove = null;
+		for (Map.Entry<String, KeyFrameMeta> cacheEntry : inMemoryMetaCache.entrySet()) {
+			if (randomIndex == 0) {
+				entryToRemove = cacheEntry;
+				break;
+			}
+			randomIndex--;
+		}
+		if (entryToRemove != null) {
+			inMemoryMetaCache.remove(entryToRemove.getKey());
+		}
 	}
 
 	@Override
@@ -74,6 +86,19 @@ public class CachingFileKeyFrameMetaCache extends FileKeyFrameMetaCache {
 	}
 
 	@Override
+	public void removeKeyFrameMeta(File file) {
+		rwLock.writeLock().lock();
+		try {
+			String canonicalPath = file.getCanonicalPath();
+			inMemoryMetaCache.remove(canonicalPath);
+		} catch (IOException e) {
+		} finally {
+			rwLock.writeLock().unlock();
+		}
+		super.removeKeyFrameMeta(file);
+	}
+
+	@Override
 	public void saveKeyFrameMeta(File file, KeyFrameMeta meta) {
 		rwLock.writeLock().lock();
 		try {
@@ -89,32 +114,7 @@ public class CachingFileKeyFrameMetaCache extends FileKeyFrameMetaCache {
 		super.saveKeyFrameMeta(file, meta);
 	}
 
-	@Override
-	public void removeKeyFrameMeta(File file) {
-		rwLock.writeLock().lock();
-		try {
-			String canonicalPath = file.getCanonicalPath();
-			inMemoryMetaCache.remove(canonicalPath);
-		} catch (IOException e) {
-		} finally {
-			rwLock.writeLock().unlock();
-		}
-		super.removeKeyFrameMeta(file);
-	}
-
-	private void freeCachingMetadata() {
-		int cacheSize = inMemoryMetaCache.size();
-		int randomIndex = random.nextInt(cacheSize);
-		Map.Entry<String, KeyFrameMeta> entryToRemove = null;
-		for (Map.Entry<String, KeyFrameMeta> cacheEntry : inMemoryMetaCache.entrySet()) {
-			if (randomIndex == 0) {
-				entryToRemove = cacheEntry;
-				break;
-			}
-			randomIndex--;
-		}
-		if (entryToRemove != null) {
-			inMemoryMetaCache.remove(entryToRemove.getKey());
-		}
+	public void setMaxCacheEntry(int maxCacheEntry) {
+		this.maxCacheEntry = maxCacheEntry;
 	}
 }

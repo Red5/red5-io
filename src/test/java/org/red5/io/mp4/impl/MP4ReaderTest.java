@@ -38,10 +38,10 @@ public class MP4ReaderTest extends TestCase {
 	@Test
 	public void testCtor() throws Exception {
 		// use for the internal unit tests
-		//File file = new File("target/test-classes/fixtures/sample.mp4");
+		File file = new File("target/test-classes/fixtures/sample.mp4");
 		// test clips for issues/bugs
 		// https://code.google.com/p/red5/issues/detail?id=141
-		File file = new File("target/test-classes/fixtures/test_480_aac.f4v");
+		//File file = new File("target/test-classes/fixtures/test_480_aac.f4v");
 		//File file = new File("M:/backup/media/test_clips/ratatouille.mp4");
 		//File file = new File("M:/backup/media/test_clips/0608071221.3g2");
 		//File file = new File("M:/backup/media/test_clips/test1.3gp");

@@ -1,14 +1,14 @@
 /*
  * RED5 Open Source Flash Server - https://github.com/Red5/
- * 
- * Copyright 2006-2013 by respective authors (see below). All rights reserved.
- * 
+ *
+ * Copyright 2006-2015 by respective authors (see below). All rights reserved.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,7 +45,7 @@ import org.xml.sax.SAXException;
 
 /**
  * File-based keyframe metadata cache.
- * 
+ *
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
  */
@@ -58,6 +58,7 @@ public class FileKeyFrameMetaCache implements IKeyFrameMetaCache {
 	private static Logger log = LoggerFactory.getLogger(FileKeyFrameMetaCache.class);
 
 	/** {@inheritDoc} */
+	@Override
 	public KeyFrameMeta loadKeyFrameMeta(File file) {
 		String filename = file.getAbsolutePath() + ".meta";
 		File metadataFile = new File(filename);
@@ -138,7 +139,25 @@ public class FileKeyFrameMetaCache implements IKeyFrameMetaCache {
 		return result;
 	}
 
+	@Override
+	public void removeKeyFrameMeta(File file) {
+		String filename = String.format("%s.meta", file.getAbsolutePath());
+		File metadataFile = new File(filename);
+		if (metadataFile.exists()) {
+			log.trace("Meta file exists");
+			if (metadataFile.delete()) {
+				log.debug("Meta file deleted - {}", filename);
+			} else {
+				log.warn("Meta file was not deleted - {}", filename);
+				metadataFile.deleteOnExit();
+			}
+		} else {
+			log.debug("Meta file does not exist: {}", filename);
+		}
+	}
+
 	/** {@inheritDoc} */
+	@Override
 	public void saveKeyFrameMeta(File file, KeyFrameMeta meta) {
 		if (meta.positions.length == 0) {
 			// Don't store empty meta informations
@@ -181,23 +200,6 @@ public class FileKeyFrameMetaCache implements IKeyFrameMetaCache {
 			serializer.serialize(dom);
 		} catch (IOException err) {
 			log.error("could not save keyframe data", err);
-		}
-	}
-
-	@Override
-	public void removeKeyFrameMeta(File file) {
-		String filename = String.format("%s.meta", file.getAbsolutePath());
-		File metadataFile = new File(filename);
-		if (metadataFile.exists()) {
-			log.trace("Meta file exists");
-			if (metadataFile.delete()) {
-				log.debug("Meta file deleted - {}", filename);
-			} else {
-				log.warn("Meta file was not deleted - {}", filename);
-				metadataFile.deleteOnExit();
-			}
-		} else {
-			log.debug("Meta file does not exist: {}", filename);
 		}
 	}
 
