@@ -35,42 +35,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SCTPTest {
-	
-	private static Logger log = LoggerFactory.getLogger(SCTPTest.class);
 
-	private static final String CLIENT_PORT = "client.port";
+    private static Logger log = LoggerFactory.getLogger(SCTPTest.class);
 
-	private static final String SERVER_PORT = "server.port";
+    private static final String CLIENT_PORT = "client.port";
 
-	@Before
-	public void before() {
-		assumeTrue(System.getProperties().containsKey(CLIENT_PORT) && System.getProperties().containsKey(SERVER_PORT));
-	}
+    private static final String SERVER_PORT = "server.port";
 
-	@Test
-	public void testClientChannel() throws InvalidKeyException, NoSuchAlgorithmException, IOException, SctpException {
-		int clientPort = Integer.parseInt(System.getProperty(CLIENT_PORT));
-		int serverPort = Integer.parseInt(System.getProperty(SERVER_PORT));
-		InetSocketAddress socketAddress = new InetSocketAddress(serverPort);
-		SctpChannel sctpChannel = SctpChannel.open();
+    @Before
+    public void before() {
+        assumeTrue(System.getProperties().containsKey(CLIENT_PORT) && System.getProperties().containsKey(SERVER_PORT));
+    }
 
-		sctpChannel.bind(new InetSocketAddress(clientPort));
-		sctpChannel.connect(socketAddress);
-	}
+    @Test
+    public void testClientChannel() throws InvalidKeyException, NoSuchAlgorithmException, IOException, SctpException {
+        int clientPort = Integer.parseInt(System.getProperty(CLIENT_PORT));
+        int serverPort = Integer.parseInt(System.getProperty(SERVER_PORT));
+        InetSocketAddress socketAddress = new InetSocketAddress(serverPort);
+        SctpChannel sctpChannel = SctpChannel.open();
 
-	@Test
-	public void testServerChannel() throws InvalidKeyException, NoSuchAlgorithmException, IOException, SctpException {
-		int serverPort = Integer.parseInt(System.getProperty(SERVER_PORT));
-		SocketAddress serverSocketAddress = new InetSocketAddress(serverPort);
-		log.debug("create and bind for sctp address");
-		SctpServerChannel sctpServerChannel = SctpServerChannel.open().bind(serverSocketAddress);
-		log.debug("address bind process finished successfully");
+        sctpChannel.bind(new InetSocketAddress(clientPort));
+        sctpChannel.connect(socketAddress);
+    }
 
-		@SuppressWarnings("unused")
+    @Test
+    public void testServerChannel() throws InvalidKeyException, NoSuchAlgorithmException, IOException, SctpException {
+        int serverPort = Integer.parseInt(System.getProperty(SERVER_PORT));
+        SocketAddress serverSocketAddress = new InetSocketAddress(serverPort);
+        log.debug("create and bind for sctp address");
+        SctpServerChannel sctpServerChannel = SctpServerChannel.open().bind(serverSocketAddress);
+        log.debug("address bind process finished successfully");
+
+        @SuppressWarnings("unused")
         SctpChannel sctpChannel = null;
-		while ((sctpChannel = sctpServerChannel.accept()) != null) {
-			log.debug("client connection received");
-			break;
-		}
-	}
+        while ((sctpChannel = sctpServerChannel.accept()) != null) {
+            log.debug("client connection received");
+            break;
+        }
+    }
 }

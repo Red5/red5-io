@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Red5 video codec for the sorenson video format.
  *
- * VERY simple implementation, just stores last keyframe.
- *
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
  * @author Paul Gregoire (mondain@gmail.com)
@@ -93,31 +91,26 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
 
     /** {@inheritDoc} */
     public boolean canHandleData(IoBuffer data) {
-        if (data.limit() == 0) {
-            // Empty buffer
-            return false;
+        if (data.limit() > 0) {
+            byte first = data.get();
+            data.rewind();
+            return ((first & 0x0f) == VideoCodec.H263.getId());
         }
-
-        byte first = data.get();
-        boolean result = ((first & 0x0f) == VideoCodec.H263.getId());
-        data.rewind();
-        return result;
+        return false;
     }
 
     /** {@inheritDoc} */
     public boolean addData(IoBuffer data) {
         if (data.limit() == 0) {
-            // Empty buffer
             return true;
         }
-
         if (!this.canHandleData(data)) {
             return false;
         }
-
         byte first = data.get();
+        //log.trace("First byte: {}", HexDump.toHexString(first));
         data.rewind();
-
+        // get frame type
         int frameType = (first & MASK_VIDEO_FRAMETYPE) >> 4;
         if (frameType != FLAG_FRAMETYPE_KEYFRAME) {
             // Not a keyframe
@@ -125,10 +118,11 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
                 int lastInterframe = numInterframes.getAndIncrement();
                 if (frameType != FLAG_FRAMETYPE_DISPOSABLE) {
                     log.trace("Buffering interframe #{}", lastInterframe);
-                    if (interframes.size() < lastInterframe + 1) {
-                        interframes.add(new FrameData());
+                    if (lastInterframe < interframes.size()) {
+                        interframes.get(lastInterframe).setData(data);
+                    } else {
+                        interframes.add(new FrameData(data));
                     }
-                    interframes.get(lastInterframe).setData(data);
                 } else {
                     numInterframes.set(lastInterframe);
                 }
@@ -146,7 +140,6 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
             this.blockSize = this.dataCount;
             this.blockData = new byte[this.blockSize];
         }
-
         data.get(this.blockData, 0, this.dataCount);
         data.rewind();
         return true;
@@ -154,14 +147,13 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
 
     /** {@inheritDoc} */
     public IoBuffer getKeyframe() {
-        if (this.dataCount == 0) {
-            return null;
+        if (this.dataCount > 0) {
+            IoBuffer result = IoBuffer.allocate(this.dataCount);
+            result.put(this.blockData, 0, this.dataCount);
+            result.rewind();
+            return result;
         }
-
-        IoBuffer result = IoBuffer.allocate(this.dataCount);
-        result.put(this.blockData, 0, this.dataCount);
-        result.rewind();
-        return result;
+        return null;
     }
 
     public IoBuffer getDecoderConfiguration() {
@@ -175,6 +167,9 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
 
     /** {@inheritDoc} */
     public FrameData getInterframe(int index) {
-        return interframes.get(index);
+        if (index < numInterframes.get()) {
+            return interframes.get(index);
+        }
+        return null;
     }
 }

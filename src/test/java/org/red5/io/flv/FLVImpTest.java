@@ -24,11 +24,11 @@ import org.red5.io.flv.impl.FLV;
 import junit.framework.TestCase;
 
 public class FLVImpTest extends TestCase {
-	
-	@Test
-	public void testCreation() {
-		FLV exampleObj = new FLV();
-		assertNotNull(exampleObj);
-	}
+
+    @Test
+    public void testCreation() {
+        FLV exampleObj = new FLV();
+        assertNotNull(exampleObj);
+    }
 
 }
