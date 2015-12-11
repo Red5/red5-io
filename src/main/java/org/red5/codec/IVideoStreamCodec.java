@@ -25,90 +25,103 @@ import org.apache.mina.core.buffer.IoBuffer;
  */
 public interface IVideoStreamCodec {
 
-	/**
-	 * FLV frame marker constant
-	 */
-	static final byte FLV_FRAME_KEY = 0x10;
+    /**
+     * FLV frame marker constant
+     */
+    static final byte FLV_FRAME_KEY = 0x10;
 
-	/**
-	 * @return the name of the video codec.
-	 */
-	public String getName();
+    /**
+     * @return the name of the video codec.
+     */
+    public String getName();
 
-	/**
-	 * Reset the codec to its initial state.
-	 */
-	public void reset();
+    /**
+     * Reset the codec to its initial state.
+     */
+    public void reset();
 
-	/**
-	 * Check if the codec supports frame dropping.
-	 * @return if the codec supports frame dropping.
-	 */
-	public boolean canDropFrames();
+    /**
+     * Check if the codec supports frame dropping.
+     * 
+     * @return if the codec supports frame dropping.
+     */
+    public boolean canDropFrames();
 
-	/**
-	 * Returns true if the codec knows how to handle the passed
-	 * stream data.
-	 * @param data some sample data to see if this codec can handle it.
-	 * @return can this code handle the data.
-	 */
-	public boolean canHandleData(IoBuffer data);
+    /**
+     * Returns true if the codec knows how to handle the passed stream data.
+     * 
+     * @param data some sample data to see if this codec can handle it
+     * @return can this code handle the data.
+     */
+    public boolean canHandleData(IoBuffer data);
 
-	/**
-	 * Update the state of the codec with the passed data.
-	 * @param data data to tell the codec we're adding
-	 * @return true for success. false for error.
-	 */
-	public boolean addData(IoBuffer data);
+    /**
+     * Update the state of the codec with the passed data.
+     * 
+     * @param data data to tell the codec we're adding
+     * @return true for success. false for error
+     */
+    public boolean addData(IoBuffer data);
 
-	/**
-	 * @return the data for a keyframe.
-	 */
-	public IoBuffer getKeyframe();
+    /**
+     * Returns keyframe data.
+     * 
+     * @return the data for a keyframe
+     */
+    public IoBuffer getKeyframe();
 
-	/**
-	 * Returns information used to configure the decoder.
-	 * 
-	 * @return the data for decoder setup.
-	 */
-	public IoBuffer getDecoderConfiguration();
+    /**
+     * Returns information used to configure the decoder.
+     * 
+     * @return the data for decoder setup
+     */
+    public IoBuffer getDecoderConfiguration();
 
-	/**
-	 * @return the number of interframes collected from last keyframe.
-	 */
-	public int getNumInterframes();
+    /**
+     * Returns the number of interframes collected from last keyframe.
+     * 
+     * @return number of interframes
+     */
+    public int getNumInterframes();
 
-	/**
-	 * Gets data of interframe with the specified index.
-	 *
-	 * @param index the index of interframe.
-	 * @return data of the interframe.
-	 */
-	public FrameData getInterframe(int index);
+    /**
+     * Gets data of interframe with the specified index.
+     *
+     * @param index of interframe
+     * @return data of the interframe or null if index is not valid
+     */
+    public FrameData getInterframe(int index);
 
-	/**
-	 * Holder for video frame data.
-	 */
-	public final static class FrameData {
+    /**
+     * Holder for video frame data.
+     */
+    public final static class FrameData {
 
-		private byte[] frame;
+        private byte[] frame;
 
-		/**
-		 * Makes a copy of the incoming bytes and places them in an IoBuffer. No flip or rewind is performed on the source data.
-		 * 
-		 * @param data data
-		 */
-		public void setData(IoBuffer data) {
-			if (frame != null) {
-				frame = null;
-			}
-			frame = new byte[data.limit()];
-			data.get(frame);
-		}
+        public FrameData() {
+        }
 
-		public IoBuffer getFrame() {
-			return frame == null ? null : IoBuffer.wrap(frame).asReadOnlyBuffer();
-		}
+        public FrameData(IoBuffer data) {
+            setData(data);
+        }
 
-	}
+        /**
+         * Makes a copy of the incoming bytes and places them in an IoBuffer. No flip or rewind is performed on the source data.
+         * 
+         * @param data data
+         */
+        public void setData(IoBuffer data) {
+            if (frame != null) {
+                frame = null;
+            }
+            frame = new byte[data.limit()];
+            data.get(frame);
+        }
+
+        public IoBuffer getFrame() {
+            return frame == null ? null : IoBuffer.wrap(frame).asReadOnlyBuffer();
+        }
+
+    }
 }

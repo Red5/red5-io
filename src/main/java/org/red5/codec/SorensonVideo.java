@@ -18,9 +18,9 @@
 
 package org.red5.codec;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.io.IoConstants;
 import org.slf4j.Logger;
@@ -33,147 +33,148 @@ import org.slf4j.LoggerFactory;
  *
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
- * @author Paul Gregoire (mondain@gmail.com) 
+ * @author Paul Gregoire (mondain@gmail.com)
  */
 public class SorensonVideo implements IVideoStreamCodec, IoConstants {
 
-	private Logger log = LoggerFactory.getLogger(SorensonVideo.class);
+    private Logger log = LoggerFactory.getLogger(SorensonVideo.class);
 
     /**
      * Sorenson video codec constant
      */
-	static final String CODEC_NAME = "SorensonVideo";
+    static final String CODEC_NAME = "SorensonVideo";
 
     /**
      * Block of data
      */
-	private byte[] blockData;
+    private byte[] blockData;
+
     /**
      * Number of data blocks
      */
-	private int dataCount;
+    private int dataCount;
+
     /**
      * Data block size
      */
-	private int blockSize;
+    private int blockSize;
 
-	/**
-	 * Storage for frames buffered since last key frame
-	 */
-	private final List<FrameData> interframes = new ArrayList<FrameData>(50);
+    /**
+     * Storage for frames buffered since last key frame
+     */
+    private final CopyOnWriteArrayList<FrameData> interframes = new CopyOnWriteArrayList<FrameData>();
 
-	/**
-	 * Number of frames buffered since last key frame
-	 */
-	private final AtomicInteger numInterframes = new AtomicInteger(0);
+    /**
+     * Number of frames buffered since last key frame
+     */
+    private final AtomicInteger numInterframes = new AtomicInteger(0);
 
-	/** Constructs a new SorensonVideo. */
-	public SorensonVideo() {
-		this.reset();
-	}
+    /** Constructs a new SorensonVideo. */
+    public SorensonVideo() {
+        this.reset();
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public String getName() {
-		return CODEC_NAME;
-	}
+        return CODEC_NAME;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public boolean canDropFrames() {
-		return true;
-	}
+        return true;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public void reset() {
-		this.blockData = null;
-		this.blockSize = 0;
-		this.dataCount = 0;
-	}
+        this.blockData = null;
+        this.blockSize = 0;
+        this.dataCount = 0;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public boolean canHandleData(IoBuffer data) {
-		if (data.limit() == 0) {
-			// Empty buffer
-			return false;
-		}
+        if (data.limit() == 0) {
+            // Empty buffer
+            return false;
+        }
 
-		byte first = data.get();
-		boolean result = ((first & 0x0f) == VideoCodec.H263.getId());
-		data.rewind();
-		return result;
-	}
+        byte first = data.get();
+        boolean result = ((first & 0x0f) == VideoCodec.H263.getId());
+        data.rewind();
+        return result;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public boolean addData(IoBuffer data) {
-		if (data.limit() == 0) {
-			// Empty buffer
-			return true;
-		}
+        if (data.limit() == 0) {
+            // Empty buffer
+            return true;
+        }
 
-		if (!this.canHandleData(data)) {
-			return false;
-		}
+        if (!this.canHandleData(data)) {
+            return false;
+        }
 
-		byte first = data.get();
-		data.rewind();
+        byte first = data.get();
+        data.rewind();
 
-		int frameType = (first & MASK_VIDEO_FRAMETYPE) >> 4;
-		if (frameType != FLAG_FRAMETYPE_KEYFRAME) {
-			// Not a keyframe
-			try {
-				int lastInterframe = numInterframes.getAndIncrement();
-				if (frameType != FLAG_FRAMETYPE_DISPOSABLE) {
-					log.trace("Buffering interframe #{}", lastInterframe);
-					if (interframes.size() < lastInterframe + 1) {
-						interframes.add(new FrameData());
-					}
-					interframes.get(lastInterframe).setData(data);
-				} else {
-					numInterframes.set(lastInterframe);
-				}
-			} catch (Throwable e) {
-				log.error("Failed to buffer interframe", e);
-			}
-			data.rewind();
-			return true;
-		}
+        int frameType = (first & MASK_VIDEO_FRAMETYPE) >> 4;
+        if (frameType != FLAG_FRAMETYPE_KEYFRAME) {
+            // Not a keyframe
+            try {
+                int lastInterframe = numInterframes.getAndIncrement();
+                if (frameType != FLAG_FRAMETYPE_DISPOSABLE) {
+                    log.trace("Buffering interframe #{}", lastInterframe);
+                    if (interframes.size() < lastInterframe + 1) {
+                        interframes.add(new FrameData());
+                    }
+                    interframes.get(lastInterframe).setData(data);
+                } else {
+                    numInterframes.set(lastInterframe);
+                }
+            } catch (Throwable e) {
+                log.error("Failed to buffer interframe", e);
+            }
+            data.rewind();
+            return true;
+        }
+        numInterframes.set(0);
+        interframes.clear();
+        // Store last keyframe
+        this.dataCount = data.limit();
+        if (this.blockSize < this.dataCount) {
+            this.blockSize = this.dataCount;
+            this.blockData = new byte[this.blockSize];
+        }
 
-		numInterframes.set(0);
+        data.get(this.blockData, 0, this.dataCount);
+        data.rewind();
+        return true;
+    }
 
-		// Store last keyframe
-		this.dataCount = data.limit();
-		if (this.blockSize < this.dataCount) {
-			this.blockSize = this.dataCount;
-			this.blockData = new byte[this.blockSize];
-		}
-
-		data.get(this.blockData, 0, this.dataCount);
-		data.rewind();
-		return true;
-	}
-
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public IoBuffer getKeyframe() {
-		if (this.dataCount == 0) {
-			return null;
-		}
+        if (this.dataCount == 0) {
+            return null;
+        }
 
-		IoBuffer result = IoBuffer.allocate(this.dataCount);
-		result.put(this.blockData, 0, this.dataCount);
-		result.rewind();
-		return result;
-	}
-    
-	public IoBuffer getDecoderConfiguration() {
-		return null;
-	}
+        IoBuffer result = IoBuffer.allocate(this.dataCount);
+        result.put(this.blockData, 0, this.dataCount);
+        result.rewind();
+        return result;
+    }
 
-	/** {@inheritDoc} */
-	public int getNumInterframes() {
-		return numInterframes.get();
-	}
+    public IoBuffer getDecoderConfiguration() {
+        return null;
+    }
 
-	/** {@inheritDoc} */
-	public FrameData getInterframe(int index) {
-		return interframes.get(index);
-	}
+    /** {@inheritDoc} */
+    public int getNumInterframes() {
+        return numInterframes.get();
+    }
+
+    /** {@inheritDoc} */
+    public FrameData getInterframe(int index) {
+        return interframes.get(index);
+    }
 }

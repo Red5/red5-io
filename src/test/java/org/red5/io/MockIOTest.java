@@ -31,26 +31,26 @@ import org.red5.io.mock.Output;
 */
 public class MockIOTest extends AbstractIOTest {
 
-	protected List<Object> list;
+    protected List<Object> list;
 
-	/** {@inheritDoc} */
-	@Override
-	void setupIO() {
-		list = new LinkedList<Object>();
-		in = new Input(list);
-		out = new Output(list);
-	}
+    /** {@inheritDoc} */
+    @Override
+    void setupIO() {
+        list = new LinkedList<Object>();
+        in = new Input(list);
+        out = new Output(list);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	void dumpOutput() {
-		System.out.println(Mock.listToString(list));
-	}
+    /** {@inheritDoc} */
+    @Override
+    void dumpOutput() {
+        System.out.println(Mock.listToString(list));
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	void resetOutput() {
-		setupIO();
-	}
+    /** {@inheritDoc} */
+    @Override
+    void resetOutput() {
+        setupIO();
+    }
 
 }
