@@ -26,57 +26,56 @@ import java.util.Arrays;
  */
 public interface IKeyFrameDataAnalyzer {
 
-	/**
-	 * Analyze and return keyframe metadata.
-	 *
-	 * @return           Metadata object
-	 */
-	public KeyFrameMeta analyzeKeyFrames();
+    /**
+     * Analyze and return keyframe metadata.
+     *
+     * @return Metadata object
+     */
+    public KeyFrameMeta analyzeKeyFrames();
 
-	/**
-	 * Keyframe metadata.
-	 */
-	public static class KeyFrameMeta implements Serializable {
-		
-		private static final long serialVersionUID = 5436632873705625365L;
+    /**
+     * Keyframe metadata.
+     */
+    public static class KeyFrameMeta implements Serializable {
 
-		/**
-		 * Video codec id.
-		 */
-		public int videoCodecId = -1;
+        private static final long serialVersionUID = 5436632873705625365L;
 
-		/**
-		 * Audio codec id.
-		 */
-		public int audioCodecId = -1;
+        /**
+         * Video codec id.
+         */
+        public int videoCodecId = -1;
 
-		/**
-		 * Duration in milliseconds
-		 */
-		public long duration;
+        /**
+         * Audio codec id.
+         */
+        public int audioCodecId = -1;
 
-		/**
-		 * Only audio frames?
-		 */
-		public boolean audioOnly;
+        /**
+         * Duration in milliseconds
+         */
+        public long duration;
 
-		/**
-		 * Keyframe timestamps
-		 */
-		public int timestamps[];
+        /**
+         * Only audio frames?
+         */
+        public boolean audioOnly;
 
-		/**
-		 * Keyframe positions
-		 */
-		public long positions[];
+        /**
+         * Keyframe timestamps
+         */
+        public int timestamps[];
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-			return "KeyFrameMeta [videoCodecId=" + videoCodecId + ", audioCodecId=" + audioCodecId + ", duration=" + duration + ", audioOnly=" + audioOnly + ", timestamps="
-					+ Arrays.toString(timestamps) + ", positions=" + Arrays.toString(positions) + "]";
-		}
-	}
+        /**
+         * Keyframe positions
+         */
+        public long positions[];
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return "KeyFrameMeta [videoCodecId=" + videoCodecId + ", audioCodecId=" + audioCodecId + ", duration=" + duration + ", audioOnly=" + audioOnly + ", timestamps=" + Arrays.toString(timestamps) + ", positions=" + Arrays.toString(positions) + "]";
+        }
+    }
 }

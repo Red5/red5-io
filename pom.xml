@@ -64,7 +64,8 @@
         <quartz.version>2.2.2</quartz.version>
         <bc.version>1.53</bc.version>
         <junit.version>4.12</junit.version>
-        <isoparser.version>1.0.5.4</isoparser.version>
+        <isoparser.version>1.1.17</isoparser.version>
+        <tika.version>1.11</tika.version>
     </properties>
     <repositories>
         <repository>
@@ -84,10 +85,6 @@
         <repository>
             <id>maven2-repository.jfrog</id>
             <url>http://repo.jfrog.org/artifactory/libs-releases/</url>
-        </repository>
-        <repository>
-            <id>jaudiotagger-repository</id>
-            <url>https://dl.bintray.com/ijabz/maven</url>
         </repository>
     </repositories>
     <build>
@@ -215,7 +212,6 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
                 <extensions>true</extensions>
             </plugin>
             <plugin>
@@ -325,6 +321,16 @@
                     <artifactId>mina-integration-ognl</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>${tika.version}</version>
         </dependency>
         <dependency>
             <artifactId>commons-beanutils</artifactId>
@@ -460,11 +466,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.jthink</groupId>
-            <artifactId>jaudiotagger</artifactId>
-            <version>2.2.5</version>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>

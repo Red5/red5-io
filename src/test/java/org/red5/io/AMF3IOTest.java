@@ -37,7 +37,7 @@ import org.red5.io.utils.HexDump;
 /*
  * @author The Red5 Project
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
- * @author Art Clarke, Vlideshow Inc (aclarke@vlideshow.com)
+ * @author Art Clarke
 */
 public class AMF3IOTest extends AbstractIOTest {
 

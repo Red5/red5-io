@@ -32,15 +32,10 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import org.apache.mina.core.buffer.IoBuffer;
-import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.mp3.MP3AudioHeader;
-import org.jaudiotagger.audio.mp3.MP3File;
-import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.TagException;
-import org.jaudiotagger.tag.datatype.DataTypes;
-import org.jaudiotagger.tag.id3.ID3v24Tag;
-import org.jaudiotagger.tag.id3.framebody.FrameBodyAPIC;
-import org.jaudiotagger.tag.images.Artwork;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.mp3.AudioFrame;
+import org.apache.tika.parser.mp3.Mp3Parser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.red5.io.IKeyFrameMetaCache;
 import org.red5.io.IStreamableFile;
 import org.red5.io.ITag;
@@ -70,16 +65,6 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     private FileInputStream fis;
 
     /**
-     * File channel
-     */
-    private FileChannel channel;
-
-    /**
-     * Byte buffer
-     */
-    private ByteBuffer buf = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN);
-
-    /**
      * Last read tag object
      */
     private ITag tag;
@@ -102,7 +87,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     /**
      * Positions and time map
      */
-    private HashMap<Long, Double> posTimeMap;
+    private HashMap<Long, Float> posTimeMap;
 
     private int dataRate;
 
@@ -130,6 +115,14 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
 
     private final Semaphore lock = new Semaphore(1, true);
 
+    private FileChannel fileChannel;
+
+    private LinkedList<AudioFrame> frameList;
+
+    private int frameIndex;
+
+    private int frameCount;
+
     MP3Reader() {
         // Only used by the bean startup code to initialize the frame cache
     }
@@ -144,111 +137,95 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
      */
     public MP3Reader(File file) throws IOException {
         this.file = file;
-        // parse the id3 info
+        fis = new FileInputStream(file);
         try {
-            MP3File mp3file = (MP3File) AudioFileIO.read(file);
-            MP3AudioHeader audioHeader = (MP3AudioHeader) mp3file.getAudioHeader();
-            if (audioHeader != null) {
-                log.debug("Track length: {}", audioHeader.getTrackLength());
-                log.debug("Sample rate: {}", audioHeader.getSampleRateAsNumber());
-                log.debug("Channels: {}", audioHeader.getChannels());
-                log.debug("Variable bit rate: {}", audioHeader.isVariableBitRate());
-                log.debug("Track length (2): {}", audioHeader.getTrackLengthAsString());
-                log.debug("Mpeg version: {}", audioHeader.getMpegVersion());
-                log.debug("Mpeg layer: {}", audioHeader.getMpegLayer());
-                log.debug("Original: {}", audioHeader.isOriginal());
-                log.debug("Copyrighted: {}", audioHeader.isCopyrighted());
-                log.debug("Private: {}", audioHeader.isPrivate());
-                log.debug("Protected: {}", audioHeader.isProtected());
-                log.debug("Bitrate: {}", audioHeader.getBitRate());
-                log.debug("Encoding type: {}", audioHeader.getEncodingType());
-                log.debug("Encoder: {}", audioHeader.getEncoder());
-            }
-            ID3v24Tag idTag = mp3file.getID3v2TagAsv24();
-            if (idTag != null) {
-                // create meta data holder
-                metaData = new MetaData();
-                metaData.setAlbum(idTag.getFirst(FieldKey.ALBUM));
-                metaData.setArtist(idTag.getFirst(FieldKey.ARTIST));
-                metaData.setComment(idTag.getFirst(FieldKey.COMMENT));
-                metaData.setGenre(idTag.getFirst(FieldKey.GENRE));
-                metaData.setSongName(idTag.getFirst(FieldKey.TITLE));
-                metaData.setTrack(idTag.getFirst(FieldKey.TRACK));
-                metaData.setYear(idTag.getFirst(FieldKey.YEAR));
-                //send album image if included
-                List<Artwork> tagFieldList = idTag.getArtworkList();
-                if (tagFieldList == null || tagFieldList.isEmpty()) {
-                    log.debug("No cover art was found");
-                } else {
-                    Artwork imageField = tagFieldList.get(0);
-                    log.debug("Picture type: {}", imageField.getPictureType());
-                    FrameBodyAPIC imageFrameBody = new FrameBodyAPIC();
-                    imageFrameBody.setImageData(imageField.getBinaryData());
-                    if (!imageFrameBody.isImageUrl()) {
-                        byte[] imageBuffer = (byte[]) imageFrameBody.getObjectValue(DataTypes.OBJ_PICTURE_DATA);
-                        //set the cover image on the metadata
-                        metaData.setCovr(imageBuffer);
-                        // Create tag for onImageData event
-                        IoBuffer buf = IoBuffer.allocate(imageBuffer.length);
-                        buf.setAutoExpand(true);
-                        Output out = new Output(buf);
-                        out.writeString("onImageData");
-                        Map<Object, Object> props = new HashMap<Object, Object>();
-                        props.put("trackid", 1);
-                        props.put("data", imageBuffer);
-                        out.writeMap(props);
-                        buf.flip();
-                        //Ugh i hate flash sometimes!!
-                        //Error #2095: flash.net.NetStream was unable to invoke callback onImageData.
-                        ITag result = new Tag(IoConstants.TYPE_METADATA, 0, buf.limit(), null, 0);
-                        result.setBody(buf);
-                        //add to first frames
-                        firstTags.add(result);
-                    }
+            // parse the ID3 info
+            BodyContentHandler handler = new BodyContentHandler();
+            Metadata metadata = new Metadata();
+            // MP3 parser
+            Mp3Parser parser = new Mp3Parser();
+            parser.parse(fis, handler, metadata, null);
+            log.debug("Contents of the document: {}", handler.toString());
+            // create meta data holder
+            metaData = new MetaData();
+            String val = null;
+            String[] metadataNames = metadata.names();
+            for (String name : metadataNames) {
+                val = metadata.get(name);
+                log.debug("Meta name: {} value: {}", name, val);
+                if ("xmpDM:artist".equals(name)) {
+                    metaData.setArtist(val);
+                } else if ("xmpDM:album".equals(name)) {
+                    metaData.setAlbum(val);
+                } else if ("title".equals(name)) {
+                    metaData.setSongName(val);
+                } else if ("xmpDM:genre".equals(name)) {
+                    metaData.setGenre(val);
+                } else if ("xmpDM:logComment".equals(name)) {
+                    metaData.setComment(val);
+                } else if ("xmpDM:trackNumber".equals(name)) {
+                    metaData.setTrack(val);
+                } else if ("xmpDM:releaseDate".equals(name)) {
+                    metaData.setYear(val);
+                } else if ("xmpDM:duration".equals(name) || "duration".equals(name)) {
+                    metaData.setDuration(val);
+                } else if ("xmpDM:audioSampleRate".equals(name) || "samplerate".equals(name)) {
+                    metaData.setSampleRate(val);
+                } else if ("channels".equals(name)) {
+                    metaData.setChannels(val);
                 }
-            } else {
-                log.info("File did not contain ID3v2 data: {}", file.getName());
             }
-            mp3file = null;
-        } catch (TagException e) {
-            log.error("MP3Reader (tag error) {}", e);
+            /*
+                            //send album image if included
+                            List<Artwork> tagFieldList = idTag.getArtworkList();
+                            if (tagFieldList == null || tagFieldList.isEmpty()) {
+                                log.debug("No cover art was found");
+                            } else {
+                                Artwork imageField = tagFieldList.get(0);
+                                log.debug("Picture type: {}", imageField.getPictureType());
+                                FrameBodyAPIC imageFrameBody = new FrameBodyAPIC();
+                                imageFrameBody.setImageData(imageField.getBinaryData());
+                                if (!imageFrameBody.isImageUrl()) {
+                                    byte[] imageBuffer = (byte[]) imageFrameBody.getObjectValue(DataTypes.OBJ_PICTURE_DATA);
+                                    //set the cover image on the metadata
+                                    metaData.setCovr(imageBuffer);
+                                    // Create tag for onImageData event
+                                    IoBuffer buf = IoBuffer.allocate(imageBuffer.length);
+                                    buf.setAutoExpand(true);
+                                    Output out = new Output(buf);
+                                    out.writeString("onImageData");
+                                    Map<Object, Object> props = new HashMap<Object, Object>();
+                                    props.put("trackid", 1);
+                                    props.put("data", imageBuffer);
+                                    out.writeMap(props);
+                                    buf.flip();
+                                    //Ugh i hate flash sometimes!!
+                                    //Error #2095: flash.net.NetStream was unable to invoke callback onImageData.
+                                    ITag result = new Tag(IoConstants.TYPE_METADATA, 0, buf.limit(), null, 0);
+                                    result.setBody(buf);
+                                    //add to first frames
+                                    firstTags.add(result);
+                                }
+                            }
+                        } else {
+                            log.info("File did not contain ID3v2 data: {}", file.getName());
+                        }
+            */
         } catch (Exception e) {
             log.error("MP3Reader {}", e);
         }
-        fis = new FileInputStream(file);
-        // grab file channel and map it to memory-mapped byte buffer in read-only mode
-        channel = fis.getChannel();
+        // ensure we have a valid sample rate
+        checkValidHeader();
         // get the total bytes / file size
-        fileSize = channel.size();
+        fileSize = file.length();
         log.debug("File size: {}", fileSize);
         // analyze keyframes data
         analyzeKeyFrames();
         // create file metadata object
         firstTags.addFirst(createFileMeta());
-        // MP3 header is length of 32 bits, that is, 4 bytes
-        // read further if there's still data
-        if ((fileSize - channel.position()) > 4) {
-            // look for next frame
-            searchNextFrame();
-            // get current position
-            long pos = channel.position();
-            // Data in MP3 file goes header-data-header-data...header-data
-            // Read header...
-            MP3Header header = null;
-            try {
-                header = readHeader();
-            } catch (Exception e) {
-                log.warn("Exception reading initial header", e);
-            }
-            // set position
-            channel.position(pos);
-            // Check header
-            if (header != null) {
-                checkValidHeader(header);
-            } else {
-                throw new RuntimeException("No initial header found");
-            }
-        }
+        log.trace("File input stream - open: {} position: {}", fis.getChannel().isOpen(), fis.getChannel().position());
+        // create a channel for reading
+        fileChannel = fis.getChannel();
     }
 
     /**
@@ -266,12 +243,10 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
 
     /**
      * Check if the file can be played back with Flash. Supported sample rates are 44KHz, 22KHz, 11KHz and 5.5KHz
-     * 
-     * @param header
-     *            Header to check
      */
-    private void checkValidHeader(MP3Header header) {
-        switch (header.getSampleRate()) {
+    private void checkValidHeader() {
+        int sampleRate = Integer.valueOf(metaData.getSampleRate());
+        switch (sampleRate) {
             case 48000:
             case 44100:
             case 22050:
@@ -279,7 +254,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
             case 5513:
                 break;
             default:
-                throw new RuntimeException("Unsupported sample rate: " + header.getSampleRate());
+                throw new RuntimeException("Unsupported sample rate: " + sampleRate);
         }
     }
 
@@ -296,21 +271,40 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
         Output out = new Output(in);
         out.writeString("onMetaData");
         Map<Object, Object> props = new HashMap<Object, Object>();
-        props.put("duration", frameMeta.timestamps[frameMeta.timestamps.length - 1] / 1000.0);
         props.put("audiocodecid", IoConstants.FLAG_FORMAT_MP3);
-        if (dataRate > 0) {
-            props.put("audiodatarate", dataRate);
-        }
         props.put("canSeekToEnd", true);
-        //set id3 meta data if it exists
+        // set id3 meta data if it exists
         if (metaData != null) {
-            props.put("artist", metaData.getArtist());
-            props.put("album", metaData.getAlbum());
-            props.put("songName", metaData.getSongName());
-            props.put("genre", metaData.getGenre());
-            props.put("year", metaData.getYear());
-            props.put("track", metaData.getTrack());
-            props.put("comment", metaData.getComment());
+            if (metaData.artist != null) {
+                props.put("artist", metaData.artist);
+            }
+            if (metaData.album != null) {
+                props.put("album", metaData.album);
+            }
+            if (metaData.songName != null) {
+                props.put("songName", metaData.songName);
+            }
+            if (metaData.genre != null) {
+                props.put("genre", metaData.genre);
+            }
+            if (metaData.year != null) {
+                props.put("year", metaData.year);
+            }
+            if (metaData.track != null) {
+                props.put("track", metaData.track);
+            }
+            if (metaData.comment != null) {
+                props.put("comment", metaData.comment);
+            }
+            if (metaData.duration != null) {
+                props.put("duration", metaData.duration);
+            }
+            if (metaData.channels != null) {
+                props.put("channels", metaData.channels);
+            }
+            if (metaData.sampleRate != null) {
+                props.put("samplerate", metaData.sampleRate);
+            }
             if (metaData.hasCoverImage()) {
                 Map<Object, Object> covr = new HashMap<Object, Object>(1);
                 covr.put("covr", new Object[] { metaData.getCovr() });
@@ -319,49 +313,26 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
             //clear meta for gc
             metaData = null;
         }
+        log.debug("Metadata properties map: {}", props);
+        // check for duration
+        if (!props.containsKey("duration")) {
+            // generate it from framemeta
+            if (frameMeta != null) {
+                props.put("duration", frameMeta.timestamps[frameMeta.timestamps.length - 1] / 1000.0);
+            } else {
+                log.debug("Frame meta was null");
+            }
+        }
+        // set datarate
+        if (dataRate > 0) {
+            props.put("audiodatarate", dataRate);
+        }
         out.writeMap(props);
         in.flip();
-
+        // meta-data
         ITag result = new Tag(IoConstants.TYPE_METADATA, 0, in.limit(), null, prevSize);
         result.setBody(in);
         return result;
-    }
-
-    /**
-     * Search for next frame sync word. Sync word identifies valid frame.
-     */
-    public void searchNextFrame() {
-        log.debug("searchNextFrame");
-        ByteBuffer in = ByteBuffer.allocate(1).order(ByteOrder.BIG_ENDIAN);
-        try {
-            while ((fileSize - channel.position()) > 1) {
-                // read byte
-                in.clear();
-                channel.read(in);
-                in.flip();
-                // check byte
-                int ch = in.get() & 0xff;
-                if (ch != 0xff) {
-                    continue;
-                }
-                // read next byte
-                in.clear();
-                channel.read(in);
-                in.flip();
-                // check next byte
-                if ((in.get() & 0xe0) == 0xe0) {
-                    // found it
-                    log.debug("Found frame");
-                    channel.position(channel.position() - 2);
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            log.warn("Exception getting next frame", e);
-        } finally {
-            in.clear();
-            in = null;
-        }
     }
 
     /** {@inheritDoc} */
@@ -377,9 +348,8 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     /** {@inheritDoc} */
     public long getBytesRead() {
         try {
-            return channel.position();
+            return fileChannel != null ? fileChannel.position() : 0;
         } catch (IOException e) {
-            log.warn("Exception getting bytes read", e);
         }
         return 0;
     }
@@ -401,38 +371,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     /** {@inheritDoc} */
     public boolean hasMoreTags() {
         log.debug("hasMoreTags");
-        MP3Header header = null;
-        try {
-            header = readHeader();
-        } catch (IOException e) {
-            log.warn("Exception reading header", e);
-        } catch (Exception e) {
-            searchNextFrame();
-        }
-        //log.debug("Header: {}", header);
-        if (header == null || header.frameSize() == 0) {
-            // TODO find better solution how to deal with broken files
-            return false;
-        }
-        try {
-            if (channel.position() + header.frameSize() - 4 > fileSize) {
-                // last frame is incomplete
-                channel.position(fileSize);
-                return false;
-            }
-            channel.position(channel.position() - 4);
-        } catch (IOException e) {
-            log.warn("Exception checking for more tags", e);
-        }
-        return true;
-    }
-
-    private MP3Header readHeader() throws Exception {
-        log.debug("readHeader at {}", channel.position());
-        buf.clear();
-        channel.read(buf);
-        buf.flip();
-        return new MP3Header(buf.getInt());
+        return fileChannel.isOpen() && frameIndex < frameCount;
     }
 
     /** {@inheritDoc} */
@@ -441,27 +380,25 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
         try {
             lock.acquire();
             if (!firstTags.isEmpty()) {
-                // Return first tags before media data
+                // return first tags before media data
                 return firstTags.removeFirst();
             }
-            MP3Header header = readHeader();
-            int frameSize = header.frameSize();
-            if (frameSize == 0) {
-                // TODO find better solution how to deal with broken files
+            AudioFrame frame = frameList.get(frameIndex++);
+            if (frame == null) {
                 return null;
             }
-            if (channel.position() + frameSize - 4 > fileSize) {
-                // last frame is incomplete
-                channel.position(fileSize);
+            int frameSize = frame.getLength();
+            log.trace("Frame size: {}", frameSize);
+            if (frameSize == 0) {
                 return null;
             }
             tag = new Tag(IoConstants.TYPE_AUDIO, (int) currentTime, frameSize + 1, null, prevSize);
             prevSize = frameSize + 1;
-            currentTime += header.frameDuration();
+            currentTime += frame.getDuration();
             IoBuffer body = IoBuffer.allocate(tag.getBodySize());
             body.setAutoExpand(true);
             byte tagType = (IoConstants.FLAG_FORMAT_MP3 << 4) | (IoConstants.FLAG_SIZE_16_BIT << 1);
-            switch (header.getSampleRate()) {
+            switch (frame.getSampleRate()) {
                 case 48000:
                     tagType |= IoConstants.FLAG_RATE_48_KHZ << 2;
                     break;
@@ -477,20 +414,19 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
                 default:
                     tagType |= IoConstants.FLAG_RATE_5_5_KHZ << 2;
             }
-            tagType |= (header.isStereo() ? IoConstants.FLAG_TYPE_STEREO : IoConstants.FLAG_TYPE_MONO);
+            tagType |= (frame.getChannels() > 1 ? IoConstants.FLAG_TYPE_STEREO : IoConstants.FLAG_TYPE_MONO);
             body.put(tagType);
-            body.putInt(header.getData());
-            int bufferSize = (frameSize - 4);
-            log.trace("Allocating {} buffer", bufferSize);
-            if (bufferSize > 0) {
-                ByteBuffer in = ByteBuffer.allocate(bufferSize).order(ByteOrder.BIG_ENDIAN);
-                channel.read(in);
+            // read the header and data after fixing the position
+            log.trace("Allocating {} buffer", frameSize);
+            if (frameSize > 0) {
+                ByteBuffer in = ByteBuffer.allocate(frameSize).order(ByteOrder.BIG_ENDIAN);
+                fileChannel.read(in);
                 in.flip();
                 body.put(in);
                 body.flip();
                 tag.setBody(body);
             } else {
-                log.warn("Buffer size was invalid: {}", bufferSize);
+                log.warn("Buffer size was invalid: {}", frameSize);
             }
         } catch (InterruptedException e) {
             log.warn("Exception acquiring lock", e);
@@ -507,13 +443,9 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
         if (posTimeMap != null) {
             posTimeMap.clear();
         }
-        if (buf != null) {
-            buf.clear();
-            buf = null;
-        }
         try {
             fis.close();
-            channel.close();
+            fileChannel.close();
         } catch (IOException e) {
             log.error("Exception on close", e);
         }
@@ -525,25 +457,17 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
 
     /** {@inheritDoc} */
     public void position(long pos) {
-        try {
-            if (pos == Long.MAX_VALUE) {
-                // seek at EOF
-                channel.position(fileSize);
-                currentTime = duration;
-                return;
+        if (pos == Long.MAX_VALUE) {
+            // seek at EOF
+            currentTime = duration;
+        }
+        if (posTimeMap.containsKey(pos)) {
+            try {
+                fileChannel.position(pos);
+                currentTime = posTimeMap.get(pos);
+            } catch (IOException e) {
+                log.warn("Setting position to: {} failed", pos, e);
             }
-            channel.position(pos);
-            // advance to next frame
-            searchNextFrame();
-            Double time = posTimeMap.get(channel.position());
-            if (time != null) {
-                currentTime = time;
-            } else {
-                // Unknown frame position - this should never happen
-                currentTime = 0;
-            }
-        } catch (IOException e) {
-            log.warn("Exception setting position", e);
         }
     }
 
@@ -555,53 +479,67 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
         }
         try {
             lock.acquire();
-            // check for cached frame informations
+            // check for cached frame information
             if (frameCache != null) {
                 frameMeta = frameCache.loadKeyFrameMeta(file);
                 if (frameMeta != null && frameMeta.duration > 0) {
-                    // Frame data loaded, create other mappings
+                    // frame data loaded, create other mappings
                     duration = frameMeta.duration;
                     frameMeta.audioOnly = true;
-                    posTimeMap = new HashMap<Long, Double>();
+                    posTimeMap = new HashMap<Long, Float>();
                     for (int i = 0; i < frameMeta.positions.length; i++) {
-                        posTimeMap.put(frameMeta.positions[i], (double) frameMeta.timestamps[i]);
+                        posTimeMap.put(frameMeta.positions[i], (float) frameMeta.timestamps[i]);
                     }
                     return frameMeta;
                 }
             }
+            // rewind to the beginning using a channel
+            FileChannel channel = fis.getChannel();
+            log.debug("Position: {}", channel.position());
+            channel.position(0);
+            // create an internal parsing stream
+            @SuppressWarnings("resource")
+            MP3Stream stream = new MP3Stream(fis);
+            // frame holder
+            frameList = new LinkedList<AudioFrame>();
+            // position and timestamp lists
             List<Long> positionList = new ArrayList<Long>();
-            List<Double> timestampList = new ArrayList<Double>();
+            List<Float> timestampList = new ArrayList<Float>();
             dataRate = 0;
             long rate = 0;
-            int count = 0;
-            long origPos = channel.position();
-            double time = 0;
-            channel.position(0);
-            searchNextFrame();
-            while (hasMoreTags()) {
-                MP3Header header = readHeader();
-                if (header == null || header.frameSize() == 0) {
-                    // TODO find better solution how to deal with broken files...
-                    // See APPSERVER-62 for details
-                    break;
-                }
+            float time = 0f;
+            // read the first frame and move on to all the following ones
+            AudioFrame frame = stream.nextFrame();
+            while (frame != null) {
                 long pos = channel.position() - 4;
-                if (pos + header.frameSize() > fileSize) {
+                if (pos + frame.getLength() > fileSize) {
                     // last frame is incomplete
+                    log.trace("Last frame was incomplete");
                     break;
                 }
+                // save frame ref
+                frameList.add(frame);
+                // add the position for this frame
                 positionList.add(pos);
+                // add the timestamp for this frame
                 timestampList.add(time);
-                rate += header.getBitRate() / 1000;
-                time += header.frameDuration();
-                channel.position(pos + header.frameSize());
-                count++;
+                // get the bitrate
+                rate += frame.getBitRate() / 1000;
+                // get the duration
+                time += frame.getDuration();
+                // increase the frame counter
+                frameCount++;
+                // skip current frame
+                stream.skipFrame();
+                // move to next frame
+                frame = stream.nextFrame();
             }
-            // restore the pos
-            channel.position(origPos);
+            // reset the file input stream position
+            channel.position(0);
+            log.trace("Finished with frame count: {}", frameCount);
             duration = (long) time;
-            dataRate = (int) (rate / count);
-            posTimeMap = new HashMap<Long, Double>();
+            dataRate = (int) (rate / frameCount);
+            posTimeMap = new HashMap<Long, Float>();
             frameMeta = new KeyFrameMeta();
             frameMeta.duration = duration;
             frameMeta.positions = new long[positionList.size()];
@@ -623,6 +561,9 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
             lock.release();
         }
         log.debug("Analysis complete");
+        if (log.isTraceEnabled()) {
+            log.trace("{}", frameMeta);
+        }
         return frameMeta;
     }
 
@@ -630,19 +571,25 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
      * Simple holder for id3 meta data
      */
     static class MetaData {
-        String album = "";
+        String album;
 
-        String artist = "";
+        String artist;
 
-        String genre = "";
+        String genre;
 
-        String songName = "";
+        String songName;
 
-        String track = "";
+        String track;
 
-        String year = "";
+        String year;
 
-        String comment = "";
+        String comment;
+
+        String duration;
+
+        String sampleRate;
+
+        String channels;
 
         byte[] covr = null;
 
@@ -700,6 +647,30 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
 
         public void setComment(String comment) {
             this.comment = comment;
+        }
+
+        public String getDuration() {
+            return duration;
+        }
+
+        public void setDuration(String duration) {
+            this.duration = duration;
+        }
+
+        public String getSampleRate() {
+            return sampleRate;
+        }
+
+        public void setSampleRate(String sampleRate) {
+            this.sampleRate = sampleRate;
+        }
+
+        public String getChannels() {
+            return channels;
+        }
+
+        public void setChannels(String channels) {
+            this.channels = channels;
         }
 
         public byte[] getCovr() {
