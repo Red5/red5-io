@@ -25,155 +25,156 @@ package org.red5.io.mp4;
  */
 public class MP4Frame implements Comparable<MP4Frame> {
 
-	private byte type;
+    private byte type;
 
-	private long offset;
+    private long offset;
 
-	private int size;
+    private int size;
 
-	private double time;
+    private double time;
 
-	//this value originates from the ctts atom
-	private int timeOffset;
-	
-	private boolean keyFrame;
+    //this value originates from the ctts atom
+    private int timeOffset;
 
-	/**
-	 * Returns the data type, being audio or video.
-	 * 
-	 * @return the data type
-	 */
-	public byte getType() {
-		return type;
-	}
+    private boolean keyFrame;
 
-	public void setType(byte type) {
-		this.type = type;
-	}
+    /**
+     * Returns the data type, being audio or video.
+     * 
+     * @return the data type
+     */
+    public byte getType() {
+        return type;
+    }
 
-	/**
-	 * Returns the offset of the data chunk in the media source.
-	 * 
-	 * @return the offset in bytes
-	 */
-	public long getOffset() {
-		return offset;
-	}
+    public void setType(byte type) {
+        this.type = type;
+    }
 
-	public void setOffset(long offset) {
-		this.offset = offset;
-	}
+    /**
+     * Returns the offset of the data chunk in the media source.
+     * 
+     * @return the offset in bytes
+     */
+    public long getOffset() {
+        return offset;
+    }
 
-	/**
-	 * Returns the size of the data chunk.
-	 * 
-	 * @return the size in bytes
-	 */
-	public int getSize() {
-		return size;
-	}
+    public void setOffset(long offset) {
+        this.offset = offset;
+    }
 
-	public void setSize(int size) {
-		this.size = size;
-	}
+    /**
+     * Returns the size of the data chunk.
+     * 
+     * @return the size in bytes
+     */
+    public int getSize() {
+        return size;
+    }
 
-	/**
-	 * Returns the timestamp.
-	 * 
-	 * @return the timestamp
-	 */
-	public double getTime() {
-		return time;
-	}
+    public void setSize(int size) {
+        this.size = size;
+    }
 
-	public void setTime(double time) {
-		this.time = time;
-	}
+    /**
+     * Returns the timestamp.
+     * 
+     * @return the timestamp
+     */
+    public double getTime() {
+        return time;
+    }
 
-	/**
-	 * @return the timeOffset
-	 */
-	public int getTimeOffset() {
-		return timeOffset;
-	}
+    public void setTime(double time) {
+        this.time = time;
+    }
 
-	/**
-	 * @param timeOffset the timeOffset to set
-	 */
-	public void setTimeOffset(int timeOffset) {
-		this.timeOffset = timeOffset;
-	}
+    /**
+     * @return the timeOffset
+     */
+    public int getTimeOffset() {
+        return timeOffset;
+    }
 
-	/**
-	 * Returns whether or not this chunk represents a key frame.
-	 * 
-	 * @return true if a key frame
-	 */
-	public boolean isKeyFrame() {
-		return keyFrame;
-	}
+    /**
+     * @param timeOffset
+     *            the timeOffset to set
+     */
+    public void setTimeOffset(int timeOffset) {
+        this.timeOffset = timeOffset;
+    }
 
-	public void setKeyFrame(boolean keyFrame) {
-		this.keyFrame = keyFrame;
-	}
+    /**
+     * Returns whether or not this chunk represents a key frame.
+     * 
+     * @return true if a key frame
+     */
+    public boolean isKeyFrame() {
+        return keyFrame;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (offset ^ (offset >>> 32));
-		result = prime * result + type;
-		return result;
-	}
+    public void setKeyFrame(boolean keyFrame) {
+        this.keyFrame = keyFrame;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MP4Frame other = (MP4Frame) obj;
-		if (offset != other.offset)
-			return false;
-		if (type != other.type)
-			return false;
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (offset ^ (offset >>> 32));
+        result = prime * result + type;
+        return result;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder("MP4Frame type=");
-		sb.append(type);
-		sb.append(", time=");
-		sb.append(time);
-		sb.append(", timeOffset=");
-		sb.append(timeOffset);		
-		sb.append(", size=");
-		sb.append(size);
-		sb.append(", offset=");
-		sb.append(offset);
-		sb.append(", keyframe=");
-		sb.append(keyFrame);
-		return sb.toString();
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MP4Frame other = (MP4Frame) obj;
+        if (offset != other.offset)
+            return false;
+        if (type != other.type)
+            return false;
+        return true;
+    }
 
-	/**
-	 * The frames are expected to be sorted by their timestamp
-	 */
-	public int compareTo(MP4Frame that) {
-		int ret = 0;
-		if (this.time > that.getTime()) {
-			ret = 1;
-		} else if (this.time < that.getTime()) {
-			ret = -1;
-		} else if (Double.doubleToLongBits(time) == Double.doubleToLongBits(that.getTime()) && this.offset > that.getOffset()) {
-			ret = 1;
-		} else if (Double.doubleToLongBits(time) == Double.doubleToLongBits(that.getTime()) && this.offset < that.getOffset()) {
-			ret = -1;
-		}
-		return ret;
-	}
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("MP4Frame type=");
+        sb.append(type);
+        sb.append(", time=");
+        sb.append(time);
+        sb.append(", timeOffset=");
+        sb.append(timeOffset);
+        sb.append(", size=");
+        sb.append(size);
+        sb.append(", offset=");
+        sb.append(offset);
+        sb.append(", keyframe=");
+        sb.append(keyFrame);
+        return sb.toString();
+    }
+
+    /**
+     * The frames are expected to be sorted by their timestamp
+     */
+    public int compareTo(MP4Frame that) {
+        int ret = 0;
+        if (this.time > that.getTime()) {
+            ret = 1;
+        } else if (this.time < that.getTime()) {
+            ret = -1;
+        } else if (Double.doubleToLongBits(time) == Double.doubleToLongBits(that.getTime()) && this.offset > that.getOffset()) {
+            ret = 1;
+        } else if (Double.doubleToLongBits(time) == Double.doubleToLongBits(that.getTime()) && this.offset < that.getOffset()) {
+            ret = -1;
+        }
+        return ret;
+    }
 
 }

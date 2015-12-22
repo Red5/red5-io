@@ -19,207 +19,211 @@
 package org.red5.io.object;
 
 /**
- * The core datatypes supported by red5, I have left out undefined (this is
- * up for debate).
- * If a codec returns one of these datatypes its handled by the base
- * serializer.
+ * The core datatypes supported by red5, I have left out undefined (this is up for debate). If a codec returns one of these datatypes its handled by the base serializer.
  *
  * @author The Red5 Project
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
  */
 public class DataTypes {
 
-	/**
-	 * Padding marker
-	 */
-	public static final byte CORE_SKIP = 0x00; // padding
+    /**
+     * Padding marker
+     */
+    public static final byte CORE_SKIP = 0x00; // padding
 
-	/**
-	 * Null type marker
-	 */
-	public static final byte CORE_NULL = 0x01; // no undefined type
+    /**
+     * Null type marker
+     */
+    public static final byte CORE_NULL = 0x01; // no undefined type
 
-	/**
-	 * Boolean type marker
-	 */
-	public static final byte CORE_BOOLEAN = 0x02;
+    /**
+     * Boolean type marker
+     */
+    public static final byte CORE_BOOLEAN = 0x02;
 
-	/**
-	 * Number type marker
-	 */
-	public static final byte CORE_NUMBER = 0x03;
+    /**
+     * Number type marker
+     */
+    public static final byte CORE_NUMBER = 0x03;
 
-	/**
-	 * String type marker
-	 */
-	public static final byte CORE_STRING = 0x04;
+    /**
+     * String type marker
+     */
+    public static final byte CORE_STRING = 0x04;
 
-	/**
-	 * Date type marker
-	 */
-	public static final byte CORE_DATE = 0x05;
+    /**
+     * Date type marker
+     */
+    public static final byte CORE_DATE = 0x05;
 
-	// Basic stuctures
+    // Basic stuctures
 
-	/**
-	 * Array type marker
-	 */
-	public static final byte CORE_ARRAY = 0x06;
+    /**
+     * Array type marker
+     */
+    public static final byte CORE_ARRAY = 0x06;
 
-	/**
-	 * Map type marker
-	 */
-	public static final byte CORE_MAP = 0x07;
+    /**
+     * Map type marker
+     */
+    public static final byte CORE_MAP = 0x07;
 
-	/**
-	 * XML type marker
-	 */
-	public static final byte CORE_XML = 0x08;
+    /**
+     * XML type marker
+     */
+    public static final byte CORE_XML = 0x08;
 
-	/**
-	 * Object (Hash) type marker
-	 */
-	public static final byte CORE_OBJECT = 0x09;
+    /**
+     * Object (Hash) type marker
+     */
+    public static final byte CORE_OBJECT = 0x09;
 
-	/**
-	 * ByteArray type marker (AMF3 only)
-	 */
-	public static final byte CORE_BYTEARRAY = 0x10; //16
+    /**
+     * ByteArray type marker (AMF3 only)
+     */
+    public static final byte CORE_BYTEARRAY = 0x10; //16
 
-	/**
-	 * Vector type markers
-	 */
-	public static final byte CORE_VECTOR_INT = 0x0D + 0x30; //61
-	public static final byte CORE_VECTOR_UINT = 0x0E + 0x30; //62
-	public static final byte CORE_VECTOR_NUMBER = 0x0F + 0x30; //63
-	public static final byte CORE_VECTOR_OBJECT = 0x10 + 0x30; //64
-	
-	/**
-	 * Reference type, this is optional for codecs to support
-	 */
-	public static final byte OPT_REFERENCE = 0x11; //17
+    /**
+     * Vector type markers
+     */
+    public static final byte CORE_VECTOR_INT = 0x0D + 0x30; //61
 
-	// More datatypes can be added but they should be prefixed by the type
-	// If a codec returns one of these datatypes its handled by a custom serializer
+    public static final byte CORE_VECTOR_UINT = 0x0E + 0x30; //62
 
-	/**
-	 * Custom datatype mock mask marker
-	 */
-	public static final byte CUSTOM_MOCK_MASK = 0x20;
+    public static final byte CORE_VECTOR_NUMBER = 0x0F + 0x30; //63
 
-	/**
-	 * Custom datatype AMF mask
-	 */
-	public static final byte CUSTOM_AMF_MASK = 0x30;
+    public static final byte CORE_VECTOR_OBJECT = 0x10 + 0x30; //64
 
-	/**
-	 * Custom datatype RTMP mask
-	 */
-	public static final byte CUSTOM_RTMP_MASK = 0x40;
+    /**
+     * Reference type, this is optional for codecs to support
+     */
+    public static final byte OPT_REFERENCE = 0x11; //17
 
-	/**
-	 * Custom datatype JSON mask
-	 */
-	public static final byte CUSTOM_JSON_MASK = 0x50;
+    // More datatypes can be added but they should be prefixed by the type
+    // If a codec returns one of these datatypes its handled by a custom serializer
 
-	/**
-	 * Custom datatype XML mask
-	 */
-	public static final byte CUSTOM_XML_MASK = 0x60;
+    /**
+     * Custom datatype mock mask marker
+     */
+    public static final byte CUSTOM_MOCK_MASK = 0x20;
 
-	// Some helper methods..
+    /**
+     * Custom datatype AMF mask
+     */
+    public static final byte CUSTOM_AMF_MASK = 0x30;
 
-	/**
-	 * Returns the string value of the data type
-	 *
-	 * @return String        String value of given ActionScript data type
-	 * @param dataType       AS data type as byte
-	 */
-	public static String toStringValue(byte dataType) {
-		switch (dataType) {
-			case CORE_SKIP:
-				return "skip";
-			case CORE_NULL:
-				return "null";
-			case CORE_BOOLEAN:
-				return "Boolean";
-			case CORE_NUMBER:
-				return "Number";
-			case CORE_STRING:
-				return "String";
-			case CORE_DATE:
-				return "Date";
-			case CORE_ARRAY:
-				return "Array";
-			case CORE_MAP:
-				return "List";
-			case CORE_XML:
-				return "XML";
-			case CORE_OBJECT:
-				return "Object";
-			case CORE_BYTEARRAY:
-				return "ByteArray";
-			case CORE_VECTOR_INT:
-				return "Vector<int>";
-			case CORE_VECTOR_UINT:
-				return "Vector<uint>";
-			case CORE_VECTOR_NUMBER:
-				return "Vector<Number>";
-			case CORE_VECTOR_OBJECT:
-				return "Vector<Object>";
-			case OPT_REFERENCE:
-				return "Reference";
-			default:
-		}
+    /**
+     * Custom datatype RTMP mask
+     */
+    public static final byte CUSTOM_RTMP_MASK = 0x40;
 
-		if (dataType >= CUSTOM_MOCK_MASK && dataType < CUSTOM_AMF_MASK) {
-			return "MOCK[" + (dataType - CUSTOM_MOCK_MASK) + ']';
-		}
+    /**
+     * Custom datatype JSON mask
+     */
+    public static final byte CUSTOM_JSON_MASK = 0x50;
 
-		if (dataType >= CUSTOM_AMF_MASK && dataType < CUSTOM_RTMP_MASK) {
-			return "AMF[" + (dataType - CUSTOM_AMF_MASK) + ']';
-		}
+    /**
+     * Custom datatype XML mask
+     */
+    public static final byte CUSTOM_XML_MASK = 0x60;
 
-		if (dataType >= CUSTOM_RTMP_MASK && dataType < CUSTOM_JSON_MASK) {
-			return "RTMP[" + (dataType - CUSTOM_RTMP_MASK) + ']';
-		}
+    // Some helper methods..
 
-		if (dataType >= CUSTOM_JSON_MASK && dataType < CUSTOM_XML_MASK) {
-			return "JSON[" + (dataType - CUSTOM_JSON_MASK) + ']';
-		}
+    /**
+     * Returns the string value of the data type
+     *
+     * @return String String value of given ActionScript data type
+     * @param dataType
+     *            AS data type as byte
+     */
+    public static String toStringValue(byte dataType) {
+        switch (dataType) {
+            case CORE_SKIP:
+                return "skip";
+            case CORE_NULL:
+                return "null";
+            case CORE_BOOLEAN:
+                return "Boolean";
+            case CORE_NUMBER:
+                return "Number";
+            case CORE_STRING:
+                return "String";
+            case CORE_DATE:
+                return "Date";
+            case CORE_ARRAY:
+                return "Array";
+            case CORE_MAP:
+                return "List";
+            case CORE_XML:
+                return "XML";
+            case CORE_OBJECT:
+                return "Object";
+            case CORE_BYTEARRAY:
+                return "ByteArray";
+            case CORE_VECTOR_INT:
+                return "Vector<int>";
+            case CORE_VECTOR_UINT:
+                return "Vector<uint>";
+            case CORE_VECTOR_NUMBER:
+                return "Vector<Number>";
+            case CORE_VECTOR_OBJECT:
+                return "Vector<Object>";
+            case OPT_REFERENCE:
+                return "Reference";
+            default:
+        }
 
-		return "XML[" + (dataType - CUSTOM_XML_MASK) + ']';
+        if (dataType >= CUSTOM_MOCK_MASK && dataType < CUSTOM_AMF_MASK) {
+            return "MOCK[" + (dataType - CUSTOM_MOCK_MASK) + ']';
+        }
 
-	}
+        if (dataType >= CUSTOM_AMF_MASK && dataType < CUSTOM_RTMP_MASK) {
+            return "AMF[" + (dataType - CUSTOM_AMF_MASK) + ']';
+        }
 
-	/**
-	 * Returns whether it is a basic data type
-	 *
-	 * @param type           Data type as byte
-	 * @return boolean       <code>true</code> if data type is primitive, <code>false</code> otherwise
-	 */
-	public static boolean isBasicType(byte type) {
-		return type <= CORE_DATE;
-	}
+        if (dataType >= CUSTOM_RTMP_MASK && dataType < CUSTOM_JSON_MASK) {
+            return "RTMP[" + (dataType - CUSTOM_RTMP_MASK) + ']';
+        }
 
-	/**
-	 * Returns whether it is a complex data type
-	 *
-	 * @param type           Data type as byte
-	 * @return boolean       <code>true</code> if data type is complex (non-primitive), <code>false</code> otherwise
-	 */
-	public static boolean isComplexType(byte type) {
-		return type >= CORE_ARRAY || type <= CORE_OBJECT;
-	}
+        if (dataType >= CUSTOM_JSON_MASK && dataType < CUSTOM_XML_MASK) {
+            return "JSON[" + (dataType - CUSTOM_JSON_MASK) + ']';
+        }
 
-	/**
-	 * Returns whether it is a custom data type
-	 *
-	 * @param type           Data type as byte
-	 * @return boolean       Whether given type is of custom type
-	 */
-	public static boolean isCustomType(byte type) {
-		return type >= CUSTOM_AMF_MASK;
-	}
+        return "XML[" + (dataType - CUSTOM_XML_MASK) + ']';
+
+    }
+
+    /**
+     * Returns whether it is a basic data type
+     *
+     * @param type
+     *            Data type as byte
+     * @return boolean <code>true</code> if data type is primitive, <code>false</code> otherwise
+     */
+    public static boolean isBasicType(byte type) {
+        return type <= CORE_DATE;
+    }
+
+    /**
+     * Returns whether it is a complex data type
+     *
+     * @param type
+     *            Data type as byte
+     * @return boolean <code>true</code> if data type is complex (non-primitive), <code>false</code> otherwise
+     */
+    public static boolean isComplexType(byte type) {
+        return type >= CORE_ARRAY || type <= CORE_OBJECT;
+    }
+
+    /**
+     * Returns whether it is a custom data type
+     *
+     * @param type
+     *            Data type as byte
+     * @return boolean Whether given type is of custom type
+     */
+    public static boolean isCustomType(byte type) {
+        return type >= CUSTOM_AMF_MASK;
+    }
 
 }

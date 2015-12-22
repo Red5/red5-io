@@ -29,117 +29,118 @@ import org.red5.io.object.Serializer;
 
 /**
  * Implementation of the IDataOutput interface. Can be used to store an IExternalizable object.
- *  
+ * 
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
  * 
  */
 public class DataOutput implements IDataOutput {
 
-	/** The output stream */
-	private Output output;
+    /** The output stream */
+    private Output output;
 
-	/** Raw data of output destination */
-	private IoBuffer buffer;
+    /** Raw data of output destination */
+    private IoBuffer buffer;
 
-	/**
-	 * Create a new DataOutput.
-	 * 
-	 * @param output		destination to write to
-	 */
-	protected DataOutput(Output output) {
-		this.output = output;
-		buffer = output.getBuffer();
-	}
+    /**
+     * Create a new DataOutput.
+     * 
+     * @param output
+     *            destination to write to
+     */
+    protected DataOutput(Output output) {
+        this.output = output;
+        buffer = output.getBuffer();
+    }
 
-	/** {@inheritDoc} */
-	public ByteOrder getEndian() {
-		return buffer.order();
-	}
+    /** {@inheritDoc} */
+    public ByteOrder getEndian() {
+        return buffer.order();
+    }
 
-	/** {@inheritDoc} */
-	public void setEndian(ByteOrder endian) {
-		buffer.order(endian);
-	}
+    /** {@inheritDoc} */
+    public void setEndian(ByteOrder endian) {
+        buffer.order(endian);
+    }
 
-	/** {@inheritDoc} */
-	public void writeBoolean(boolean value) {
-		buffer.put((byte) (value ? 1 : 0));
-	}
+    /** {@inheritDoc} */
+    public void writeBoolean(boolean value) {
+        buffer.put((byte) (value ? 1 : 0));
+    }
 
-	/** {@inheritDoc} */
-	public void writeByte(byte value) {
-		buffer.put(value);
-	}
+    /** {@inheritDoc} */
+    public void writeByte(byte value) {
+        buffer.put(value);
+    }
 
-	/** {@inheritDoc} */
-	public void writeBytes(byte[] bytes) {
-		buffer.put(bytes);
-	}
+    /** {@inheritDoc} */
+    public void writeBytes(byte[] bytes) {
+        buffer.put(bytes);
+    }
 
-	/** {@inheritDoc} */
-	public void writeBytes(byte[] bytes, int offset) {
-		buffer.put(bytes, offset, bytes.length - offset);
-	}
+    /** {@inheritDoc} */
+    public void writeBytes(byte[] bytes, int offset) {
+        buffer.put(bytes, offset, bytes.length - offset);
+    }
 
-	/** {@inheritDoc} */
-	public void writeBytes(byte[] bytes, int offset, int length) {
-		buffer.put(bytes, offset, length);
-	}
+    /** {@inheritDoc} */
+    public void writeBytes(byte[] bytes, int offset, int length) {
+        buffer.put(bytes, offset, length);
+    }
 
-	/** {@inheritDoc} */
-	public void writeDouble(double value) {
-		buffer.putDouble(value);
-	}
+    /** {@inheritDoc} */
+    public void writeDouble(double value) {
+        buffer.putDouble(value);
+    }
 
-	/** {@inheritDoc} */
-	public void writeFloat(float value) {
-		buffer.putFloat(value);
-	}
+    /** {@inheritDoc} */
+    public void writeFloat(float value) {
+        buffer.putFloat(value);
+    }
 
-	/** {@inheritDoc} */
-	public void writeInt(int value) {
-		buffer.putInt(value);
-	}
+    /** {@inheritDoc} */
+    public void writeInt(int value) {
+        buffer.putInt(value);
+    }
 
-	/** {@inheritDoc} */
-	public void writeMultiByte(String value, String encoding) {
-		final Charset cs = Charset.forName(encoding);
-		final ByteBuffer strBuf = cs.encode(value);
-		buffer.put(strBuf);
-	}
+    /** {@inheritDoc} */
+    public void writeMultiByte(String value, String encoding) {
+        final Charset cs = Charset.forName(encoding);
+        final ByteBuffer strBuf = cs.encode(value);
+        buffer.put(strBuf);
+    }
 
-	/** {@inheritDoc} */
-	public void writeObject(Object value) {
-		Serializer.serialize(output, value);
-	}
+    /** {@inheritDoc} */
+    public void writeObject(Object value) {
+        Serializer.serialize(output, value);
+    }
 
-	/** {@inheritDoc} */
-	public void writeShort(short value) {
-		buffer.putShort(value);
-	}
+    /** {@inheritDoc} */
+    public void writeShort(short value) {
+        buffer.putShort(value);
+    }
 
-	/** {@inheritDoc} */
-	public void writeUnsignedInt(long value) {
-		buffer.putInt((int) value);
-	}
+    /** {@inheritDoc} */
+    public void writeUnsignedInt(long value) {
+        buffer.putInt((int) value);
+    }
 
-	/** {@inheritDoc} */
-	public void writeUTF(String value) {
-		// fix from issue #97
-		try {
-			byte[] strBuf = value.getBytes(AMF.CHARSET.name());
-			buffer.putShort((short) strBuf.length);
-			buffer.put(strBuf);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-	}
+    /** {@inheritDoc} */
+    public void writeUTF(String value) {
+        // fix from issue #97
+        try {
+            byte[] strBuf = value.getBytes(AMF.CHARSET.name());
+            buffer.putShort((short) strBuf.length);
+            buffer.put(strBuf);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/** {@inheritDoc} */
-	public void writeUTFBytes(String value) {
-		final java.nio.ByteBuffer strBuf = AMF.CHARSET.encode(value);
-		buffer.put(strBuf);
-	}
+    /** {@inheritDoc} */
+    public void writeUTFBytes(String value) {
+        final java.nio.ByteBuffer strBuf = AMF.CHARSET.encode(value);
+        buffer.put(strBuf);
+    }
 
 }

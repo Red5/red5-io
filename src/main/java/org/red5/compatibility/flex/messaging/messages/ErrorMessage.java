@@ -26,16 +26,16 @@ package org.red5.compatibility.flex.messaging.messages;
  */
 public class ErrorMessage extends AsyncMessage {
 
-	private static final long serialVersionUID = -9069412644250075809L;
+    private static final long serialVersionUID = -9069412644250075809L;
 
-	public String faultCode;
-	
-	public String faultDetail;
-	
-	public String faultString;
+    public String faultCode;
 
-	public Object rootCause;
-	
-	public Object extendedData;
-	
+    public String faultDetail;
+
+    public String faultString;
+
+    public Object rootCause;
+
+    public Object extendedData;
+
 }

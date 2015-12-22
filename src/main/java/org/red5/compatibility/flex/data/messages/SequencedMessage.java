@@ -30,23 +30,23 @@ import org.red5.compatibility.flex.messaging.messages.AsyncMessage;
  */
 public class SequencedMessage extends AsyncMessage {
 
-	private static final long serialVersionUID = 5607350918278510061L;
+    private static final long serialVersionUID = 5607350918278510061L;
 
-	public long sequenceId;
-	
-	public Object sequenceProxies;
-	
-	public long sequenceSize;
-	
-	public String dataMessage;
+    public long sequenceId;
 
-	/** {@inheritDoc} */
-	protected void addParameters(StringBuilder result) {
-		super.addParameters(result);
-		result.append(",sequenceId="+sequenceId);
-		result.append(",sequenceProxies="+sequenceProxies);
-		result.append(",sequenceSize="+sequenceSize);
-		result.append(",dataMessage="+dataMessage);
-	}
+    public Object sequenceProxies;
+
+    public long sequenceSize;
+
+    public String dataMessage;
+
+    /** {@inheritDoc} */
+    protected void addParameters(StringBuilder result) {
+        super.addParameters(result);
+        result.append(",sequenceId=" + sequenceId);
+        result.append(",sequenceProxies=" + sequenceProxies);
+        result.append(",sequenceSize=" + sequenceSize);
+        result.append(",dataMessage=" + dataMessage);
+    }
 
 }

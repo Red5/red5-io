@@ -30,42 +30,42 @@ import org.slf4j.LoggerFactory;
  * 
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
- * @author Paul Gregoire (mondain@gmail.com) 
+ * @author Paul Gregoire (mondain@gmail.com)
  */
 public class AcknowledgeMessage extends AsyncMessage {
 
-	private static final long serialVersionUID = 228072709981643313L;
+    private static final long serialVersionUID = 228072709981643313L;
 
-	static Logger log = LoggerFactory.getLogger(AcknowledgeMessage.class);
+    static Logger log = LoggerFactory.getLogger(AcknowledgeMessage.class);
 
-	public AcknowledgeMessage() {
-		this.messageId = UUID.randomUUID().toString();
-		this.timestamp = System.currentTimeMillis();
-	}
+    public AcknowledgeMessage() {
+        this.messageId = UUID.randomUUID().toString();
+        this.timestamp = System.currentTimeMillis();
+    }
 
-	@Override
-	public void readExternal(IDataInput in) {
-		super.readExternal(in);
-		short[] flagsArray = readFlags(in);
-		for (int i = 0; i < flagsArray.length; ++i) {
-			short flags = flagsArray[i];
-			short reservedPosition = 0;
-			if (flags >> reservedPosition == 0) {
-				continue;
-			}
-			for (short j = reservedPosition; j < 6; j = (short) (j + 1)) {
-				if ((flags >> j & 0x1) == 0) {
-					continue;
-				}
-				in.readObject();
-			}
-		}
-	}
+    @Override
+    public void readExternal(IDataInput in) {
+        super.readExternal(in);
+        short[] flagsArray = readFlags(in);
+        for (int i = 0; i < flagsArray.length; ++i) {
+            short flags = flagsArray[i];
+            short reservedPosition = 0;
+            if (flags >> reservedPosition == 0) {
+                continue;
+            }
+            for (short j = reservedPosition; j < 6; j = (short) (j + 1)) {
+                if ((flags >> j & 0x1) == 0) {
+                    continue;
+                }
+                in.readObject();
+            }
+        }
+    }
 
-	@Override
-	public void writeExternal(IDataOutput output) {
-		super.writeExternal(output);
-		output.writeByte((byte) 0);
-	}
+    @Override
+    public void writeExternal(IDataOutput output) {
+        super.writeExternal(output);
+        output.writeByte((byte) 0);
+    }
 
 }

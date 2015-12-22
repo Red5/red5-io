@@ -32,49 +32,49 @@ import org.red5.io.sctp.packet.SctpPacket;
 
 public class CookieEcho extends Chunk {
 
-	private byte[] cookie;
+    private byte[] cookie;
 
-	public CookieEcho(byte[] data, int offset, int length) throws SctpException {
-		super(data, offset, length);
-		cookie = new byte[length - super.getSize()];
-		System.arraycopy(data, offset, cookie, 0, cookie.length);
-	}
+    public CookieEcho(byte[] data, int offset, int length) throws SctpException {
+        super(data, offset, length);
+        cookie = new byte[length - super.getSize()];
+        System.arraycopy(data, offset, cookie, 0, cookie.length);
+    }
 
-	public CookieEcho(byte[] cookie) {
-		super(ChunkType.COOKIE_ECHO, (byte) 0x00);
-		this.cookie = cookie;
-	}
+    public CookieEcho(byte[] cookie) {
+        super(ChunkType.COOKIE_ECHO, (byte) 0x00);
+        this.cookie = cookie;
+    }
 
-	@Override
-	public byte[] getBytes() {
-		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(super.getSize() + cookie.length);
-		byte[] data = super.getBytes();
-		byteBuffer.put(data);
-		byteBuffer.put(cookie);
+    @Override
+    public byte[] getBytes() {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(super.getSize() + cookie.length);
+        byte[] data = super.getBytes();
+        byteBuffer.put(data);
+        byteBuffer.put(cookie);
 
-		byteBuffer.clear();
-		byte[] result = new byte[byteBuffer.capacity()];
-		byteBuffer.get(result, 0, result.length);
-		return result;
-	}
+        byteBuffer.clear();
+        byte[] result = new byte[byteBuffer.capacity()];
+        byteBuffer.get(result, 0, result.length);
+        return result;
+    }
 
-	@Override
-	public void apply(IAssociationControl channel) throws SctpException, IOException {
-	}
+    @Override
+    public void apply(IAssociationControl channel) throws SctpException, IOException {
+    }
 
-	@Override
-	public void apply(InetSocketAddress address, IServerChannelControl server) throws SctpException, InvalidKeyException, NoSuchAlgorithmException, IOException {
-		// validate state cookie info
-		StateCookie stateCookie = new StateCookie(cookie, 0, cookie.length);
-		if (stateCookie.isValid(server.getMac())) {
-			// create channel & send cookie ack
-			server.addPendingChannel(address, stateCookie.getInitialTSN(), stateCookie.getVerificationTag());
-			IAssociationControl channel = server.getPendingChannel(address);
-			CookieAck cookieAck = new CookieAck();
-			@SuppressWarnings("unused")
+    @Override
+    public void apply(InetSocketAddress address, IServerChannelControl server) throws SctpException, InvalidKeyException, NoSuchAlgorithmException, IOException {
+        // validate state cookie info
+        StateCookie stateCookie = new StateCookie(cookie, 0, cookie.length);
+        if (stateCookie.isValid(server.getMac())) {
+            // create channel & send cookie ack
+            server.addPendingChannel(address, stateCookie.getInitialTSN(), stateCookie.getVerificationTag());
+            IAssociationControl channel = server.getPendingChannel(address);
+            CookieAck cookieAck = new CookieAck();
+            @SuppressWarnings("unused")
             SctpPacket packet = new SctpPacket((short) server.getPort(), (short) address.getPort(), stateCookie.getVerificationTag(), cookieAck);
-			channel.setState(State.ESTABLISHED);
-		}
-	}
+            channel.setState(State.ESTABLISHED);
+        }
+    }
 
 }

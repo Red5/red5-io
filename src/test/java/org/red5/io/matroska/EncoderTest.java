@@ -39,130 +39,141 @@ import org.red5.io.matroska.dtd.UnsignedIntegerTag;
  *
  */
 public class EncoderTest {
-	/**
-	 * tests if created and parsed {@link Tag}s have same IDs
-	 * 
-	 * @throws IOException - in case of any IO errors
-	 * @throws ConverterException - in case of any errors during conversion
-	 */
-	@Test
-	public void testCreateTags() throws IOException, ConverterException {
-		InputStream inputStream = new ByteArrayInputStream(ParserTest.ebmlTagBytes);
-		Tag ebml1 = ParserUtils.parseTag(inputStream);
-		Tag ebml2 = TagFactory.createTag("EBML");
-		assertEquals("EBML:: IDs are not equals", ebml1.getId(), ebml2.getId());
-		
-		inputStream = new ByteArrayInputStream(ParserTest.ebmlVersionTagBytes);
-		Tag ebmlV1 = ParserUtils.parseTag(inputStream);
-		Tag ebmlV2 = TagFactory.createTag("EBMLVersion");
-		assertEquals("EBMLVersion:: IDs are not equals", ebmlV1.getId(), ebmlV2.getId());
+    /**
+     * tests if created and parsed {@link Tag}s have same IDs
+     * 
+     * @throws IOException
+     *             - in case of any IO errors
+     * @throws ConverterException
+     *             - in case of any errors during conversion
+     */
+    @Test
+    public void testCreateTags() throws IOException, ConverterException {
+        InputStream inputStream = new ByteArrayInputStream(ParserTest.ebmlTagBytes);
+        Tag ebml1 = ParserUtils.parseTag(inputStream);
+        Tag ebml2 = TagFactory.createTag("EBML");
+        assertEquals("EBML:: IDs are not equals", ebml1.getId(), ebml2.getId());
 
-		inputStream = new ByteArrayInputStream(ParserTest.trackEntryTagBytes);
-		Tag te1 = ParserUtils.parseTag(inputStream);
-		Tag te2 = TagFactory.createTag("TrackEntry");
-		assertEquals("TrackEntry:: IDs are not equals", te1.getId(), te2.getId());
-	}
-	
-	/**
-	 * tests if manually created and encoded "master" {@link Tag} can be parsed successfully
-	 * 
-	 * @throws IOException - in case of any IO errors
-	 * @throws ConverterException - in case of any errors during conversion
-	 */
-	@Test
-	public void testEncodeTagEBML() throws IOException, ConverterException {
-		CompoundTag t = TagFactory.<CompoundTag>create("EBML")
-				.add(TagFactory.<UnsignedIntegerTag>create("EBMLVersion").setValue(1));
-		
-		InputStream is = new ByteArrayInputStream(t.encode());
-		CompoundTag tag = (CompoundTag) ParserUtils.parseTag(is);
-		assertEquals("TrackEntry:: wrong tag was read", "EBML", tag.getName());
-		
-		tag.parse(is);
-		assertEquals("TrackEntry:: wrong size of tag", 1, tag.getNumberOfSubElements());
-		UnsignedIntegerTag ebmlVersion = (UnsignedIntegerTag) tag.get("EBMLVersion");
-		ebmlVersion.parse();
-		assertEquals("TrackEntry:: wrong sub tag was read", "EBMLVersion", ebmlVersion.getName());
-		assertEquals("TrackEntry:: wrong sub tag was read", 1, ebmlVersion.getValue());
-	}
+        inputStream = new ByteArrayInputStream(ParserTest.ebmlVersionTagBytes);
+        Tag ebmlV1 = ParserUtils.parseTag(inputStream);
+        Tag ebmlV2 = TagFactory.createTag("EBMLVersion");
+        assertEquals("EBMLVersion:: IDs are not equals", ebmlV1.getId(), ebmlV2.getId());
 
-	/**
-	 * tests if manually created and encoded "uint" {@link Tag} can be parsed successfully
-	 * 
-	 * @throws IOException - in case of any IO errors
-	 * @throws ConverterException - in case of any errors during conversion
-	 */
-	@Test
-	public void testEncodeTagUint() throws IOException, ConverterException {
-		int[] vals = {0, 1, 500, 17000, 3000000, 250000000};
-		for (int i = 0; i < vals.length; ++i) {
-			UnsignedIntegerTag t = TagFactory.<UnsignedIntegerTag>create("EBMLVersion").setValue(vals[i]);
-			
-			InputStream is = new ByteArrayInputStream(t.encode());
-			Tag tag = ParserUtils.parseTag(is);
-			tag.parse();
-			assertEquals("EBML:: IDs are not equals", t.getId(), tag.getId());
-			assertEquals("EBML:: Values are not equals", t.getValue(), ((UnsignedIntegerTag)tag).getValue());
-		}
-	}
+        inputStream = new ByteArrayInputStream(ParserTest.trackEntryTagBytes);
+        Tag te1 = ParserUtils.parseTag(inputStream);
+        Tag te2 = TagFactory.createTag("TrackEntry");
+        assertEquals("TrackEntry:: IDs are not equals", te1.getId(), te2.getId());
+    }
 
-	/**
-	 * tests if manually created and encoded "string" {@link Tag} can be parsed successfully
-	 * 
-	 * @throws IOException - in case of any IO errors
-	 * @throws ConverterException - in case of any errors during conversion
-	 */
-	@Test
-	public void testEncodeTagString() throws IOException, ConverterException {
-		String[] vals = {null, "", "abcd", "Some examples of the encoding of integers of width 1 to 4", "A\u00ea\u00f1\u00fcC"};
-		for (int i = 0; i < vals.length; ++i) {
-			StringTag t = TagFactory.<StringTag>create("DocType").setValue(vals[i]);
-			
-			InputStream is = new ByteArrayInputStream(t.encode());
-			Tag tag = ParserUtils.parseTag(is);
-			tag.parse();
-			assertEquals("EBML:: IDs are not equals", t.getId(), tag.getId());
-			assertEquals("EBML:: Values are not equals", t.getValue(), ((StringTag)tag).getValue());
-		}
-	}
-	
-	/**
-	 * tests if manually created and encoded "double" {@link Tag} can be parsed successfully
-	 * 
-	 * @throws IOException - in case of any IO errors
-	 * @throws ConverterException - in case of any errors during conversion
-	 */
-	@Test
-	public void testEncodeTagDouble() throws IOException, ConverterException {
-		double[] vals = {0, .1, 500.12345, Double.MIN_NORMAL, Double.MAX_VALUE};
-		for (int i = 0; i < vals.length; ++i) {
-			FloatTag t = TagFactory.<FloatTag>create("Duration").setValue(vals[i]);
-			
-			InputStream is = new ByteArrayInputStream(t.encode());
-			Tag tag = ParserUtils.parseTag(is);
-			tag.parse();
-			assertEquals("EBML:: IDs are not equals", t.getId(), tag.getId());
-			assertEquals("EBML:: Values are not equals", t.getValue(), ((FloatTag)tag).getValue(), 1e-10);
-		}
-	}
-	
-	/**
-	 * tests if manually created and encoded "date" {@link Tag} can be parsed successfully
-	 * 
-	 * @throws IOException - in case of any IO errors
-	 * @throws ConverterException - in case of any errors during conversion
-	 */
-	@Test
-	public void testEncodeTagDate() throws IOException, ConverterException {
-		Date[] vals = {new Date()};
-		for (int i = 0; i < vals.length; ++i) {
-			DateTag t = TagFactory.<DateTag>create("DateUTC").setValue(vals[i]);
-			
-			InputStream is = new ByteArrayInputStream(t.encode());
-			Tag tag = ParserUtils.parseTag(is);
-			tag.parse();
-			assertEquals("EBML:: IDs are not equals", t.getId(), tag.getId());
-			assertEquals("EBML:: Values are not equals", t.getValue(), ((DateTag)tag).getValue(), 1e-10);
-		}
-	}
+    /**
+     * tests if manually created and encoded "master" {@link Tag} can be parsed successfully
+     * 
+     * @throws IOException
+     *             - in case of any IO errors
+     * @throws ConverterException
+     *             - in case of any errors during conversion
+     */
+    @Test
+    public void testEncodeTagEBML() throws IOException, ConverterException {
+        CompoundTag t = TagFactory.<CompoundTag> create("EBML").add(TagFactory.<UnsignedIntegerTag> create("EBMLVersion").setValue(1));
+
+        InputStream is = new ByteArrayInputStream(t.encode());
+        CompoundTag tag = (CompoundTag) ParserUtils.parseTag(is);
+        assertEquals("TrackEntry:: wrong tag was read", "EBML", tag.getName());
+
+        tag.parse(is);
+        assertEquals("TrackEntry:: wrong size of tag", 1, tag.getNumberOfSubElements());
+        UnsignedIntegerTag ebmlVersion = (UnsignedIntegerTag) tag.get("EBMLVersion");
+        ebmlVersion.parse();
+        assertEquals("TrackEntry:: wrong sub tag was read", "EBMLVersion", ebmlVersion.getName());
+        assertEquals("TrackEntry:: wrong sub tag was read", 1, ebmlVersion.getValue());
+    }
+
+    /**
+     * tests if manually created and encoded "uint" {@link Tag} can be parsed successfully
+     * 
+     * @throws IOException
+     *             - in case of any IO errors
+     * @throws ConverterException
+     *             - in case of any errors during conversion
+     */
+    @Test
+    public void testEncodeTagUint() throws IOException, ConverterException {
+        int[] vals = { 0, 1, 500, 17000, 3000000, 250000000 };
+        for (int i = 0; i < vals.length; ++i) {
+            UnsignedIntegerTag t = TagFactory.<UnsignedIntegerTag> create("EBMLVersion").setValue(vals[i]);
+
+            InputStream is = new ByteArrayInputStream(t.encode());
+            Tag tag = ParserUtils.parseTag(is);
+            tag.parse();
+            assertEquals("EBML:: IDs are not equals", t.getId(), tag.getId());
+            assertEquals("EBML:: Values are not equals", t.getValue(), ((UnsignedIntegerTag) tag).getValue());
+        }
+    }
+
+    /**
+     * tests if manually created and encoded "string" {@link Tag} can be parsed successfully
+     * 
+     * @throws IOException
+     *             - in case of any IO errors
+     * @throws ConverterException
+     *             - in case of any errors during conversion
+     */
+    @Test
+    public void testEncodeTagString() throws IOException, ConverterException {
+        String[] vals = { null, "", "abcd", "Some examples of the encoding of integers of width 1 to 4", "A\u00ea\u00f1\u00fcC" };
+        for (int i = 0; i < vals.length; ++i) {
+            StringTag t = TagFactory.<StringTag> create("DocType").setValue(vals[i]);
+
+            InputStream is = new ByteArrayInputStream(t.encode());
+            Tag tag = ParserUtils.parseTag(is);
+            tag.parse();
+            assertEquals("EBML:: IDs are not equals", t.getId(), tag.getId());
+            assertEquals("EBML:: Values are not equals", t.getValue(), ((StringTag) tag).getValue());
+        }
+    }
+
+    /**
+     * tests if manually created and encoded "double" {@link Tag} can be parsed successfully
+     * 
+     * @throws IOException
+     *             - in case of any IO errors
+     * @throws ConverterException
+     *             - in case of any errors during conversion
+     */
+    @Test
+    public void testEncodeTagDouble() throws IOException, ConverterException {
+        double[] vals = { 0, .1, 500.12345, Double.MIN_NORMAL, Double.MAX_VALUE };
+        for (int i = 0; i < vals.length; ++i) {
+            FloatTag t = TagFactory.<FloatTag> create("Duration").setValue(vals[i]);
+
+            InputStream is = new ByteArrayInputStream(t.encode());
+            Tag tag = ParserUtils.parseTag(is);
+            tag.parse();
+            assertEquals("EBML:: IDs are not equals", t.getId(), tag.getId());
+            assertEquals("EBML:: Values are not equals", t.getValue(), ((FloatTag) tag).getValue(), 1e-10);
+        }
+    }
+
+    /**
+     * tests if manually created and encoded "date" {@link Tag} can be parsed successfully
+     * 
+     * @throws IOException
+     *             - in case of any IO errors
+     * @throws ConverterException
+     *             - in case of any errors during conversion
+     */
+    @Test
+    public void testEncodeTagDate() throws IOException, ConverterException {
+        Date[] vals = { new Date() };
+        for (int i = 0; i < vals.length; ++i) {
+            DateTag t = TagFactory.<DateTag> create("DateUTC").setValue(vals[i]);
+
+            InputStream is = new ByteArrayInputStream(t.encode());
+            Tag tag = ParserUtils.parseTag(is);
+            tag.parse();
+            assertEquals("EBML:: IDs are not equals", t.getId(), tag.getId());
+            assertEquals("EBML:: Values are not equals", t.getValue(), ((DateTag) tag).getValue(), 1e-10);
+        }
+    }
 }

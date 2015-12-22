@@ -25,11 +25,13 @@ import java.util.HashMap;
  * 
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
- * @param <K> key type
- * @param <V> value type
+ * @param <K>
+ *            key type
+ * @param <V>
+ *            value type
  */
 public class ObjectMap<K, V> extends HashMap<K, V> {
 
-	private static final long serialVersionUID = 5146266119400305646L;
+    private static final long serialVersionUID = 5146266119400305646L;
 
 }

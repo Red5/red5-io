@@ -28,6 +28,6 @@ import org.red5.io.IStreamableFile;
  */
 public interface IMP3 extends IStreamableFile {
 
-	// TODO: add more methods
+    // TODO: add more methods
 
 }

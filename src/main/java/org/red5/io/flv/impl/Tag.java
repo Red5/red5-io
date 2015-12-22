@@ -31,195 +31,203 @@ import org.red5.io.ITag;
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
  */
 public class Tag implements ITag {
-	
-	/**
-	 * Tag type
-	 */
-	private byte type;
 
-	/**
-	 * Tag data type
-	 */
-	private byte dataType;
+    /**
+     * Tag type
+     */
+    private byte type;
 
-	/**
-	 * Timestamp
-	 */
-	private int timestamp;
+    /**
+     * Tag data type
+     */
+    private byte dataType;
 
-	/**
-	 * Tag body size
-	 */
-	private int bodySize;
+    /**
+     * Timestamp
+     */
+    private int timestamp;
 
-	/**
-	 * Tag body as byte buffer
-	 */
-	private IoBuffer body;
+    /**
+     * Tag body size
+     */
+    private int bodySize;
 
-	/**
-	 * Previous tag size
-	 */
-	private int previousTagSize;
+    /**
+     * Tag body as byte buffer
+     */
+    private IoBuffer body;
 
-	/**
-	 * Bit flags
-	 */
-	private byte bitflags;
+    /**
+     * Previous tag size
+     */
+    private int previousTagSize;
 
-	/**
-	 * TagImpl Constructor
-	 * 
-	 * @param dataType              Tag data type
-	 * @param timestamp             Timestamp
-	 * @param bodySize              Tag body size
-	 * @param body                  Tag body
-	 * @param previousTagSize       Previous tag size information
-	 */
-	public Tag(byte dataType, int timestamp, int bodySize, IoBuffer body, int previousTagSize) {
-		this.dataType = dataType;
-		this.timestamp = timestamp;
-		this.bodySize = bodySize;
-		this.body = body;
-		this.previousTagSize = previousTagSize;
-	}
+    /**
+     * Bit flags
+     */
+    private byte bitflags;
 
-	/** Constructs a new Tag. */
-	public Tag() {
+    /**
+     * TagImpl Constructor
+     * 
+     * @param dataType
+     *            Tag data type
+     * @param timestamp
+     *            Timestamp
+     * @param bodySize
+     *            Tag body size
+     * @param body
+     *            Tag body
+     * @param previousTagSize
+     *            Previous tag size information
+     */
+    public Tag(byte dataType, int timestamp, int bodySize, IoBuffer body, int previousTagSize) {
+        this.dataType = dataType;
+        this.timestamp = timestamp;
+        this.bodySize = bodySize;
+        this.body = body;
+        this.previousTagSize = previousTagSize;
+    }
 
-	}
+    /** Constructs a new Tag. */
+    public Tag() {
 
-	/**
-	 * Getter for bit flags
-	 *
-	 * @return Value for bit flags
-	 */
-	public byte getBitflags() {
-		return bitflags;
-	}
+    }
 
-	/**
-	 * Setter for bit flags
-	 *
-	 * @param bitflags  Bit flags
-	 */
-	public void setBitflags(byte bitflags) {
-		this.bitflags = bitflags;
-	}
+    /**
+     * Getter for bit flags
+     *
+     * @return Value for bit flags
+     */
+    public byte getBitflags() {
+        return bitflags;
+    }
 
-	/** {@inheritDoc}
-	 */
-	public IoBuffer getData() {
-		return null;
-	}
+    /**
+     * Setter for bit flags
+     *
+     * @param bitflags
+     *            Bit flags
+     */
+    public void setBitflags(byte bitflags) {
+        this.bitflags = bitflags;
+    }
 
-	/**
-	 * Return the body IoBuffer
-	 * 
-	 * @return         Tag body
-	 */
-	public IoBuffer getBody() {
-		return body;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public IoBuffer getData() {
+        return null;
+    }
 
-	/**
-	 * Return the size of the body
-	 * 
-	 * @return                Tag body size
-	 */
-	public int getBodySize() {
-		return bodySize;
-	}
+    /**
+     * Return the body IoBuffer
+     * 
+     * @return Tag body
+     */
+    public IoBuffer getBody() {
+        return body;
+    }
 
-	/**
-	 * Get the data type
-	 * 
-	 * @return               Tag data type
-	 */
-	public byte getDataType() {
-		return dataType;
-	}
+    /**
+     * Return the size of the body
+     * 
+     * @return Tag body size
+     */
+    public int getBodySize() {
+        return bodySize;
+    }
 
-	/**
-	 * Return the timestamp
-	 * 
-	 * @return                Tag timestamp
-	 */
-	public int getTimestamp() {
-		return timestamp;
-	}
+    /**
+     * Get the data type
+     * 
+     * @return Tag data type
+     */
+    public byte getDataType() {
+        return dataType;
+    }
 
-	/**
-	 * Return previous tag size
-	 * 
-	 * @return                Previous tag size
-	 */
-	public int getPreviousTagSize() {
-		return previousTagSize;
-	}
+    /**
+     * Return the timestamp
+     * 
+     * @return Tag timestamp
+     */
+    public int getTimestamp() {
+        return timestamp;
+    }
 
-	/**
-	 * Prints out the contents of the tag
-	 * 
-	 * @return  Tag contents
-	 */
-	@Override
-	public String toString() {
-		String ret = "Data Type\t=" + dataType + "\n";
-		ret += "Prev. Tag Size\t=" + previousTagSize + "\n";
-		ret += "Body size\t=" + bodySize + "\n";
-		ret += "timestamp\t=" + timestamp + "\n";
-		ret += "Body Data\t=" + body + "\n";
-		return ret;
-	}
+    /**
+     * Return previous tag size
+     * 
+     * @return Previous tag size
+     */
+    public int getPreviousTagSize() {
+        return previousTagSize;
+    }
 
-	/**
-	 * Getter for tag type
-	 *
-	 * @return  Tag type
-	 */
-	public byte getType() {
-		return type;
-	}
+    /**
+     * Prints out the contents of the tag
+     * 
+     * @return Tag contents
+     */
+    @Override
+    public String toString() {
+        String ret = "Data Type\t=" + dataType + "\n";
+        ret += "Prev. Tag Size\t=" + previousTagSize + "\n";
+        ret += "Body size\t=" + bodySize + "\n";
+        ret += "timestamp\t=" + timestamp + "\n";
+        ret += "Body Data\t=" + body + "\n";
+        return ret;
+    }
 
-	/**
-	 * Setter for tag type
-	 *
-	 * @param type Tag type
-	 */
-	public void setType(byte type) {
-		this.type = type;
-	}
+    /**
+     * Getter for tag type
+     *
+     * @return Tag type
+     */
+    public byte getType() {
+        return type;
+    }
 
-	/** {@inheritDoc} */
-	public void setBody(IoBuffer body) {
-		this.body = body;
-	}
+    /**
+     * Setter for tag type
+     *
+     * @param type
+     *            Tag type
+     */
+    public void setType(byte type) {
+        this.type = type;
+    }
 
-	/** {@inheritDoc} */
-	public void setBodySize(int bodySize) {
-		this.bodySize = bodySize;
-	}
+    /** {@inheritDoc} */
+    public void setBody(IoBuffer body) {
+        this.body = body;
+    }
 
-	/** {@inheritDoc} */
-	public void setDataType(byte dataType) {
-		this.dataType = dataType;
-	}
+    /** {@inheritDoc} */
+    public void setBodySize(int bodySize) {
+        this.bodySize = bodySize;
+    }
 
-	/** {@inheritDoc} */
-	public void setTimestamp(int timestamp) {
-		this.timestamp = timestamp;
-	}
+    /** {@inheritDoc} */
+    public void setDataType(byte dataType) {
+        this.dataType = dataType;
+    }
 
-	/**
-	 * Setter for tag data. Empty method.
-	 */
-	public void setData() {
-	}
+    /** {@inheritDoc} */
+    public void setTimestamp(int timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	/** {@inheritDoc} */
-	public void setPreviousTagSize(int size) {
-		this.previousTagSize = size;
-	}
+    /**
+     * Setter for tag data. Empty method.
+     */
+    public void setData() {
+    }
+
+    /** {@inheritDoc} */
+    public void setPreviousTagSize(int size) {
+        this.previousTagSize = size;
+    }
 
 }

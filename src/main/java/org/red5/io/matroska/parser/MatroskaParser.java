@@ -26,5 +26,5 @@ import org.red5.io.matroska.ConverterException;
 import org.red5.io.matroska.dtd.Tag;
 
 public interface MatroskaParser {
-	List<Tag> parse(InputStream inputStream) throws IOException, ConverterException;
+    List<Tag> parse(InputStream inputStream) throws IOException, ConverterException;
 }

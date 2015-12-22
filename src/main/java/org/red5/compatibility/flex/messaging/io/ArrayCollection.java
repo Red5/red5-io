@@ -33,144 +33,145 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Flex <code>ArrayCollection</code> compatibility class.
- *  
+ * 
  * @see <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/collections/ArrayCollection.html">ArrayCollection</a>
- *  
+ * 
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
  * @author Paul Gregoire (mondain@gmail.com)
- * @param <T> type of collection elements
+ * @param <T>
+ *            type of collection elements
  */
 public class ArrayCollection<T> implements Collection<T>, List<T>, IExternalizable {
 
-	private static final Logger log = LoggerFactory.getLogger(ArrayCollection.class);
+    private static final Logger log = LoggerFactory.getLogger(ArrayCollection.class);
 
-	private ArrayList<T> source;
+    private ArrayList<T> source;
 
-	public ArrayCollection() {
-		this.source = new ArrayList<T>();
-	}
+    public ArrayCollection() {
+        this.source = new ArrayList<T>();
+    }
 
-	public ArrayCollection(T[] source) {
-		this.source = new ArrayList<T>(source.length);
-		this.source.addAll(Arrays.asList(source));
-	}
+    public ArrayCollection(T[] source) {
+        this.source = new ArrayList<T>(source.length);
+        this.source.addAll(Arrays.asList(source));
+    }
 
-	public void setSource(T[] source) {
-		this.source = new ArrayList<T>(source.length);
-		this.source.addAll(Arrays.asList(source));		
-	}
-	
-	public int size() {
-		return source.size();
-	}
+    public void setSource(T[] source) {
+        this.source = new ArrayList<T>(source.length);
+        this.source.addAll(Arrays.asList(source));
+    }
 
-	public boolean isEmpty() {
-		return source == null ? true : source.isEmpty();
-	}
+    public int size() {
+        return source.size();
+    }
 
-	public boolean contains(Object o) {
-		return source.contains(o);
-	}
+    public boolean isEmpty() {
+        return source == null ? true : source.isEmpty();
+    }
 
-	public Iterator<T> iterator() {
-		return source.iterator();
-	}
+    public boolean contains(Object o) {
+        return source.contains(o);
+    }
 
-	@SuppressWarnings("unchecked")
-	public T[] toArray() {
-		return (T[]) source.toArray();
-	}
+    public Iterator<T> iterator() {
+        return source.iterator();
+    }
 
-	@SuppressWarnings("hiding")
-	public <T> T[] toArray(T[] a) {
-		return source.toArray(a);
-	}
+    @SuppressWarnings("unchecked")
+    public T[] toArray() {
+        return (T[]) source.toArray();
+    }
 
-	public boolean add(T e) {
-		return source.add(e);
-	}
+    @SuppressWarnings("hiding")
+    public <T> T[] toArray(T[] a) {
+        return source.toArray(a);
+    }
 
-	public boolean remove(Object o) {
-		return source.remove(o);
-	}
+    public boolean add(T e) {
+        return source.add(e);
+    }
 
-	public boolean containsAll(Collection<?> c) {
-		return source.containsAll(c);
-	}
+    public boolean remove(Object o) {
+        return source.remove(o);
+    }
 
-	public boolean addAll(Collection<? extends T> c) {
-		return source.addAll(c);
-	}
+    public boolean containsAll(Collection<?> c) {
+        return source.containsAll(c);
+    }
 
-	public boolean removeAll(Collection<?> c) {
-		return source.removeAll(c);
-	}
+    public boolean addAll(Collection<? extends T> c) {
+        return source.addAll(c);
+    }
 
-	public boolean retainAll(Collection<?> c) {
-		return source.retainAll(c);
-	}
+    public boolean removeAll(Collection<?> c) {
+        return source.removeAll(c);
+    }
 
-	public void clear() {
-		if (source != null) {
-			source.clear();
-		}
-	}
+    public boolean retainAll(Collection<?> c) {
+        return source.retainAll(c);
+    }
 
-	public boolean addAll(int index, Collection<? extends T> c) {
-		return source.addAll(index, c);
-	}
+    public void clear() {
+        if (source != null) {
+            source.clear();
+        }
+    }
 
-	public T get(int index) {
-		return source.get(index);
-	}
+    public boolean addAll(int index, Collection<? extends T> c) {
+        return source.addAll(index, c);
+    }
 
-	public T set(int index, T element) {
-		return source.set(index, element);
-	}
+    public T get(int index) {
+        return source.get(index);
+    }
 
-	public void add(int index, T element) {
-		source.add(index, element);
-	}
+    public T set(int index, T element) {
+        return source.set(index, element);
+    }
 
-	public T remove(int index) {
-		return source.remove(index);
-	}
+    public void add(int index, T element) {
+        source.add(index, element);
+    }
 
-	public int indexOf(Object o) {
-		return source.indexOf(o);
-	}
+    public T remove(int index) {
+        return source.remove(index);
+    }
 
-	public int lastIndexOf(Object o) {
-		return source.lastIndexOf(o);
-	}
+    public int indexOf(Object o) {
+        return source.indexOf(o);
+    }
 
-	public ListIterator<T> listIterator() {
-		return source.listIterator();
-	}
+    public int lastIndexOf(Object o) {
+        return source.lastIndexOf(o);
+    }
 
-	public ListIterator<T> listIterator(int index) {
-		return source.listIterator(index);
-	}
+    public ListIterator<T> listIterator() {
+        return source.listIterator();
+    }
 
-	public List<T> subList(int fromIndex, int toIndex) {
-		return source.subList(fromIndex, toIndex);
-	}	
+    public ListIterator<T> listIterator(int index) {
+        return source.listIterator(index);
+    }
 
-	@SuppressWarnings("unchecked")
-	public void readExternal(IDataInput input) {
-		log.debug("readExternal");
-		if (source == null) {
-			source = (ArrayList<T>) input.readObject();
-		} else {
-			source.clear();
-			source.addAll((ArrayList<T>) input.readObject());
-		}
-	}
+    public List<T> subList(int fromIndex, int toIndex) {
+        return source.subList(fromIndex, toIndex);
+    }
 
-	public void writeExternal(IDataOutput output) {
-		log.debug("writeExternal");
-		output.writeObject(source);
-	}
+    @SuppressWarnings("unchecked")
+    public void readExternal(IDataInput input) {
+        log.debug("readExternal");
+        if (source == null) {
+            source = (ArrayList<T>) input.readObject();
+        } else {
+            source.clear();
+            source.addAll((ArrayList<T>) input.readObject());
+        }
+    }
+
+    public void writeExternal(IDataOutput output) {
+        log.debug("writeExternal");
+        output.writeObject(source);
+    }
 
 }

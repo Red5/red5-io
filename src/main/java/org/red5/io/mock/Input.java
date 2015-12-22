@@ -32,130 +32,130 @@ import org.w3c.dom.Document;
 
 public class Input extends BaseInput implements org.red5.io.object.Input {
 
-	protected static Logger log = LoggerFactory.getLogger(Input.class);
+    protected static Logger log = LoggerFactory.getLogger(Input.class);
 
-	protected List<Object> list;
+    protected List<Object> list;
 
-	protected int idx;
+    protected int idx;
 
-	public Input(List<Object> list) {
-		super();
-		this.list = list;
-		this.idx = 0;
-	}
+    public Input(List<Object> list) {
+        super();
+        this.list = list;
+        this.idx = 0;
+    }
 
-	/**
-	 * Getter for property 'next'.
-	 *
-	 * @return Value for property 'next'.
-	 */
-	protected Object getNext() {
-		return list.get(idx++);
-	}
+    /**
+     * Getter for property 'next'.
+     *
+     * @return Value for property 'next'.
+     */
+    protected Object getNext() {
+        return list.get(idx++);
+    }
 
-	/** {@inheritDoc} */
-	public byte readDataType() {
-		Byte b = (Byte) getNext();
-		return b.byteValue();
-	}
+    /** {@inheritDoc} */
+    public byte readDataType() {
+        Byte b = (Byte) getNext();
+        return b.byteValue();
+    }
 
-	// Basic
+    // Basic
 
-	/** {@inheritDoc} */
-	public Object readNull(Type target) {
-		return null;
-	}
+    /** {@inheritDoc} */
+    public Object readNull(Type target) {
+        return null;
+    }
 
-	/** {@inheritDoc} */
-	public Boolean readBoolean(Type target) {
-		return (Boolean) getNext();
-	}
+    /** {@inheritDoc} */
+    public Boolean readBoolean(Type target) {
+        return (Boolean) getNext();
+    }
 
-	/** {@inheritDoc} */
-	public Number readNumber(Type target) {
-		return (Number) getNext();
-	}
+    /** {@inheritDoc} */
+    public Number readNumber(Type target) {
+        return (Number) getNext();
+    }
 
-	/** {@inheritDoc} */
-	public String getString() {
-		return (String) getNext();
-	}
+    /** {@inheritDoc} */
+    public String getString() {
+        return (String) getNext();
+    }
 
-	/** {@inheritDoc} */
-	public String readString(Type target) {
-		return (String) getNext();
-	}
+    /** {@inheritDoc} */
+    public String readString(Type target) {
+        return (String) getNext();
+    }
 
-	/** {@inheritDoc} */
-	public Date readDate(Type target) {
-		return (Date) getNext();
-	}
+    /** {@inheritDoc} */
+    public Date readDate(Type target) {
+        return (Date) getNext();
+    }
 
-	// Array
+    // Array
 
-	/** {@inheritDoc} */
-	public Object readArray(Type target) {
-		return getNext();
-	}
+    /** {@inheritDoc} */
+    public Object readArray(Type target) {
+        return getNext();
+    }
 
-	/** {@inheritDoc} */
-	public Object readMap(Type target) {
-		return getNext();
-	}
+    /** {@inheritDoc} */
+    public Object readMap(Type target) {
+        return getNext();
+    }
 
-	/** {@inheritDoc} */
-	@SuppressWarnings("unchecked")
-	public Map<String, Object> readKeyValues() {
-		return (Map<String, Object>) getNext();
-	}
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> readKeyValues() {
+        return (Map<String, Object>) getNext();
+    }
 
-	// Object
+    // Object
 
-	/** {@inheritDoc} */
-	public Object readObject(Type target) {
-		return getNext();
-	}
+    /** {@inheritDoc} */
+    public Object readObject(Type target) {
+        return getNext();
+    }
 
-	/** {@inheritDoc} */
-	public Document readXML(Type target) {
-		return (Document) getNext();
-	}
+    /** {@inheritDoc} */
+    public Document readXML(Type target) {
+        return (Document) getNext();
+    }
 
-	/** {@inheritDoc} */
-	public Object readCustom(Type target) {
-		// Not supported
-		return null;
-	}
+    /** {@inheritDoc} */
+    public Object readCustom(Type target) {
+        // Not supported
+        return null;
+    }
 
-	/** {@inheritDoc} */
-	public ByteArray readByteArray(Type target) {
-		return (ByteArray) getNext();
-	}
+    /** {@inheritDoc} */
+    public ByteArray readByteArray(Type target) {
+        return (ByteArray) getNext();
+    }
 
-	@SuppressWarnings("unchecked")
-	public Vector<Integer> readVectorInt() {
-		return (Vector<Integer>) getNext();
-	}
+    @SuppressWarnings("unchecked")
+    public Vector<Integer> readVectorInt() {
+        return (Vector<Integer>) getNext();
+    }
 
-	@SuppressWarnings("unchecked")
-	public Vector<Long> readVectorUInt() {
-		return (Vector<Long>) getNext();
-	}
+    @SuppressWarnings("unchecked")
+    public Vector<Long> readVectorUInt() {
+        return (Vector<Long>) getNext();
+    }
 
-	@SuppressWarnings("unchecked")
-	public Vector<Double> readVectorNumber() {
-		return (Vector<Double>) getNext();
-	}
+    @SuppressWarnings("unchecked")
+    public Vector<Double> readVectorNumber() {
+        return (Vector<Double>) getNext();
+    }
 
-	@SuppressWarnings("unchecked")
-	public Vector<Object> readVectorObject() {
-		return (Vector<Object>) getNext();
-	}
+    @SuppressWarnings("unchecked")
+    public Vector<Object> readVectorObject() {
+        return (Vector<Object>) getNext();
+    }
 
-	/** {@inheritDoc} */
-	public Object readReference(Type target) {
-		final Short num = (Short) getNext();
-		return getReference(num.shortValue());
-	}
+    /** {@inheritDoc} */
+    public Object readReference(Type target) {
+        final Short num = (Short) getNext();
+        return getReference(num.shortValue());
+    }
 
 }

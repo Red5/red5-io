@@ -28,32 +28,32 @@ import java.util.Random;
 
 public class SctpChannel {
 
-	private Association association;
+    private Association association;
 
-	public SctpChannel(Association association) {
-		this.association = association;
-	}
+    public SctpChannel(Association association) {
+        this.association = association;
+    }
 
-	public SctpChannel bind(InetSocketAddress address) throws SocketException {
-		association.setSource(new DatagramSocket(address));
-		return this;
-	}
+    public SctpChannel bind(InetSocketAddress address) throws SocketException {
+        association.setSource(new DatagramSocket(address));
+        return this;
+    }
 
-	public boolean connect(InetSocketAddress address) throws IOException, SctpException, InvalidKeyException, NoSuchAlgorithmException {
-		return association.setUp(address);
-	}
+    public boolean connect(InetSocketAddress address) throws IOException, SctpException, InvalidKeyException, NoSuchAlgorithmException {
+        return association.setUp(address);
+    }
 
-	public void send(byte[] data, int offset, int length) {
-		// TODO
-	}
+    public void send(byte[] data, int offset, int length) {
+        // TODO
+    }
 
-	public byte[] receive() {
-		// TODO
-		return null;
-	}
+    public byte[] receive() {
+        // TODO
+        return null;
+    }
 
-	public static SctpChannel open() throws SocketException {
-		return new SctpChannel(new Association(new Random(), null));
-	}
+    public static SctpChannel open() throws SocketException {
+        return new SctpChannel(new Association(new Random(), null));
+    }
 
 }

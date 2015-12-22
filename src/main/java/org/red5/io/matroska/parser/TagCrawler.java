@@ -34,92 +34,99 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class TagCrawler {
-	private static Logger log = LoggerFactory.getLogger(TagCrawler.class);
-	private final Map<String, TagHandler> handlers = new HashMap<>();
-	private final TagHandler skipHandler;
-	
-	/**
-	 * Constructor
-	 * 
-	 */
-	public TagCrawler() {
-		skipHandler = createSkipHandler();
-	}
-	
-	/**
-	 * Method to add {@link TagHandler}
-	 * 
-	 * @param name - unique name of tag handler
-	 * @param handler - handler
-	 * @return - this for chaining
-	 */
-	public TagCrawler addHandler(String name, TagHandler handler) {
-		handlers.put(name, handler);
-		return this;
-	}
+    private static Logger log = LoggerFactory.getLogger(TagCrawler.class);
 
-	/**
-	 * Method to remove {@link TagHandler}
-	 * 
-	 * @param name - unique name of tag handler
-	 * @return - this for chaining
-	 */
-	public TagCrawler removeHandler(String name) {
-		if (handlers.containsKey(name)) {
-			handlers.remove(name);
-		}
-		return this;
-	}
+    private final Map<String, TagHandler> handlers = new HashMap<>();
 
-	/**
-	 * Method to get {@link TagHandler} by tag, can be overridden to change 
-	 * the logic of handler searching
-	 * 
-	 * @param tag - tag to be handled
-	 * @return - this for chaining
-	 */
-	public TagHandler getHandler(Tag tag) {
-		if (handlers.containsKey(tag.getName())) {
-			return handlers.get(tag.getName());
-		}
-		return null;
-	}
+    private final TagHandler skipHandler;
 
-	/**
-	 * Method to create "default" handler (the one will be used if none other handlers were found)
-	 * can be overridden to change the logic
-	 * 
-	 * @return - this for chaining
-	 */
-	public TagHandler createSkipHandler() {
-		return new TagHandler() {
-			@Override
-			public void handle(Tag tag, InputStream input) throws IOException, ConverterException {
-				log.debug("Going to skip tag: " + tag.getName());
-				long size = tag.getSize();
-				while (size > 0) {
-					size -= input.skip(size);
-				}
-			}
-		};
-	}
-	
-	/**
-	 * Method to process the input stream given, will stop as soon as input stream will be empty
-	 * 
-	 * @param input - input stream to process
-	 * @throws IOException - in case of any IO errors
-	 * @throws ConverterException - in case of any conversion errorss
-	 */
-	public void process(InputStream input) throws IOException, ConverterException {
-		while (0 != input.available()) {
-			Tag tag = ParserUtils.parseTag(input);
-			TagHandler handler = getHandler(tag);
-			if (null == handler) {
-				skipHandler.handle(tag, input);
-			} else {
-				handler.handle(tag, input);
-			}
-		}
-	}
+    /**
+     * Constructor
+     * 
+     */
+    public TagCrawler() {
+        skipHandler = createSkipHandler();
+    }
+
+    /**
+     * Method to add {@link TagHandler}
+     * 
+     * @param name
+     *            - unique name of tag handler
+     * @param handler
+     *            - handler
+     * @return - this for chaining
+     */
+    public TagCrawler addHandler(String name, TagHandler handler) {
+        handlers.put(name, handler);
+        return this;
+    }
+
+    /**
+     * Method to remove {@link TagHandler}
+     * 
+     * @param name
+     *            - unique name of tag handler
+     * @return - this for chaining
+     */
+    public TagCrawler removeHandler(String name) {
+        if (handlers.containsKey(name)) {
+            handlers.remove(name);
+        }
+        return this;
+    }
+
+    /**
+     * Method to get {@link TagHandler} by tag, can be overridden to change the logic of handler searching
+     * 
+     * @param tag
+     *            - tag to be handled
+     * @return - this for chaining
+     */
+    public TagHandler getHandler(Tag tag) {
+        if (handlers.containsKey(tag.getName())) {
+            return handlers.get(tag.getName());
+        }
+        return null;
+    }
+
+    /**
+     * Method to create "default" handler (the one will be used if none other handlers were found) can be overridden to change the logic
+     * 
+     * @return - this for chaining
+     */
+    public TagHandler createSkipHandler() {
+        return new TagHandler() {
+            @Override
+            public void handle(Tag tag, InputStream input) throws IOException, ConverterException {
+                log.debug("Going to skip tag: " + tag.getName());
+                long size = tag.getSize();
+                while (size > 0) {
+                    size -= input.skip(size);
+                }
+            }
+        };
+    }
+
+    /**
+     * Method to process the input stream given, will stop as soon as input stream will be empty
+     * 
+     * @param input
+     *            - input stream to process
+     * @throws IOException
+     *             - in case of any IO errors
+     * @throws ConverterException
+     *             - in case of any conversion errorss
+     */
+    public void process(InputStream input) throws IOException, ConverterException {
+        while (0 != input.available()) {
+            Tag tag = ParserUtils.parseTag(input);
+            TagHandler handler = getHandler(tag);
+            if (null == handler) {
+                skipHandler.handle(tag, input);
+            } else {
+                handler.handle(tag, input);
+            }
+        }
+    }
 }

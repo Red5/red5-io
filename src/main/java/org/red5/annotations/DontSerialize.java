@@ -24,13 +24,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for fields that should not be serialized when sending
- * objects to a client.
+ * Annotation for fields that should not be serialized when sending objects to a client.
  * 
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
  */
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Target({ ElementType.FIELD, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DontSerialize {
 

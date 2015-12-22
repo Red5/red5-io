@@ -19,30 +19,30 @@
 package org.red5.io.sctp.packet.chunks;
 
 public enum ChunkType {
-	
-	DATA(0), // Payload Data
-	INIT(1), // Initiation
-	INIT_ACK(2), // Initiation Acknowledgement
-	SACK(3), // Selective Acknowledgement
-	HEARTBEAT(4), // Heartbeat Request
-	HEARTBEAT_ACK(5), // Heartbeat Acknowledgement
-	ABORT(6), // Abort
-	SHUTDOWN(7), // Shutdown
-	SHUTDOWN_ACK(8), // Shutdown Acknowledgement
-	ERROR(9), // Operation Error
-	COOKIE_ECHO(10), // State Cookie
-	COOKIE_ACK(11), // Cookie Acknowledgement
-	ECNE(12), // Reserved for Explicit Congestion Notification Echo
-	CWR(13), // Reserved for Congestion Window Reduced
-	SHUTDOWN_COMPLETE(14);
-	
-	private int value;
-	
-	private ChunkType(final int value) {
-		this.value = value;
-	}
-	
-	public int getValue() {
-		return value;
-	}
+
+    DATA(0), // Payload Data
+    INIT(1), // Initiation
+    INIT_ACK(2), // Initiation Acknowledgement
+    SACK(3), // Selective Acknowledgement
+    HEARTBEAT(4), // Heartbeat Request
+    HEARTBEAT_ACK(5), // Heartbeat Acknowledgement
+    ABORT(6), // Abort
+    SHUTDOWN(7), // Shutdown
+    SHUTDOWN_ACK(8), // Shutdown Acknowledgement
+    ERROR(9), // Operation Error
+    COOKIE_ECHO(10), // State Cookie
+    COOKIE_ACK(11), // Cookie Acknowledgement
+    ECNE(12), // Reserved for Explicit Congestion Notification Echo
+    CWR(13), // Reserved for Congestion Window Reduced
+    SHUTDOWN_COMPLETE(14);
+
+    private int value;
+
+    private ChunkType(final int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
 }

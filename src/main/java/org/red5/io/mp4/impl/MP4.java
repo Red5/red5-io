@@ -41,150 +41,151 @@ import org.slf4j.LoggerFactory;
  */
 public class MP4 implements IMP4 {
 
-	protected static Logger log = LoggerFactory.getLogger(MP4.class);
+    protected static Logger log = LoggerFactory.getLogger(MP4.class);
 
-	private File file;
+    private File file;
 
-	private IMetaService metaService;
+    private IMetaService metaService;
 
-	private IMetaData<?, ?> metaData;
+    private IMetaData<?, ?> metaData;
 
-	/**
-	 * Default constructor, used by Spring so that parameters may be injected.
-	 */
-	public MP4() {
-	}
+    /**
+     * Default constructor, used by Spring so that parameters may be injected.
+     */
+    public MP4() {
+    }
 
-	/**
-	 * Create MP4 from given file source.
-	 * 
-	 * @param file File source
-	 */
-	public MP4(File file) {
-		this.file = file;
-		/*
-		try {
-			MP4Reader reader = new MP4Reader(this.file);
-			ITag tag = reader.createFileMeta();
-			if (metaService == null) {
-				metaService = new MetaService(this.file);
-			}
-			metaData = metaService.readMetaData(tag.getBody());
-			reader.close();
-		} catch (Exception e) {
-			log.error("An error occurred looking for metadata:", e);
-		}
-		*/		
-	}
+    /**
+     * Create MP4 from given file source.
+     * 
+     * @param file
+     *            File source
+     */
+    public MP4(File file) {
+        this.file = file;
+        /*
+        try {
+        	MP4Reader reader = new MP4Reader(this.file);
+        	ITag tag = reader.createFileMeta();
+        	if (metaService == null) {
+        		metaService = new MetaService(this.file);
+        	}
+        	metaData = metaService.readMetaData(tag.getBody());
+        	reader.close();
+        } catch (Exception e) {
+        	log.error("An error occurred looking for metadata:", e);
+        }
+        */
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean hasMetaData() {
-		return metaData != null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasMetaData() {
+        return metaData != null;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public IMetaData<?, ?> getMetaData() throws FileNotFoundException {
-		metaService.setFile(file);
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public IMetaData<?, ?> getMetaData() throws FileNotFoundException {
+        metaService.setFile(file);
+        return null;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean hasKeyFrameData() {
-		return false;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasKeyFrameData() {
+        return false;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void setKeyFrameData(Map<?, ?> keyframedata) {
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void setKeyFrameData(Map<?, ?> keyframedata) {
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Map<?, ?> getKeyFrameData() {
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public Map<?, ?> getKeyFrameData() {
+        return null;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void refreshHeaders() throws IOException {
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void refreshHeaders() throws IOException {
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public void flushHeaders() throws IOException {
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void flushHeaders() throws IOException {
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ITagReader getReader() throws IOException {
-		MP4Reader reader = null;
-		IoBuffer fileData = null;
-		String fileName = file.getName();
-		if (file.exists()) {
-			log.debug("File name: {} size: {}", fileName, file.length());
-			reader = new MP4Reader(file);
-			// get a ref to the mapped byte buffer
-			fileData = reader.getFileData();
-			log.trace("File data size: {}", fileData);
-		} else {
-			log.info("Creating new file: {}", file);
-			file.createNewFile();
-		}
-		return reader;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ITagReader getReader() throws IOException {
+        MP4Reader reader = null;
+        IoBuffer fileData = null;
+        String fileName = file.getName();
+        if (file.exists()) {
+            log.debug("File name: {} size: {}", fileName, file.length());
+            reader = new MP4Reader(file);
+            // get a ref to the mapped byte buffer
+            fileData = reader.getFileData();
+            log.trace("File data size: {}", fileData);
+        } else {
+            log.info("Creating new file: {}", file);
+            file.createNewFile();
+        }
+        return reader;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ITagReader readerFromNearestKeyFrame(int seekPoint) {
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ITagReader readerFromNearestKeyFrame(int seekPoint) {
+        return null;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ITagWriter getWriter() throws IOException {
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ITagWriter getWriter() throws IOException {
+        return null;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ITagWriter writerFromNearestKeyFrame(int seekPoint) {
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ITagWriter writerFromNearestKeyFrame(int seekPoint) {
+        return null;
+    }
 
-	/** {@inheritDoc} */
-	public void setMetaData(IMetaData<?, ?> meta) throws IOException {
-		if (metaService == null) {
-			metaService = new MetaService(file);
-		}
-		//if the file is not checked the write may produce an NPE
-		if (metaService.getFile() == null) {
-			metaService.setFile(file);
-		}
-		metaService.write(meta);
-		metaData = meta;
-	}
+    /** {@inheritDoc} */
+    public void setMetaData(IMetaData<?, ?> meta) throws IOException {
+        if (metaService == null) {
+            metaService = new MetaService(file);
+        }
+        //if the file is not checked the write may produce an NPE
+        if (metaService.getFile() == null) {
+            metaService.setFile(file);
+        }
+        metaService.write(meta);
+        metaData = meta;
+    }
 
-	/** {@inheritDoc} */
-	public void setMetaService(IMetaService service) {
-		metaService = service;
-	}
+    /** {@inheritDoc} */
+    public void setMetaService(IMetaService service) {
+        metaService = service;
+    }
 
-	public ITagWriter getAppendWriter() throws IOException {
-		return null;
-	}
-	
+    public ITagWriter getAppendWriter() throws IOException {
+        return null;
+    }
+
 }

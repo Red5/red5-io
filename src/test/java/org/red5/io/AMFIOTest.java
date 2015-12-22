@@ -29,28 +29,28 @@ import org.red5.io.utils.HexDump;
 */
 public class AMFIOTest extends AbstractIOTest {
 
-	IoBuffer buf;
+    IoBuffer buf;
 
-	/** {@inheritDoc} */
-	@Override
-	void dumpOutput() {
-		buf.flip();
-		System.err.println(HexDump.formatHexDump(buf.getHexDump()));
-	}
+    /** {@inheritDoc} */
+    @Override
+    void dumpOutput() {
+        buf.flip();
+        System.err.println(HexDump.formatHexDump(buf.getHexDump()));
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	void resetOutput() {
-		setupIO();
-	}
+    /** {@inheritDoc} */
+    @Override
+    void resetOutput() {
+        setupIO();
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	void setupIO() {
-		buf = IoBuffer.allocate(0); // 1kb
-		buf.setAutoExpand(true);
-		in = new Input(buf);
-		out = new Output(buf);
-	}
+    /** {@inheritDoc} */
+    @Override
+    void setupIO() {
+        buf = IoBuffer.allocate(0); // 1kb
+        buf.setAutoExpand(true);
+        in = new Input(buf);
+        out = new Output(buf);
+    }
 
 }

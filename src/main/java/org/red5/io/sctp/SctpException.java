@@ -20,11 +20,16 @@ package org.red5.io.sctp;
 
 public class SctpException extends Exception {
 
-	/**
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
-	
-	public SctpException() { super(); }
-	public SctpException(String message) { super(message); }
+    private static final long serialVersionUID = 1L;
+
+    public SctpException() {
+        super();
+    }
+
+    public SctpException(String message) {
+        super(message);
+    }
 }

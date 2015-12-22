@@ -32,80 +32,80 @@ import org.springframework.context.ApplicationContext;
  */
 public class CacheableImpl implements ICacheable {
 
-	protected static Logger log = LoggerFactory.getLogger(CacheableImpl.class);
+    protected static Logger log = LoggerFactory.getLogger(CacheableImpl.class);
 
-	protected ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
-	private byte[] bytes;
+    private byte[] bytes;
 
-	private String name;
+    private String name;
 
-	private boolean cached;
+    private boolean cached;
 
-	public CacheableImpl(Object obj) {
-		IoBuffer tmp = IoBuffer.allocate(1024, true);
-		tmp.setAutoExpand(true);
-		tmp.putObject(obj);
-		bytes = new byte[tmp.capacity()];
-		tmp.get(bytes);
-		cached = true;
-		tmp.free();
-		tmp = null;
-	}
+    public CacheableImpl(Object obj) {
+        IoBuffer tmp = IoBuffer.allocate(1024, true);
+        tmp.setAutoExpand(true);
+        tmp.putObject(obj);
+        bytes = new byte[tmp.capacity()];
+        tmp.get(bytes);
+        cached = true;
+        tmp.free();
+        tmp = null;
+    }
 
-	public CacheableImpl(IoBuffer buffer) {
-		if (log.isDebugEnabled()) {
-			log.debug("Buffer is direct: {} capacity: {}", buffer.isDirect(), buffer.capacity());
-			log.debug("Buffer limit: {} remaining: {} position: {}", new Object[]{buffer.limit(),  buffer.remaining(), buffer.position()});
-		}
-		bytes = new byte[buffer.capacity()];
-		buffer.rewind();
-		int i = 0;
-		while (i < buffer.limit()) {
-			buffer.position(i);
-			while (buffer.remaining() > 0) {
-				bytes[i++] = buffer.get();
-			}
-		}
-		cached = true;
-		if (log.isDebugEnabled()) {
-			log.debug("Buffer size: " + buffer.capacity());
-		}
-		buffer = null;
-	}
+    public CacheableImpl(IoBuffer buffer) {
+        if (log.isDebugEnabled()) {
+            log.debug("Buffer is direct: {} capacity: {}", buffer.isDirect(), buffer.capacity());
+            log.debug("Buffer limit: {} remaining: {} position: {}", new Object[] { buffer.limit(), buffer.remaining(), buffer.position() });
+        }
+        bytes = new byte[buffer.capacity()];
+        buffer.rewind();
+        int i = 0;
+        while (i < buffer.limit()) {
+            buffer.position(i);
+            while (buffer.remaining() > 0) {
+                bytes[i++] = buffer.get();
+            }
+        }
+        cached = true;
+        if (log.isDebugEnabled()) {
+            log.debug("Buffer size: " + buffer.capacity());
+        }
+        buffer = null;
+    }
 
-	public void addRequest() {
-		log.info("Adding request for: " + name);
-	}
+    public void addRequest() {
+        log.info("Adding request for: " + name);
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public byte[] getBytes() {
-		return bytes;
-	}
+        return bytes;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public IoBuffer getByteBuffer() {
-		return IoBuffer.wrap(bytes).asReadOnlyBuffer();
-	}
+        return IoBuffer.wrap(bytes).asReadOnlyBuffer();
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public String getName() {
-		return name;
-	}
+        return name;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public boolean isCached() {
-		return cached;
-	}
+        return cached;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public void setCached(boolean cached) {
-		this.cached = cached;
-	}
+        this.cached = cached;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public void setName(String name) {
-		this.name = name;
-	}
+        this.name = name;
+    }
 
 }

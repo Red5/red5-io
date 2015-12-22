@@ -34,154 +34,164 @@ import org.red5.io.amf3.IExternalizable;
  * @see <a href="http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/utils/ObjectProxy.html">ObjectProxy</a>
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
- * @param <T> type
- * @param <V> value
+ * @param <T>
+ *            type
+ * @param <V>
+ *            value
  */
 public class ObjectProxy<T, V> implements Map<T, V>, IExternalizable {
 
-	private String uid;
-	
-	private Object type;
-	
-	/** The proxied object. */
-	private Map<T, V> item;
-	
-	/** Create new empty proxy. */
-	public ObjectProxy() {
-		this(new HashMap<T, V>());
-	}
-	
-	/**
-	 * Create proxy for given object.
-	 * 
-	 * @param item object to proxy
-	 */
-	public ObjectProxy(Map<T, V> item) {
-		this.item = new HashMap<T, V>(item);
-	}
+    private String uid;
 
-	/** {@inheritDoc} */
-	@SuppressWarnings("unchecked")
-	public void readExternal(IDataInput input) {
-		item = (Map<T, V>) input.readObject();
-	}
+    private Object type;
 
-	/** {@inheritDoc} */
-	public void writeExternal(IDataOutput output) {
-		output.writeObject(item);
-	}
+    /** The proxied object. */
+    private Map<T, V> item;
 
-	/**
-	 * Return string representation of the proxied object.
-	 * 
-	 * @return string
-	 */
-	public String toString() {
-		return item.toString();
-	}
+    /** Create new empty proxy. */
+    public ObjectProxy() {
+        this(new HashMap<T, V>());
+    }
 
-	public void clear() {
-		item.clear();
-	}
+    /**
+     * Create proxy for given object.
+     * 
+     * @param item
+     *            object to proxy
+     */
+    public ObjectProxy(Map<T, V> item) {
+        this.item = new HashMap<T, V>(item);
+    }
 
-	/**
-	 * Check if proxied object has a given property.
-	 * 
-	 * @param name name
-	 * @return boolean
-	 */
-	public boolean containsKey(Object name) {
-		return item.containsKey(name);
-	}
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    public void readExternal(IDataInput input) {
+        item = (Map<T, V>) input.readObject();
+    }
 
-	public boolean containsValue(Object value) {
-		return item.containsValue(value);
-	}
+    /** {@inheritDoc} */
+    public void writeExternal(IDataOutput output) {
+        output.writeObject(item);
+    }
 
-	public Set<Entry<T, V>> entrySet() {
-		return Collections.unmodifiableSet(item.entrySet());
-	}
+    /**
+     * Return string representation of the proxied object.
+     * 
+     * @return string
+     */
+    public String toString() {
+        return item.toString();
+    }
 
-	/**
-	 * Return the value of a property.
-	 * 
-	 * @param name name
-	 * @return value
-	 */
-	public V get(Object name) {
-		return item.get(name);
-	}
+    public void clear() {
+        item.clear();
+    }
 
-	public boolean isEmpty() {
-		return item.isEmpty();
-	}
+    /**
+     * Check if proxied object has a given property.
+     * 
+     * @param name
+     *            name
+     * @return boolean
+     */
+    public boolean containsKey(Object name) {
+        return item.containsKey(name);
+    }
 
-	public Set<T> keySet() {
-		return item.keySet();
-	}
+    public boolean containsValue(Object value) {
+        return item.containsValue(value);
+    }
 
-	/**
-	 * Change a property of the proxied object.
-	 * 
-	 * @param name name
-	 * @param value value
-	 * @return old value
-	 */
-	public V put(T name, V value) {
-		return item.put(name, value);
-	}
+    public Set<Entry<T, V>> entrySet() {
+        return Collections.unmodifiableSet(item.entrySet());
+    }
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void putAll(Map values) {
-		item.putAll(values);
-	}
+    /**
+     * Return the value of a property.
+     * 
+     * @param name
+     *            name
+     * @return value
+     */
+    public V get(Object name) {
+        return item.get(name);
+    }
 
-	/**
-	 * Remove a property from the proxied object.
-	 * 
-	 * @param name name
-	 * @return old value
-	 */
-	public V remove(Object name) {
-		return item.remove(name);
-	}
+    public boolean isEmpty() {
+        return item.isEmpty();
+    }
 
-	public int size() {
-		return item.size();
-	}
+    public Set<T> keySet() {
+        return item.keySet();
+    }
 
-	public Collection<V> values() {
-		return Collections.unmodifiableCollection(item.values());
-	}
+    /**
+     * Change a property of the proxied object.
+     * 
+     * @param name
+     *            name
+     * @param value
+     *            value
+     * @return old value
+     */
+    public V put(T name, V value) {
+        return item.put(name, value);
+    }
 
-	/**
-	 * @return the uid
-	 */
-	public String getUid() {
-		return uid;
-	}
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void putAll(Map values) {
+        item.putAll(values);
+    }
 
-	/**
-	 * @param uid the uid to set
-	 */
-	public void setUid(String uid) {
-		this.uid = uid;
-	}
+    /**
+     * Remove a property from the proxied object.
+     * 
+     * @param name
+     *            name
+     * @return old value
+     */
+    public V remove(Object name) {
+        return item.remove(name);
+    }
 
-	/**
-	 * @return the type
-	 */
-	public Object getType() {
-		return type;
-	}
+    public int size() {
+        return item.size();
+    }
 
-	/**
-	 * @param type the type to set
-	 */
-	public void setType(Object type) {
-		this.type = type;
-	}
-	
-	// TODO: implement other ObjectProxy methods
-	
+    public Collection<V> values() {
+        return Collections.unmodifiableCollection(item.values());
+    }
+
+    /**
+     * @return the uid
+     */
+    public String getUid() {
+        return uid;
+    }
+
+    /**
+     * @param uid
+     *            the uid to set
+     */
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    /**
+     * @return the type
+     */
+    public Object getType() {
+        return type;
+    }
+
+    /**
+     * @param type
+     *            the type to set
+     */
+    public void setType(Object type) {
+        this.type = type;
+    }
+
+    // TODO: implement other ObjectProxy methods
+
 }

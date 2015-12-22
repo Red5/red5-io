@@ -34,156 +34,156 @@ import org.w3c.dom.Document;
 
 public class Output extends BaseOutput implements org.red5.io.object.Output {
 
-	protected static Logger log = LoggerFactory.getLogger(Output.class);
+    protected static Logger log = LoggerFactory.getLogger(Output.class);
 
-	protected List<Object> list;
+    protected List<Object> list;
 
-	public Output(List<Object> list) {
-		super();
-		this.list = list;
-	}
+    public Output(List<Object> list) {
+        super();
+        this.list = list;
+    }
 
-	/** {@inheritDoc} */
-	public boolean isCustom(Object custom) {
-		// No custom types supported
-		return false;
-	}
+    /** {@inheritDoc} */
+    public boolean isCustom(Object custom) {
+        // No custom types supported
+        return false;
+    }
 
-	/** {@inheritDoc} */
-	public void putString(String string) {
-		list.add(string);
-	}
+    /** {@inheritDoc} */
+    public void putString(String string) {
+        list.add(string);
+    }
 
-	/** {@inheritDoc} */
-	public boolean supportsDataType(byte type) {
-		// does not yet support references
-		return type <= DataTypes.OPT_REFERENCE;
-	}
+    /** {@inheritDoc} */
+    public boolean supportsDataType(byte type) {
+        // does not yet support references
+        return type <= DataTypes.OPT_REFERENCE;
+    }
 
-	/** {@inheritDoc} */
-	public void writeBoolean(Boolean bol) {
-		list.add(Byte.valueOf(DataTypes.CORE_BOOLEAN));
-		list.add(bol);
-	}
+    /** {@inheritDoc} */
+    public void writeBoolean(Boolean bol) {
+        list.add(Byte.valueOf(DataTypes.CORE_BOOLEAN));
+        list.add(bol);
+    }
 
-	/** {@inheritDoc} */
-	public void writeCustom(Object custom) {
-		// Customs not supported by this version
-	}
+    /** {@inheritDoc} */
+    public void writeCustom(Object custom) {
+        // Customs not supported by this version
+    }
 
-	/** {@inheritDoc} */
-	public void writeDate(Date date) {
-		list.add(Byte.valueOf(DataTypes.CORE_DATE));
-		list.add(date);
-	}
+    /** {@inheritDoc} */
+    public void writeDate(Date date) {
+        list.add(Byte.valueOf(DataTypes.CORE_DATE));
+        list.add(date);
+    }
 
-	/** {@inheritDoc} */
-	// DONE
-	public void writeNull() {
-		list.add(Byte.valueOf(DataTypes.CORE_NULL));
-	}
+    /** {@inheritDoc} */
+    // DONE
+    public void writeNull() {
+        list.add(Byte.valueOf(DataTypes.CORE_NULL));
+    }
 
-	/** {@inheritDoc} */
-	// DONE
-	public void writeNumber(Number num) {
-		list.add(Byte.valueOf(DataTypes.CORE_NUMBER));
-		list.add(num);
-	}
+    /** {@inheritDoc} */
+    // DONE
+    public void writeNumber(Number num) {
+        list.add(Byte.valueOf(DataTypes.CORE_NUMBER));
+        list.add(num);
+    }
 
-	/** {@inheritDoc} */
-	public void writeReference(Object obj) {
-		list.add(Byte.valueOf(DataTypes.OPT_REFERENCE));
-		list.add(Short.valueOf(getReferenceId(obj)));
-	}
+    /** {@inheritDoc} */
+    public void writeReference(Object obj) {
+        list.add(Byte.valueOf(DataTypes.OPT_REFERENCE));
+        list.add(Short.valueOf(getReferenceId(obj)));
+    }
 
-	/** {@inheritDoc} */
-	public void writeString(String string) {
-		list.add(Byte.valueOf(DataTypes.CORE_STRING));
-		list.add(string);
-	}
+    /** {@inheritDoc} */
+    public void writeString(String string) {
+        list.add(Byte.valueOf(DataTypes.CORE_STRING));
+        list.add(string);
+    }
 
-	/** {@inheritDoc} */
-	public void writeXML(Document xml) {
-		list.add(Byte.valueOf(DataTypes.CORE_XML));
-		list.add(xml);
-	}
+    /** {@inheritDoc} */
+    public void writeXML(Document xml) {
+        list.add(Byte.valueOf(DataTypes.CORE_XML));
+        list.add(xml);
+    }
 
-	/** {@inheritDoc} */
-	public void writeArray(Collection<?> array) {
-		list.add(Byte.valueOf(DataTypes.CORE_ARRAY));
-		list.add(array);
-	}
+    /** {@inheritDoc} */
+    public void writeArray(Collection<?> array) {
+        list.add(Byte.valueOf(DataTypes.CORE_ARRAY));
+        list.add(array);
+    }
 
-	/** {@inheritDoc} */
-	public void writeArray(Object[] array) {
-		list.add(Byte.valueOf(DataTypes.CORE_ARRAY));
-		list.add(array);
-	}
+    /** {@inheritDoc} */
+    public void writeArray(Object[] array) {
+        list.add(Byte.valueOf(DataTypes.CORE_ARRAY));
+        list.add(array);
+    }
 
-	/** {@inheritDoc} */
-	public void writeArray(Object array) {
-		list.add(Byte.valueOf(DataTypes.CORE_ARRAY));
-		list.add(array);
-	}
+    /** {@inheritDoc} */
+    public void writeArray(Object array) {
+        list.add(Byte.valueOf(DataTypes.CORE_ARRAY));
+        list.add(array);
+    }
 
-	/** {@inheritDoc} */
-	public void writeMap(Map<Object, Object> map) {
-		list.add(Byte.valueOf(DataTypes.CORE_MAP));
-		list.add(map);
-	}
+    /** {@inheritDoc} */
+    public void writeMap(Map<Object, Object> map) {
+        list.add(Byte.valueOf(DataTypes.CORE_MAP));
+        list.add(map);
+    }
 
-	/** {@inheritDoc} */
-	public void writeMap(Collection<?> array) {
-		list.add(Byte.valueOf(DataTypes.CORE_MAP));
-		list.add(array);
-	}
+    /** {@inheritDoc} */
+    public void writeMap(Collection<?> array) {
+        list.add(Byte.valueOf(DataTypes.CORE_MAP));
+        list.add(array);
+    }
 
-	/** {@inheritDoc} */
-	public void writeObject(Object object) {
-		list.add(Byte.valueOf(DataTypes.CORE_OBJECT));
-		list.add(object);
-	}
+    /** {@inheritDoc} */
+    public void writeObject(Object object) {
+        list.add(Byte.valueOf(DataTypes.CORE_OBJECT));
+        list.add(object);
+    }
 
-	/** {@inheritDoc} */
-	public void writeObject(Map<Object, Object> map) {
-		list.add(Byte.valueOf(DataTypes.CORE_OBJECT));
-		list.add(map);
-	}
+    /** {@inheritDoc} */
+    public void writeObject(Map<Object, Object> map) {
+        list.add(Byte.valueOf(DataTypes.CORE_OBJECT));
+        list.add(map);
+    }
 
-	/** {@inheritDoc} */
-	public void writeRecordSet(RecordSet recordset) {
-		list.add(Byte.valueOf(DataTypes.CORE_OBJECT));
-		list.add(recordset);
-	}
+    /** {@inheritDoc} */
+    public void writeRecordSet(RecordSet recordset) {
+        list.add(Byte.valueOf(DataTypes.CORE_OBJECT));
+        list.add(recordset);
+    }
 
-	/** {@inheritDoc} */
-	public void writeByteArray(ByteArray array) {
-		list.add(Byte.valueOf(DataTypes.CORE_BYTEARRAY));
-		list.add(array);
-	}
+    /** {@inheritDoc} */
+    public void writeByteArray(ByteArray array) {
+        list.add(Byte.valueOf(DataTypes.CORE_BYTEARRAY));
+        list.add(array);
+    }
 
-	/** {@inheritDoc} */
-	public void writeVectorInt(Vector<Integer> vector) {
-		list.add(Byte.valueOf(DataTypes.CORE_VECTOR_INT));
-		list.add(vector);
-	}
+    /** {@inheritDoc} */
+    public void writeVectorInt(Vector<Integer> vector) {
+        list.add(Byte.valueOf(DataTypes.CORE_VECTOR_INT));
+        list.add(vector);
+    }
 
-	/** {@inheritDoc} */
-	public void writeVectorUInt(Vector<Long> vector) {
-		list.add(Byte.valueOf(DataTypes.CORE_VECTOR_UINT));
-		list.add(vector);
-	}
+    /** {@inheritDoc} */
+    public void writeVectorUInt(Vector<Long> vector) {
+        list.add(Byte.valueOf(DataTypes.CORE_VECTOR_UINT));
+        list.add(vector);
+    }
 
-	/** {@inheritDoc} */
-	public void writeVectorNumber(Vector<Double> vector) {
-		list.add(Byte.valueOf(DataTypes.CORE_VECTOR_NUMBER));
-		list.add(vector);
-	}
+    /** {@inheritDoc} */
+    public void writeVectorNumber(Vector<Double> vector) {
+        list.add(Byte.valueOf(DataTypes.CORE_VECTOR_NUMBER));
+        list.add(vector);
+    }
 
-	/** {@inheritDoc} */
-	public void writeVectorObject(Vector<Object> vector) {
-		list.add(Byte.valueOf(DataTypes.CORE_VECTOR_OBJECT));
-		list.add(vector);
-	}
+    /** {@inheritDoc} */
+    public void writeVectorObject(Vector<Object> vector) {
+        list.add(Byte.valueOf(DataTypes.CORE_VECTOR_OBJECT));
+        list.add(vector);
+    }
 
 }

@@ -21,16 +21,15 @@ package org.red5.io.sctp.packet.chunks;
 import org.red5.io.sctp.SctpException;
 
 public class ChunkFactory {
-	public static Chunk createChunk(final byte[] data, int offset, int length)
-			throws SctpException {
-		assert length > 0;
-		switch (ChunkType.values()[data[offset]]) {
-		case INIT:
-			return new Init(data, offset, length);
-		case INIT_ACK:
-			return new InitAck(data, offset, length);
-		default:
-			throw new SctpException("not supported chunk type " + data);
-		}
-	}
+    public static Chunk createChunk(final byte[] data, int offset, int length) throws SctpException {
+        assert length > 0;
+        switch (ChunkType.values()[data[offset]]) {
+            case INIT:
+                return new Init(data, offset, length);
+            case INIT_ACK:
+                return new InitAck(data, offset, length);
+            default:
+                throw new SctpException("not supported chunk type " + data);
+        }
+    }
 }

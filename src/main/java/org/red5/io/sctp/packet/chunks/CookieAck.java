@@ -29,21 +29,19 @@ import org.red5.io.sctp.SctpException;
 
 public class CookieAck extends Chunk {
 
-	public CookieAck() {
-		super(ChunkType.COOKIE_ACK, (byte)0x00, (short)CHUNK_HEADER_SIZE);
-	}
+    public CookieAck() {
+        super(ChunkType.COOKIE_ACK, (byte) 0x00, (short) CHUNK_HEADER_SIZE);
+    }
 
-	@Override
-	public void apply(IAssociationControl channel)
-			throws SctpException, IOException, InvalidKeyException, NoSuchAlgorithmException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void apply(IAssociationControl channel) throws SctpException, IOException, InvalidKeyException, NoSuchAlgorithmException {
+        // TODO Auto-generated method stub
 
-	@Override
-	public void apply(InetSocketAddress address, IServerChannelControl server)
-			throws SctpException, InvalidKeyException, NoSuchAlgorithmException, IOException {
-		// TODO Auto-generated method stub
-	}
+    }
+
+    @Override
+    public void apply(InetSocketAddress address, IServerChannelControl server) throws SctpException, InvalidKeyException, NoSuchAlgorithmException, IOException {
+        // TODO Auto-generated method stub
+    }
 
 }

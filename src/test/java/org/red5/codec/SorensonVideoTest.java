@@ -44,12 +44,12 @@ public class SorensonVideoTest {
     @Test
     public void testRealisticFlow() {
         log.info("testRealisticFlow");
-        
+
         IoBuffer data = IoBuffer.allocate(128);
         data.put((byte) keyFrameType);
         data.put(RandomStringUtils.random(24).getBytes());
         data.flip();
-        
+
         SorensonVideo video = new SorensonVideo();
         assertTrue(video.canHandleData(data));
         assertTrue(video.addData(data));

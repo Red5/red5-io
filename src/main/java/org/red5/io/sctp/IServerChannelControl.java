@@ -28,17 +28,17 @@ import javax.crypto.Mac;
 import org.red5.io.sctp.packet.SctpPacket;
 
 public interface IServerChannelControl {
-	void removePendingChannel(InetSocketAddress address);
-	
-	boolean addPendingChannel(InetSocketAddress address, int initialTSN, int verificationTag) throws SocketException;
-	
-	IAssociationControl getPendingChannel(InetSocketAddress address);
-	
-	Mac getMac();
-	
-	Random getRandom();
-	
-	int getPort();
-	
-	void send(SctpPacket packet, InetSocketAddress address) throws IOException;
+    void removePendingChannel(InetSocketAddress address);
+
+    boolean addPendingChannel(InetSocketAddress address, int initialTSN, int verificationTag) throws SocketException;
+
+    IAssociationControl getPendingChannel(InetSocketAddress address);
+
+    Mac getMac();
+
+    Random getRandom();
+
+    int getPort();
+
+    void send(SctpPacket packet, InetSocketAddress address) throws IOException;
 }

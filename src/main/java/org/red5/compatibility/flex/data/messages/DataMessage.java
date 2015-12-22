@@ -28,17 +28,17 @@ import org.red5.compatibility.flex.messaging.messages.AsyncMessage;
  */
 public class DataMessage extends AsyncMessage {
 
-	private static final long serialVersionUID = -4650851055941106677L;
+    private static final long serialVersionUID = -4650851055941106677L;
 
-	public Object identity;
-	
-	public int operation;
+    public Object identity;
 
-	/** {@inheritDoc} */
-	protected void addParameters(StringBuilder result) {
-		super.addParameters(result);
-		result.append(",identity="+identity);
-		result.append(",operation="+operation);
-	}
+    public int operation;
+
+    /** {@inheritDoc} */
+    protected void addParameters(StringBuilder result) {
+        super.addParameters(result);
+        result.append(",identity=" + identity);
+        result.append(",operation=" + operation);
+    }
 
 }

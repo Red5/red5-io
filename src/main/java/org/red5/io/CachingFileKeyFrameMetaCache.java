@@ -30,91 +30,91 @@ import org.red5.io.flv.IKeyFrameDataAnalyzer.KeyFrameMeta;
 
 public class CachingFileKeyFrameMetaCache extends FileKeyFrameMetaCache {
 
-	private Map<String, KeyFrameMeta> inMemoryMetaCache = new HashMap<String, KeyFrameMeta>();
+    private Map<String, KeyFrameMeta> inMemoryMetaCache = new HashMap<String, KeyFrameMeta>();
 
-	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
-	private int maxCacheEntry = 500;
+    private int maxCacheEntry = 500;
 
-	private Random random = new Random();
+    private Random random = new Random();
 
-	private void freeCachingMetadata() {
-		int cacheSize = inMemoryMetaCache.size();
-		int randomIndex = random.nextInt(cacheSize);
-		Map.Entry<String, KeyFrameMeta> entryToRemove = null;
-		for (Map.Entry<String, KeyFrameMeta> cacheEntry : inMemoryMetaCache.entrySet()) {
-			if (randomIndex == 0) {
-				entryToRemove = cacheEntry;
-				break;
-			}
-			randomIndex--;
-		}
-		if (entryToRemove != null) {
-			inMemoryMetaCache.remove(entryToRemove.getKey());
-		}
-	}
+    private void freeCachingMetadata() {
+        int cacheSize = inMemoryMetaCache.size();
+        int randomIndex = random.nextInt(cacheSize);
+        Map.Entry<String, KeyFrameMeta> entryToRemove = null;
+        for (Map.Entry<String, KeyFrameMeta> cacheEntry : inMemoryMetaCache.entrySet()) {
+            if (randomIndex == 0) {
+                entryToRemove = cacheEntry;
+                break;
+            }
+            randomIndex--;
+        }
+        if (entryToRemove != null) {
+            inMemoryMetaCache.remove(entryToRemove.getKey());
+        }
+    }
 
-	@Override
-	public KeyFrameMeta loadKeyFrameMeta(File file) {
-		rwLock.readLock().lock();
-		try {
-			String canonicalPath = file.getCanonicalPath();
-			if (!inMemoryMetaCache.containsKey(canonicalPath)) {
-				rwLock.readLock().unlock();
-				rwLock.writeLock().lock();
-				try {
-					if (inMemoryMetaCache.size() >= maxCacheEntry) {
-						freeCachingMetadata();
-					}
-					KeyFrameMeta keyFrameMeta = super.loadKeyFrameMeta(file);
-					if (keyFrameMeta != null) {
-						inMemoryMetaCache.put(canonicalPath, keyFrameMeta);
-					} else {
-						return null;
-					}
-				} finally {
-					rwLock.writeLock().unlock();
-					rwLock.readLock().lock();
-				}
-			}
-			return inMemoryMetaCache.get(canonicalPath);
-		} catch (IOException e) {
-			return null;
-		} finally {
-			rwLock.readLock().unlock();
-		}
-	}
+    @Override
+    public KeyFrameMeta loadKeyFrameMeta(File file) {
+        rwLock.readLock().lock();
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            if (!inMemoryMetaCache.containsKey(canonicalPath)) {
+                rwLock.readLock().unlock();
+                rwLock.writeLock().lock();
+                try {
+                    if (inMemoryMetaCache.size() >= maxCacheEntry) {
+                        freeCachingMetadata();
+                    }
+                    KeyFrameMeta keyFrameMeta = super.loadKeyFrameMeta(file);
+                    if (keyFrameMeta != null) {
+                        inMemoryMetaCache.put(canonicalPath, keyFrameMeta);
+                    } else {
+                        return null;
+                    }
+                } finally {
+                    rwLock.writeLock().unlock();
+                    rwLock.readLock().lock();
+                }
+            }
+            return inMemoryMetaCache.get(canonicalPath);
+        } catch (IOException e) {
+            return null;
+        } finally {
+            rwLock.readLock().unlock();
+        }
+    }
 
-	@Override
-	public void removeKeyFrameMeta(File file) {
-		rwLock.writeLock().lock();
-		try {
-			String canonicalPath = file.getCanonicalPath();
-			inMemoryMetaCache.remove(canonicalPath);
-		} catch (IOException e) {
-		} finally {
-			rwLock.writeLock().unlock();
-		}
-		super.removeKeyFrameMeta(file);
-	}
+    @Override
+    public void removeKeyFrameMeta(File file) {
+        rwLock.writeLock().lock();
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            inMemoryMetaCache.remove(canonicalPath);
+        } catch (IOException e) {
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+        super.removeKeyFrameMeta(file);
+    }
 
-	@Override
-	public void saveKeyFrameMeta(File file, KeyFrameMeta meta) {
-		rwLock.writeLock().lock();
-		try {
-			String canonicalPath = file.getCanonicalPath();
-			if (inMemoryMetaCache.containsKey(canonicalPath)) {
-				inMemoryMetaCache.remove(canonicalPath);
-			}
-		} catch (IOException e) {
-			// ignore the exception here, let super class to handle it.
-		} finally {
-			rwLock.writeLock().unlock();
-		}
-		super.saveKeyFrameMeta(file, meta);
-	}
+    @Override
+    public void saveKeyFrameMeta(File file, KeyFrameMeta meta) {
+        rwLock.writeLock().lock();
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            if (inMemoryMetaCache.containsKey(canonicalPath)) {
+                inMemoryMetaCache.remove(canonicalPath);
+            }
+        } catch (IOException e) {
+            // ignore the exception here, let super class to handle it.
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+        super.saveKeyFrameMeta(file, meta);
+    }
 
-	public void setMaxCacheEntry(int maxCacheEntry) {
-		this.maxCacheEntry = maxCacheEntry;
-	}
+    public void setMaxCacheEntry(int maxCacheEntry) {
+        this.maxCacheEntry = maxCacheEntry;
+    }
 }

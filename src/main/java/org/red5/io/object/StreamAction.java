@@ -22,61 +22,56 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents all the actions which may be permitted on a stream. Some actions are called by client implementations other than
- * a Flash Player itself; ex "getStreamLength". If an action is not specified here, the "CUSTOM" enum will be returned.
+ * Represents all the actions which may be permitted on a stream. Some actions are called by client implementations other than a Flash Player itself; ex "getStreamLength". If an action is not specified here, the "CUSTOM" enum will be returned.
  * 
  * @author Paul Gregoire
  */
 public enum StreamAction {
-	
-	CONNECT("connect"), DISCONNECT("disconnect"), 
-	CREATE_STREAM("createStream"), DELETE_STREAM("deleteStream"), CLOSE_STREAM("closeStream"), INIT_STREAM("initStream"), 
-	RELEASE_STREAM("releaseStream"), 
-	PUBLISH("publish"), PAUSE("pause"), PAUSE_RAW("pauseRaw"), SEEK("seek"), PLAY("play"), PLAY2("play2"), STOP("stop"), 
-	RECEIVE_VIDEO("receiveVideo"), RECEIVE_AUDIO("receiveAudio"), 
-	GET_STREAM_LENGTH("getStreamLength"), CUSTOM("");
 
-	//presize to fit all enums in
-	private final static Map<String, StreamAction> map = new HashMap<String, StreamAction>(StreamAction.values().length);
+    CONNECT("connect"), DISCONNECT("disconnect"), CREATE_STREAM("createStream"), DELETE_STREAM("deleteStream"), CLOSE_STREAM("closeStream"), INIT_STREAM("initStream"), RELEASE_STREAM("releaseStream"), PUBLISH("publish"), PAUSE("pause"), PAUSE_RAW("pauseRaw"), SEEK("seek"), PLAY("play"), PLAY2("play2"), STOP("stop"), RECEIVE_VIDEO("receiveVideo"), RECEIVE_AUDIO("receiveAudio"), GET_STREAM_LENGTH("getStreamLength"), CUSTOM(
+            "");
 
-	//the stream action this enum is for
-	private final String actionString;
+    //presize to fit all enums in
+    private final static Map<String, StreamAction> map = new HashMap<String, StreamAction>(StreamAction.values().length);
 
-	StreamAction(String actionString) {
-		this.actionString = actionString;
-	}
+    //the stream action this enum is for
+    private final String actionString;
 
-	public String getActionString() {
-		return actionString;
-	}
+    StreamAction(String actionString) {
+        this.actionString = actionString;
+    }
 
-	public static StreamAction getEnum(String actionString) {
-		//fill the map if its empty
-		if (map.isEmpty()) {
-			//do this only once
-			for (StreamAction action : values()) {
-				map.put(action.getActionString(), action);
-			}
-		}
-		//look up the action from the predefined set
-		StreamAction match = map.get(actionString);
-		if (match != null) {
-			return match;
-		}
-		//return an action representing a custom type
-		return CUSTOM;
-	}
+    public String getActionString() {
+        return actionString;
+    }
 
-	public boolean equals(StreamAction action) {
-		return action.getActionString().equals(actionString);
-	}
+    public static StreamAction getEnum(String actionString) {
+        //fill the map if its empty
+        if (map.isEmpty()) {
+            //do this only once
+            for (StreamAction action : values()) {
+                map.put(action.getActionString(), action);
+            }
+        }
+        //look up the action from the predefined set
+        StreamAction match = map.get(actionString);
+        if (match != null) {
+            return match;
+        }
+        //return an action representing a custom type
+        return CUSTOM;
+    }
 
-	public boolean equals(String actionString) {
-		return getActionString().equals(actionString);
-	}
+    public boolean equals(StreamAction action) {
+        return action.getActionString().equals(actionString);
+    }
 
-	public String toString() {
-		return actionString;
-	}
+    public boolean equals(String actionString) {
+        return getActionString().equals(actionString);
+    }
+
+    public String toString() {
+        return actionString;
+    }
 
 }

@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Red5 video codec for the screen capture format. 
+ * Red5 video codec for the screen capture format.
  * 
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
@@ -31,231 +31,242 @@ import org.slf4j.LoggerFactory;
  */
 public class ScreenVideo implements IVideoStreamCodec {
 
-	private Logger log = LoggerFactory.getLogger(ScreenVideo.class);
-	
+    private Logger log = LoggerFactory.getLogger(ScreenVideo.class);
+
     /**
      * FLV codec name constant
      */
-	static final String CODEC_NAME = "ScreenVideo";
-	
+    static final String CODEC_NAME = "ScreenVideo";
+
     /**
      * Block data
      */
-	private byte[] blockData;
+    private byte[] blockData;
+
     /**
      * Block size
      */
-	private int[] blockSize;
+    private int[] blockSize;
+
     /**
      * Video width
      */
-	private int width;
+    private int width;
+
     /**
      * Video height
      */
-	private int height;
+    private int height;
+
     /**
      * Width info
      */
-	private int widthInfo;
+    private int widthInfo;
+
     /**
      * Height info
      */
-	private int heightInfo;
+    private int heightInfo;
+
     /**
      * Block width
      */
-	private int blockWidth;
+    private int blockWidth;
+
     /**
      * Block height
      */
-	private int blockHeight;
+    private int blockHeight;
+
     /**
      * Number of blocks
      */
-	private int blockCount;
+    private int blockCount;
+
     /**
      * Block data size
      */
-	private int blockDataSize;
+    private int blockDataSize;
+
     /**
      * Total block data size
      */
-	private int totalBlockDataSize;
+    private int totalBlockDataSize;
 
-	/** Constructs a new ScreenVideo. */
+    /** Constructs a new ScreenVideo. */
     public ScreenVideo() {
-		this.reset();
-	}
+        this.reset();
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public String getName() {
-		return CODEC_NAME;
-	}
+        return CODEC_NAME;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public void reset() {
-		this.blockData = null;
-		this.blockSize = null;
-		this.width = 0;
-		this.height = 0;
-		this.widthInfo = 0;
-		this.heightInfo = 0;
-		this.blockWidth = 0;
-		this.blockHeight = 0;
-		this.blockCount = 0;
-		this.blockDataSize = 0;
-		this.totalBlockDataSize = 0;
-	}
+        this.blockData = null;
+        this.blockSize = null;
+        this.width = 0;
+        this.height = 0;
+        this.widthInfo = 0;
+        this.heightInfo = 0;
+        this.blockWidth = 0;
+        this.blockHeight = 0;
+        this.blockCount = 0;
+        this.blockDataSize = 0;
+        this.totalBlockDataSize = 0;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public boolean canHandleData(IoBuffer data) {
-		byte first = data.get();
-		boolean result = ((first & 0x0f) == VideoCodec.SCREEN_VIDEO.getId());
-		data.rewind();
-		return result;
-	}
+        byte first = data.get();
+        boolean result = ((first & 0x0f) == VideoCodec.SCREEN_VIDEO.getId());
+        data.rewind();
+        return result;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public boolean canDropFrames() {
-		return false;
-	}
+        return false;
+    }
 
-	/*
-	 * This uses the same algorithm as "compressBound" from zlib
-	 */
-	private int maxCompressedSize(int size) {
-		return size + (size >> 12) + (size >> 14) + 11;
-	}
+    /*
+     * This uses the same algorithm as "compressBound" from zlib
+     */
+    private int maxCompressedSize(int size) {
+        return size + (size >> 12) + (size >> 14) + 11;
+    }
 
     /**
      * Update total block size
-     * @param data      Byte buffer
+     * 
+     * @param data
+     *            Byte buffer
      */
-	private void updateSize(IoBuffer data) {
-		this.widthInfo = data.getShort();
-		this.heightInfo = data.getShort();
-		// extract width and height of the frame
-		this.width = this.widthInfo & 0xfff;
-		this.height = this.heightInfo & 0xfff;
-		// calculate size of blocks
-		this.blockWidth = this.widthInfo & 0xf000; 
-		this.blockWidth = (this.blockWidth >> 12) + 1;
-		this.blockWidth <<= 4;
-		
-		this.blockHeight = this.heightInfo & 0xf000;
-		this.blockHeight = (this.blockHeight >> 12) + 1;
-		this.blockHeight <<= 4;
+    private void updateSize(IoBuffer data) {
+        this.widthInfo = data.getShort();
+        this.heightInfo = data.getShort();
+        // extract width and height of the frame
+        this.width = this.widthInfo & 0xfff;
+        this.height = this.heightInfo & 0xfff;
+        // calculate size of blocks
+        this.blockWidth = this.widthInfo & 0xf000;
+        this.blockWidth = (this.blockWidth >> 12) + 1;
+        this.blockWidth <<= 4;
 
-		int xblocks = this.width / this.blockWidth;
-		if ((this.width % this.blockWidth) != 0) {
-			// partial block
-			xblocks += 1;
-		}
+        this.blockHeight = this.heightInfo & 0xf000;
+        this.blockHeight = (this.blockHeight >> 12) + 1;
+        this.blockHeight <<= 4;
 
-		int yblocks = this.height / this.blockHeight;
-		if ((this.height % this.blockHeight) != 0) {
-			// partial block
-			yblocks += 1;
-		}
+        int xblocks = this.width / this.blockWidth;
+        if ((this.width % this.blockWidth) != 0) {
+            // partial block
+            xblocks += 1;
+        }
 
-		this.blockCount = xblocks * yblocks;
+        int yblocks = this.height / this.blockHeight;
+        if ((this.height % this.blockHeight) != 0) {
+            // partial block
+            yblocks += 1;
+        }
 
-		int blockSize = this.maxCompressedSize(this.blockWidth
-				* this.blockHeight * 3);
-		int totalBlockSize = blockSize * this.blockCount;
-		if (this.totalBlockDataSize != totalBlockSize) {
-			log.info("Allocating memory for {} compressed blocks.", this.blockCount);
-			this.blockDataSize = blockSize;
-			this.totalBlockDataSize = totalBlockSize;
-			this.blockData = new byte[blockSize * this.blockCount];
-			this.blockSize = new int[blockSize * this.blockCount];
-			// Reset the sizes to zero
-			for (int idx = 0; idx < this.blockCount; idx++) {
-				this.blockSize[idx] = 0;
-			}
-		}
-	}
+        this.blockCount = xblocks * yblocks;
 
-	/** {@inheritDoc} */
+        int blockSize = this.maxCompressedSize(this.blockWidth * this.blockHeight * 3);
+        int totalBlockSize = blockSize * this.blockCount;
+        if (this.totalBlockDataSize != totalBlockSize) {
+            log.info("Allocating memory for {} compressed blocks.", this.blockCount);
+            this.blockDataSize = blockSize;
+            this.totalBlockDataSize = totalBlockSize;
+            this.blockData = new byte[blockSize * this.blockCount];
+            this.blockSize = new int[blockSize * this.blockCount];
+            // Reset the sizes to zero
+            for (int idx = 0; idx < this.blockCount; idx++) {
+                this.blockSize[idx] = 0;
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
     public boolean addData(IoBuffer data) {
-		if (!this.canHandleData(data)) {
-			return false;
-		}
+        if (!this.canHandleData(data)) {
+            return false;
+        }
 
-		data.get();
-		this.updateSize(data);
-		int idx = 0;
-		int pos = 0;
-		byte[] tmpData = new byte[this.blockDataSize];
+        data.get();
+        this.updateSize(data);
+        int idx = 0;
+        int pos = 0;
+        byte[] tmpData = new byte[this.blockDataSize];
 
-		int countBlocks = this.blockCount;
-		while (data.remaining() > 0 && countBlocks > 0) {
-			short size = data.getShort();
-			countBlocks--;
-			if (size == 0) {
-				// Block has not been modified
-				idx += 1;
-				pos += this.blockDataSize;
-				continue;
-			}
+        int countBlocks = this.blockCount;
+        while (data.remaining() > 0 && countBlocks > 0) {
+            short size = data.getShort();
+            countBlocks--;
+            if (size == 0) {
+                // Block has not been modified
+                idx += 1;
+                pos += this.blockDataSize;
+                continue;
+            }
 
-			// Store new block data
-			this.blockSize[idx] = size;
-			data.get(tmpData, 0, size);
-			System.arraycopy(tmpData, 0, this.blockData, pos, size);
-			idx += 1;
-			pos += this.blockDataSize;
-		}
+            // Store new block data
+            this.blockSize[idx] = size;
+            data.get(tmpData, 0, size);
+            System.arraycopy(tmpData, 0, this.blockData, pos, size);
+            idx += 1;
+            pos += this.blockDataSize;
+        }
 
-		data.rewind();
-		return true;
-	}
+        data.rewind();
+        return true;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public IoBuffer getKeyframe() {
-		IoBuffer result = IoBuffer.allocate(1024);
-		result.setAutoExpand(true);
+        IoBuffer result = IoBuffer.allocate(1024);
+        result.setAutoExpand(true);
 
-		// Header
-		result.put((byte) (FLV_FRAME_KEY | VideoCodec.SCREEN_VIDEO.getId()));
+        // Header
+        result.put((byte) (FLV_FRAME_KEY | VideoCodec.SCREEN_VIDEO.getId()));
 
-		// Frame size
-		result.putShort((short) this.widthInfo);
-		result.putShort((short) this.heightInfo);
+        // Frame size
+        result.putShort((short) this.widthInfo);
+        result.putShort((short) this.heightInfo);
 
-		// Get compressed blocks
-		byte[] tmpData = new byte[this.blockDataSize];
-		int pos = 0;
-		for (int idx = 0; idx < this.blockCount; idx++) {
-			int size = this.blockSize[idx];
-			if (size == 0) {
-				// this should not happen: no data for this block
-				return null;
-			}
+        // Get compressed blocks
+        byte[] tmpData = new byte[this.blockDataSize];
+        int pos = 0;
+        for (int idx = 0; idx < this.blockCount; idx++) {
+            int size = this.blockSize[idx];
+            if (size == 0) {
+                // this should not happen: no data for this block
+                return null;
+            }
 
-			result.putShort((short) size);
-			System.arraycopy(this.blockData, pos, tmpData, 0, size);
-			result.put(tmpData, 0, size);
-			pos += this.blockDataSize;
-		}
+            result.putShort((short) size);
+            System.arraycopy(this.blockData, pos, tmpData, 0, size);
+            result.put(tmpData, 0, size);
+            pos += this.blockDataSize;
+        }
 
-		result.rewind();
-		return result;
-	}
+        result.rewind();
+        return result;
+    }
 
-	public IoBuffer getDecoderConfiguration() {
-		return null;
-	}
+    public IoBuffer getDecoderConfiguration() {
+        return null;
+    }
 
-	/** {@inheritDoc} */
-	public int getNumInterframes() {
-		return 0;
-	}
+    /** {@inheritDoc} */
+    public int getNumInterframes() {
+        return 0;
+    }
 
-	/** {@inheritDoc} */
-	public FrameData getInterframe(int index) {
-		return null;
-	}
+    /** {@inheritDoc} */
+    public FrameData getInterframe(int index) {
+        return null;
+    }
 
 }

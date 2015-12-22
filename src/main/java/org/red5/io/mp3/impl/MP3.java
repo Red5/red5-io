@@ -32,29 +32,31 @@ public class MP3 implements IMP3 {
     /**
      * Actual file object
      */
-	private File file;
+    private File file;
 
     /**
      * Creates MP3 object using given file
-     * @param file           File object to use
+     * 
+     * @param file
+     *            File object to use
      */
     public MP3(File file) {
-		this.file = file;
-	}
+        this.file = file;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public ITagReader getReader() throws IOException {
-		return new MP3Reader(file);
-	}
+        return new MP3Reader(file);
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public ITagWriter getWriter() throws IOException {
-		return null;
-	}
+        return null;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     public ITagWriter getAppendWriter() throws IOException {
-		return null;
-	}
+        return null;
+    }
 
 }

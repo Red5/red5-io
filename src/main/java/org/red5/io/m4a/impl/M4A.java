@@ -35,42 +35,42 @@ import org.slf4j.LoggerFactory;
  */
 public class M4A implements IM4A {
 
-	protected static Logger log = LoggerFactory.getLogger(M4A.class);
+    protected static Logger log = LoggerFactory.getLogger(M4A.class);
 
-	private File file;
+    private File file;
 
-	/**
-	 * Default constructor, used by Spring so that parameters may be injected.
-	 */
-	public M4A() {
-	}
+    /**
+     * Default constructor, used by Spring so that parameters may be injected.
+     */
+    public M4A() {
+    }
 
-	/**
-	 * Create M4A from given file source
-	 * 
-	 * @param file
-	 *            File source
-	 */
-	public M4A(File file) {
-		this.file = file;
-	}
+    /**
+     * Create M4A from given file source
+     * 
+     * @param file
+     *            File source
+     */
+    public M4A(File file) {
+        this.file = file;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ITagReader getReader() throws IOException {
-		return new M4AReader(file);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ITagReader getReader() throws IOException {
+        return new M4AReader(file);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public ITagWriter getWriter() throws IOException {
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public ITagWriter getWriter() throws IOException {
+        return null;
+    }
 
-	public ITagWriter getAppendWriter() throws IOException {
-		return null;
-	}
-	
+    public ITagWriter getAppendWriter() throws IOException {
+        return null;
+    }
+
 }

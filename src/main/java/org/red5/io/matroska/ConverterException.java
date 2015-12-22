@@ -23,21 +23,22 @@ package org.red5.io.matroska;
  *
  */
 public class ConverterException extends Exception {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * @see Exception#Exception()
-	 */
-	public ConverterException() {
-		super();
-	}
+    /**
+     * @see Exception#Exception()
+     */
+    public ConverterException() {
+        super();
+    }
 
-	/**
-	 * @see Exception#Exception(String)
-	 * 
-	 * @param message - string message for this exception
-	 */
-	public ConverterException(String message) {
-		super(message);
-	}
+    /**
+     * @see Exception#Exception(String)
+     * 
+     * @param message
+     *            - string message for this exception
+     */
+    public ConverterException(String message) {
+        super(message);
+    }
 }

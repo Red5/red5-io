@@ -19,59 +19,61 @@
 package org.red5.io.flv.meta;
 
 /**
- * ICuePoint defines contract methods for use with 
- * cuepoints
+ * ICuePoint defines contract methods for use with cuepoints
  * 
  * @author The Red5 Project
  * @author Dominick Accattato (daccattato@gmail.com)
  */
 public interface IMetaCue extends IMeta, Comparable<Object> {
 
-	/**
-	 * Sets the name
-	 * 
-	 * @param name          Cue point name
-	 * 
-	 */
-	public void setName(String name);
+    /**
+     * Sets the name
+     * 
+     * @param name
+     *            Cue point name
+     * 
+     */
+    public void setName(String name);
 
-	/**
-	 * Gets the name
-	 * 
-	 * @return name         Cue point name
-	 * 
-	 */
-	public String getName();
+    /**
+     * Gets the name
+     * 
+     * @return name Cue point name
+     * 
+     */
+    public String getName();
 
-	/**
-	 * Sets the type type can be "event" or "navigation"
-	 * 
-	 * @param type          Cue point type
-	 *
-	 */
-	public void setType(String type);
+    /**
+     * Sets the type type can be "event" or "navigation"
+     * 
+     * @param type
+     *            Cue point type
+     *
+     */
+    public void setType(String type);
 
-	/**
-	 * Gets the type
-	 * 
-	 * @return type         Cue point type
-	 *
-	 */
-	public String getType();
+    /**
+     * Gets the type
+     * 
+     * @return type Cue point type
+     *
+     */
+    public String getType();
 
-	/**
-	 * Sets the time
-	 * 
-	 * @param d              Timestamp
-	 *
-	 */
-	public void setTime(double d);
+    /**
+     * Sets the time
+     * 
+     * @param d
+     *            Timestamp
+     *
+     */
+    public void setTime(double d);
 
-	/**
-	 * Gets the time
-	 * 
-	 * @return time          Timestamp
-	 *
-	 */
-	public double getTime();
+    /**
+     * Gets the time
+     * 
+     * @return time Timestamp
+     *
+     */
+    public double getTime();
 }

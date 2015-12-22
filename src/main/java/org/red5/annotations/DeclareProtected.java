@@ -24,8 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for public methods that should be protected by a named permission
- * when called through RTMP, RTMPT or Remoting.
+ * Annotation for public methods that should be protected by a named permission when called through RTMP, RTMPT or Remoting.
  * 
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
@@ -34,11 +33,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DeclareProtected {
 
-	/**
-	 * Permission required to execute method.
-	 * 
-	 * @return permission required
-	 */
-	String permission();
-	
+    /**
+     * Permission required to execute method.
+     * 
+     * @return permission required
+     */
+    String permission();
+
 }

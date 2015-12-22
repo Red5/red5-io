@@ -30,18 +30,18 @@ import org.slf4j.LoggerFactory;
 
 public class M4AReaderTest extends TestCase {
 
-	private static Logger log = LoggerFactory.getLogger(M4AReaderTest.class);
+    private static Logger log = LoggerFactory.getLogger(M4AReaderTest.class);
 
-	@Test
-	public void testCtor() throws Exception {
-		
-		File file = new File("target/test-classes/fixtures/sample.m4a");
-		M4AReader reader = new M4AReader(file);
-		
-		ITag tag = reader.readTag();
-		log.debug("Tag: {}", tag);
-		tag = reader.readTag();		
-		log.debug("Tag: {}", tag);
+    @Test
+    public void testCtor() throws Exception {
 
-	}
+        File file = new File("target/test-classes/fixtures/sample.m4a");
+        M4AReader reader = new M4AReader(file);
+
+        ITag tag = reader.readTag();
+        log.debug("Tag: {}", tag);
+        tag = reader.readTag();
+        log.debug("Tag: {}", tag);
+
+    }
 }

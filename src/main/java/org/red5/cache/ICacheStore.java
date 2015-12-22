@@ -22,8 +22,7 @@ import java.lang.ref.SoftReference;
 import java.util.Iterator;
 
 /**
- * Storage for cacheable objects. Selected cache engines must implement this
- * interface.
+ * Storage for cacheable objects. Selected cache engines must implement this interface.
  * 
  * @see <a href="http://www-128.ibm.com/developerworks/java/library/j-jtp01246.html">Soft references provide for quick-and-dirty caching</a>
  * @see <a href="http://java.sun.com/developer/technicalArticles/ALT/RefObj/">Reference Objects and Garbage Collection</a>
@@ -35,73 +34,79 @@ import java.util.Iterator;
  */
 public interface ICacheStore {
 
-	/**
-	 * Offer an object to the cache with an associated key.
-	 * If the named object exists in cache, it will not be accepted.
-	 * 
-	 * @param name string name representing the object
-	 * @param obj cacheable object
-	 * @return true if accepted, false otherwise
-	 */
-	public boolean offer(String name, Object obj);
+    /**
+     * Offer an object to the cache with an associated key. If the named object exists in cache, it will not be accepted.
+     * 
+     * @param name
+     *            string name representing the object
+     * @param obj
+     *            cacheable object
+     * @return true if accepted, false otherwise
+     */
+    public boolean offer(String name, Object obj);
 
-	/**
-	 * Puts an object in the cache with the associated key.
-	 * 
-	 * @param name string name representing the object
-	 * @param obj cacheable object
-	 */
-	public void put(String name, Object obj);
+    /**
+     * Puts an object in the cache with the associated key.
+     * 
+     * @param name
+     *            string name representing the object
+     * @param obj
+     *            cacheable object
+     */
+    public void put(String name, Object obj);
 
-	/**
-	 * Return a cached object with the given name.
-	 * 
-	 * @param name the name of the object to return
-	 * @return the object or <code>null</code> if no such object was found
-	 */
-	public ICacheable get(String name);
+    /**
+     * Return a cached object with the given name.
+     * 
+     * @param name
+     *            the name of the object to return
+     * @return the object or <code>null</code> if no such object was found
+     */
+    public ICacheable get(String name);
 
-	/**
-	 * Delete the passed cached object.
-	 * 
-	 * @param obj the object to delete
+    /**
+     * Delete the passed cached object.
+     * 
+     * @param obj
+     *            the object to delete
      * @return true if was removed; false it wasn't in cache to begin with
-	 */
-	public boolean remove(ICacheable obj);
+     */
+    public boolean remove(ICacheable obj);
 
-	/**
-	 * Delete the cached object with the given name.
-	 * 
-	 * @param name the name of the object to delete
+    /**
+     * Delete the cached object with the given name.
+     * 
+     * @param name
+     *            the name of the object to delete
      * @return true if was removed; false it wasn't in cache to begin with
-	 */
-	public boolean remove(String name);
+     */
+    public boolean remove(String name);
 
-	/**
-	 * Return iterator over the names of all already loaded objects in the
-	 * storage.
-	 * 
-	 * @return iterator over all objects names
-	 */
-	public Iterator<String> getObjectNames();
+    /**
+     * Return iterator over the names of all already loaded objects in the storage.
+     * 
+     * @return iterator over all objects names
+     */
+    public Iterator<String> getObjectNames();
 
-	/**
-	 * Return iterator over the already loaded objects in the storage.
-	 * 
-	 * @return iterator over all objects
-	 */
-	public Iterator<SoftReference<? extends ICacheable>> getObjects();
+    /**
+     * Return iterator over the already loaded objects in the storage.
+     * 
+     * @return iterator over all objects
+     */
+    public Iterator<SoftReference<? extends ICacheable>> getObjects();
 
-	/**
-	 * Sets the maximum number of entries for the cache.
-	 * 
-	 * @param max upper-limit of the cache
-	 */
-	public void setMaxEntries(int max);
+    /**
+     * Sets the maximum number of entries for the cache.
+     * 
+     * @param max
+     *            upper-limit of the cache
+     */
+    public void setMaxEntries(int max);
 
-	/**
-	 * Allows for cleanup of a cache implementation.
-	 */
-	public void destroy();
+    /**
+     * Allows for cleanup of a cache implementation.
+     */
+    public void destroy();
 
 }

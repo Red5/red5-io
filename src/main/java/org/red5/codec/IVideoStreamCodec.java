@@ -50,7 +50,8 @@ public interface IVideoStreamCodec {
     /**
      * Returns true if the codec knows how to handle the passed stream data.
      * 
-     * @param data some sample data to see if this codec can handle it
+     * @param data
+     *            some sample data to see if this codec can handle it
      * @return can this code handle the data.
      */
     public boolean canHandleData(IoBuffer data);
@@ -58,7 +59,8 @@ public interface IVideoStreamCodec {
     /**
      * Update the state of the codec with the passed data.
      * 
-     * @param data data to tell the codec we're adding
+     * @param data
+     *            data to tell the codec we're adding
      * @return true for success. false for error
      */
     public boolean addData(IoBuffer data);
@@ -87,7 +89,8 @@ public interface IVideoStreamCodec {
     /**
      * Gets data of interframe with the specified index.
      *
-     * @param index of interframe
+     * @param index
+     *            of interframe
      * @return data of the interframe or null if index is not valid
      */
     public FrameData getInterframe(int index);
@@ -109,7 +112,8 @@ public interface IVideoStreamCodec {
         /**
          * Makes a copy of the incoming bytes and places them in an IoBuffer. No flip or rewind is performed on the source data.
          * 
-         * @param data data
+         * @param data
+         *            data
          */
         public void setData(IoBuffer data) {
             if (frame != null) {

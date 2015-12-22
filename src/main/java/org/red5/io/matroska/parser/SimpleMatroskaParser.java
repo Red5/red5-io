@@ -27,21 +27,20 @@ import org.red5.io.matroska.ConverterException;
 import org.red5.io.matroska.ParserUtils;
 import org.red5.io.matroska.dtd.Tag;
 
-
 public class SimpleMatroskaParser implements MatroskaParser {
 
-	@Override
-	public List<Tag> parse(InputStream inputStream) throws IOException, ConverterException {
-		
-		List<Tag> listOfTags = new ArrayList<>();
-		
-		// parse EBML tag
-		listOfTags.add(ParserUtils.parseTag(inputStream));
-		
-		// parse Segment tag
-		listOfTags.add(ParserUtils.parseTag(inputStream));
-		
-		return listOfTags;
-	}
+    @Override
+    public List<Tag> parse(InputStream inputStream) throws IOException, ConverterException {
+
+        List<Tag> listOfTags = new ArrayList<>();
+
+        // parse EBML tag
+        listOfTags.add(ParserUtils.parseTag(inputStream));
+
+        // parse Segment tag
+        listOfTags.add(ParserUtils.parseTag(inputStream));
+
+        return listOfTags;
+    }
 
 }

@@ -61,7 +61,7 @@ public class AVCVideoTest {
         data.put((byte) 0x01);
         data.put(RandomStringUtils.random(24).getBytes());
         data.flip();
-        
+
         AVCVideo video = new AVCVideo();
         assertTrue(video.canHandleData(data));
         assertTrue(video.addData(data));
@@ -86,7 +86,7 @@ public class AVCVideoTest {
         data.put((byte) 0x01);
         data.put(RandomStringUtils.random(24).getBytes());
         data.flip();
-        
+
         AVCVideo video = new AVCVideo();
         assertTrue(video.canHandleData(data));
         assertTrue(video.addData(data));

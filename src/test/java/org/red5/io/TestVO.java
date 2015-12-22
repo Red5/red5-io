@@ -21,12 +21,12 @@ package org.red5.io;
 import java.io.Serializable;
 
 public class TestVO implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
 
-	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof TestVO;
-	}
-	
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TestVO;
+    }
+
 }

@@ -123,9 +123,9 @@ public class AVCVideo implements IVideoStreamCodec {
                         } else {
                             interframes.add(new FrameData(data));
                         }
-//                        if (log.isTraceEnabled()) {
-//                            log.trace("Interframes size: {} last: {}", interframes.size(), lastInterframe);
-//                        }
+                        //                        if (log.isTraceEnabled()) {
+                        //                            log.trace("Interframes size: {} last: {}", interframes.size(), lastInterframe);
+                        //                        }
                     } catch (Throwable e) {
                         log.error("Failed to buffer interframe", e);
                     }
@@ -158,9 +158,9 @@ public class AVCVideo implements IVideoStreamCodec {
 
     /** {@inheritDoc} */
     public FrameData getInterframe(int index) {
-//        if (log.isTraceEnabled()) {
-//            log.trace("getInterframe: {} interframes count: {} has frame: {}", index, numInterframes.get(), (index < numInterframes.get()));
-//        }
+        //        if (log.isTraceEnabled()) {
+        //            log.trace("getInterframe: {} interframes count: {} has frame: {}", index, numInterframes.get(), (index < numInterframes.get()));
+        //        }
         if (index < numInterframes.get()) {
             return interframes.get(index);
         }

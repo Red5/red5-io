@@ -24,34 +24,35 @@ package org.red5.io.model;
  */
 public class SimpleJavaBean {
 
-	private String nameOfBean = "jeff";
+    private String nameOfBean = "jeff";
 
-	/**
+    /**
      * Getter for property 'nameOfBean'.
      *
      * @return Value for property 'nameOfBean'.
      */
     public String getNameOfBean() {
-		return nameOfBean;
-	}
+        return nameOfBean;
+    }
 
-	/**
+    /**
      * Setter for property 'nameOfBean'.
      *
-     * @param nameOfBean Value to set for property 'nameOfBean'.
+     * @param nameOfBean
+     *            Value to set for property 'nameOfBean'.
      */
     public void setNameOfBean(String nameOfBean) {
-		this.nameOfBean = nameOfBean;
-	}
+        this.nameOfBean = nameOfBean;
+    }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-	public boolean equals(Object obj){
-		if(obj instanceof SimpleJavaBean){
-			SimpleJavaBean sjb = (SimpleJavaBean) obj;
-			return sjb.getNameOfBean().equals(sjb.getNameOfBean());
-		}
-		return false;
-	}
+    public boolean equals(Object obj) {
+        if (obj instanceof SimpleJavaBean) {
+            SimpleJavaBean sjb = (SimpleJavaBean) obj;
+            return sjb.getNameOfBean().equals(sjb.getNameOfBean());
+        }
+        return false;
+    }
 
 }

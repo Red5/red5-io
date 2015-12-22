@@ -30,47 +30,48 @@ import org.apache.mina.core.buffer.IoBuffer;
  */
 public interface ICacheable {
 
-	/**
-	 * Returns <code>true</code> if the object is cached, <code>false</code>
-	 * otherwise.
-	 * 
-	 * @return <code>true</code> if object is cached, <code>false</code> otherwise
-	 */
-	public boolean isCached();
+    /**
+     * Returns <code>true</code> if the object is cached, <code>false</code> otherwise.
+     * 
+     * @return <code>true</code> if object is cached, <code>false</code> otherwise
+     */
+    public boolean isCached();
 
-	/**
-	 * Sets a flag to represent the cached status of a cacheable object.
-	 * 
-	 * @param cached    <code>true</code> if object is cached, <code>false</code> otherwise
-	 */
-	public void setCached(boolean cached);
+    /**
+     * Sets a flag to represent the cached status of a cacheable object.
+     * 
+     * @param cached
+     *            <code>true</code> if object is cached, <code>false</code> otherwise
+     */
+    public void setCached(boolean cached);
 
-	/**
-	 * Returns the name of the cached object.
-	 * 
-	 * @return  Object name
-	 */
-	public String getName();
+    /**
+     * Returns the name of the cached object.
+     * 
+     * @return Object name
+     */
+    public String getName();
 
-	/**
-	 * Set the name of the cached object.
-	 * 
-	 * @param name New object name
-	 */
-	public void setName(String name);
+    /**
+     * Set the name of the cached object.
+     * 
+     * @param name
+     *            New object name
+     */
+    public void setName(String name);
 
-	/**
-	 * Returns the object contained within the cacheable reference.
-	 * 
-	 * @return    Cached representation of object
-	 */
-	public byte[] getBytes();
+    /**
+     * Returns the object contained within the cacheable reference.
+     * 
+     * @return Cached representation of object
+     */
+    public byte[] getBytes();
 
-	/**
-	 * Returns a readonly byte buffer.
-	 * 
-	 * @return     Read-only IoBuffer with cached data
-	 */
-	public IoBuffer getByteBuffer();
+    /**
+     * Returns a readonly byte buffer.
+     * 
+     * @return Read-only IoBuffer with cached data
+     */
+    public IoBuffer getByteBuffer();
 
 }
