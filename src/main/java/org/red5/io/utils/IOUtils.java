@@ -230,6 +230,8 @@ public class IOUtils {
      * @return byte array
      */
     public final static byte[] hexStringToByteArray(String s) {
+        // remove all the whitespace first
+        s = s.replaceAll("\\s+","");
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
