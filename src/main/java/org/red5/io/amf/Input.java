@@ -34,6 +34,7 @@ import java.util.Vector;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.io.amf3.ByteArray;
 import org.red5.io.object.BaseInput;
@@ -178,7 +179,6 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      * @return boolean
      */
     public Boolean readBoolean(Type target) {
-        // TODO: check values
         return (buf.get() == AMF.VALUE_TRUE) ? Boolean.TRUE : Boolean.FALSE;
     }
 
@@ -189,12 +189,23 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      */
     public Number readNumber(Type target) {
         int remaining = buf.remaining();
+        log.debug("readNumber from {} bytes", remaining);
         // look to see if big enough for double
-        if (remaining > 0 && remaining >= 8) {
-            return buf.getDouble();
+        if (remaining > 0) {
+            if (remaining >= 8) {
+                return buf.getDouble();
+            } else if (remaining >= 4) {
+                // try 32 bit int
+                return buf.getInt();
+            } else if (remaining >= 2) {
+                return buf.getShort();
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Remaining not big enough for number - offset: {} limit: {} {}", buf.position(), buf.limit(), Hex.encodeHexString(buf.array()));
+            }
+            return buf.get();
         }
-        // try int
-        return buf.getInt();
+        return 0;
         // if not make sure big enough for double or int, we'll have BufferUnderflowEx!
 //        double num = buf.getDouble();
 //        if (num == Math.round(num)) {
