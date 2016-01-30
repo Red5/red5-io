@@ -110,52 +110,40 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      */
     protected byte readDataType(byte dataType) {
         byte coreType;
-
         switch (currentDataType) {
-
             case AMF.TYPE_NULL:
             case AMF.TYPE_UNDEFINED:
                 coreType = DataTypes.CORE_NULL;
                 break;
-
             case AMF.TYPE_NUMBER:
                 coreType = DataTypes.CORE_NUMBER;
                 break;
-
             case AMF.TYPE_BOOLEAN:
                 coreType = DataTypes.CORE_BOOLEAN;
                 break;
-
             case AMF.TYPE_STRING:
             case AMF.TYPE_LONG_STRING:
                 coreType = DataTypes.CORE_STRING;
                 break;
-
             case AMF.TYPE_CLASS_OBJECT:
             case AMF.TYPE_OBJECT:
                 coreType = DataTypes.CORE_OBJECT;
                 break;
-
             case AMF.TYPE_MIXED_ARRAY:
                 coreType = DataTypes.CORE_MAP;
                 break;
-
             case AMF.TYPE_ARRAY:
                 coreType = DataTypes.CORE_ARRAY;
                 break;
-
             case AMF.TYPE_DATE:
                 coreType = DataTypes.CORE_DATE;
                 break;
-
             case AMF.TYPE_XML:
                 coreType = DataTypes.CORE_XML;
                 break;
-
             case AMF.TYPE_REFERENCE:
                 coreType = DataTypes.OPT_REFERENCE;
                 break;
-
             case AMF.TYPE_UNSUPPORTED:
             case AMF.TYPE_MOVIECLIP:
             case AMF.TYPE_RECORDSET:
@@ -164,14 +152,12 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
                 // will call back to readCustom, we can then handle or return null
                 coreType = (byte) (currentDataType + DataTypes.CUSTOM_AMF_MASK);
                 break;
-
             case AMF.TYPE_END_OF_OBJECT:
             default:
                 // End of object, and anything else lets just skip
                 coreType = DataTypes.CORE_SKIP;
                 break;
         }
-
         return coreType;
     }
 
@@ -202,16 +188,24 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      * @return Number
      */
     public Number readNumber(Type target) {
-        double num = buf.getDouble();
-        if (num == Math.round(num)) {
-            if (num < Integer.MAX_VALUE) {
-                return (int) num;
-            } else {
-                return Math.round(num);
-            }
-        } else {
-            return num;
+        int remaining = buf.remaining();
+        // look to see if big enough for double
+        if (remaining > 0 && remaining >= 8) {
+            return buf.getDouble();
         }
+        // try int
+        return buf.getInt();
+        // if not make sure big enough for double or int, we'll have BufferUnderflowEx!
+//        double num = buf.getDouble();
+//        if (num == Math.round(num)) {
+//            if (num < Integer.MAX_VALUE) {
+//                return (int) num;
+//            } else {
+//                return Math.round(num);
+//            }
+//        } else {
+//            return num;
+//        }
     }
 
     /**
