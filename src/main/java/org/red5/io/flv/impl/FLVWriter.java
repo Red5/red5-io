@@ -315,13 +315,13 @@ public class FLVWriter implements ITagWriter {
                     Input metadata = new Input(tagBody);
                     // initialize type so that readString knows what to do
                     metadata.readDataType();
-                    String metaType = metadata.readString(String.class);
+                    String metaType = metadata.readString();
                     log.debug("Metadata tag type: {}", metaType);
                     try {
                         tagBody.reset();
                     } catch (InvalidMarkException e) {
                         //TDJ: this error is probably caused by the setter of limit on readString method
-                        log.debug("Exception reseting position of buffer: " + e.getMessage(), e);
+                        log.debug("Exception reseting position of buffer: {}", e.getMessage(), e);
                     }
                     if (!"onCuePoint".equals(metaType)) {
                         // store any incoming onMetaData tags until we close the file, allow onCuePoint tags to continue
@@ -514,7 +514,7 @@ public class FLVWriter implements ITagWriter {
                     Input metadata = new Input(data);
                     // initialize type so that readString knows what to do
                     metadata.readDataType();
-                    String metaType = metadata.readString(String.class);
+                    String metaType = metadata.readString();
                     log.debug("Metadata tag type: {}", metaType);
                     data.reset();
                     if (!"onCuePoint".equals(metaType)) {

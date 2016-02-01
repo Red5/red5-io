@@ -38,7 +38,7 @@ public class AMF {
     public static final Charset CHARSET = Charset.forName("UTF-8");
 
     /**
-     * Max string lenght constant
+     * Max string length constant
      */
     public static final int LONG_STRING_LENGTH = 65535;
 
@@ -91,6 +91,11 @@ public class AMF {
      * End of object marker constant
      */
     public static final byte TYPE_END_OF_OBJECT = 0x09;
+
+    /**
+     * End of object byte sequence
+     */
+    public static final byte[] END_OF_OBJECT_SEQUENCE = new byte[] { (byte) 0x00, (byte) 0x00, TYPE_END_OF_OBJECT };
 
     /**
      * Array marker constant

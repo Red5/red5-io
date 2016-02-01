@@ -341,19 +341,6 @@ public class Serializer {
         return true;
     }
 
-    // Extension points
-    /**
-     * Pre-processes an object TODO // must be implemented
-     * 
-     * @return Pre-processed object
-     * @param any
-     *            Object to pre-process
-     */
-    public static Object preProcessExtension(Object any) {
-        // Does nothing right now but will later
-        return any;
-    }
-
     /**
      * Writes a custom data to the output
      * 

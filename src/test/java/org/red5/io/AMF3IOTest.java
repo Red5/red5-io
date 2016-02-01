@@ -43,6 +43,11 @@ public class AMF3IOTest extends AbstractIOTest {
 
     IoBuffer buf;
 
+    {
+        // setup to use AMF3
+        encoding = 3;
+    }
+
     /** {@inheritDoc} */
     @Override
     void dumpOutput() {

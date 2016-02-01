@@ -21,20 +21,12 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.UnsupportedCharsetException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Hexadecimal byte dumper
  * 
  * @author Niko Schweitzer
  */
 public class HexDump {
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = LoggerFactory.getLogger(HexDump.class);
 
     /**
      * Method prettyPrintHex
@@ -730,12 +722,14 @@ public class HexDump {
     }
 
     /**
-     * Returns a string of 8 hexadecimal digits (most significant digit first) corresponding to the integer <i>n</i> , which is treated as unsigned.
+     * Returns a string of 8 hexadecimal digits (most significant digit first) corresponding to the integer <i>n</i> , which is treated as
+     * unsigned.
      * 
      * @param n
      *            Description of Parameter
      * @return Description of the Returned Value
      */
+    @SuppressWarnings("unused")
     private static String intToHexString(int n) {
         char[] buf = new char[8];
         for (int i = 7; i >= 0; i--) {
@@ -743,115 +737,6 @@ public class HexDump {
             n >>>= 4;
         }
         return new String(buf);
-    }
-
-    /**
-     * test and demo for the Convert class
-     * 
-     * @param args
-     *            none needed
-     */
-    public static void main(String args[]) {
-        logger.info("-test and demo of the converter ");
-
-        String str = "Niko";
-        byte[] ba = str.getBytes();
-
-        logger.info("to convert: " + str);
-        logger.info("converted1: " + byteArrayToHexString(ba));
-        logger.info("converted1: " + byteArrayToHexString(ba, 0, ba.length));
-        logger.info("converted3: " + stringToHexString(str));
-        logger.info("----Convert integer to hexString...");
-
-        int i = -2;
-
-        logger.info("to convert: " + i + " -> " + intToHexString(i));
-        logger.info("----Convert byte[] to binary String...");
-
-        byte[] baToConvert = { (byte) 0xff, (byte) 0x00, (byte) 0x33, (byte) 0x11, (byte) 0xff, (byte) 0x5f, (byte) 0x5f, (byte) 0x4f, (byte) 0x1f, (byte) 0xff };
-
-        logger.info("to convert: " + toHexString(baToConvert) + " -> " + byteArrayToBinaryString(baToConvert));
-
-        // ---- modify line separator
-        setByteSeparator('-');
-        logger.info("to convert: " + toHexString(baToConvert) + " -> " + byteArrayToBinaryString(baToConvert));
-
-        // ---- modify line separator
-        setByteSeparator('*');
-        setWithByteSeparator(true);
-        logger.info("to convert: " + toHexString(baToConvert) + " -> " + byteArrayToBinaryString(baToConvert));
-
-        // ---- modify bit digits
-        char[] bd = { 'a', 'b' };
-
-        try {
-            setBitDigits(bd);
-        } catch (Exception ex) {
-            logger.debug("", ex);
-            // ex.printStackTrace();
-        }
-
-        logger.info("to convert: " + toHexString(baToConvert) + " -> " + byteArrayToBinaryString(baToConvert));
-
-        // ------------------------------------------------//
-        setBitDigits('0', '1');
-        logger.info("---- Convert.toByteArray(int) ");
-
-        for (int iToConvert = -10; iToConvert < 10; iToConvert++) {
-            logger.info("to convert = " + iToConvert + " = " + HexDump.toBinaryString(iToConvert));
-
-            byte[] baConvInt = new byte[4];
-
-            baConvInt = HexDump.toByteArray(iToConvert);
-
-            logger.info("convertet byteArray = " + HexDump.toBinaryString(baConvInt));
-        }
-
-        logger.info("---- toHexString(int) ");
-
-        i = -1;
-
-        logger.info(i + " = 0x" + toHexString(i) + " = " + toBinaryString(i));
-
-        i++;
-
-        logger.info(i + " = 0x" + toHexString(i) + " = " + toBinaryString(i));
-
-        // ------------------------------------------------//
-        logger.info("---- toHexString(long) ");
-
-        long l = 100;
-
-        logger.info(l + " = 0x" + toHexString(l) + " = " + toBinaryString(l));
-
-        java.util.Random rnd = new java.util.Random();
-
-        l = rnd.nextLong();
-
-        logger.info(l + " = 0x" + toHexString(l) + " = " + toBinaryString(l));
-
-        // ------------------------------------------------//
-        logger.info("---- toHexString(short) ");
-
-        short s = 100;
-
-        logger.info(s + " = 0x" + toHexString(s) + " = " + toBinaryString(s));
-
-        rnd = new java.util.Random();
-        s = (short) rnd.nextInt();
-
-        logger.info(s + " = 0x" + toHexString(s) + " = " + toBinaryString(s));
-
-        // ---------------------------------------------------------------------------//
-        // convert dezimal-String to binary
-        logger.info("---- read file in Hex-Format ");
-
-        String strToConvert = "12345654321";
-
-        logger.info(strToConvert + " = " + stringToHexString(strToConvert));
-        logger.info("Das ist die Hex-Darstellung des obigen Strings");
-
-        logger.info("ba = " + toHexString(ba));
     }
 
     public static String formatHexDump(String in) {

@@ -34,8 +34,6 @@ import org.w3c.dom.Document;
  */
 public interface Output {
 
-    boolean supportsDataType(byte type);
-
     void putString(String string);
 
     // Basic Data Types

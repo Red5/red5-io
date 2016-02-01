@@ -27,6 +27,11 @@ package org.red5.io.object;
 public class DataTypes {
 
     /**
+     * End marker
+     */
+    public static final byte CORE_END_OBJECT = (byte) 0xff;
+
+    /**
      * Padding marker
      */
     public static final byte CORE_SKIP = 0x00; // padding
@@ -170,27 +175,20 @@ public class DataTypes {
                 return "Vector<Object>";
             case OPT_REFERENCE:
                 return "Reference";
-            default:
         }
-
         if (dataType >= CUSTOM_MOCK_MASK && dataType < CUSTOM_AMF_MASK) {
             return "MOCK[" + (dataType - CUSTOM_MOCK_MASK) + ']';
         }
-
         if (dataType >= CUSTOM_AMF_MASK && dataType < CUSTOM_RTMP_MASK) {
             return "AMF[" + (dataType - CUSTOM_AMF_MASK) + ']';
         }
-
         if (dataType >= CUSTOM_RTMP_MASK && dataType < CUSTOM_JSON_MASK) {
             return "RTMP[" + (dataType - CUSTOM_RTMP_MASK) + ']';
         }
-
         if (dataType >= CUSTOM_JSON_MASK && dataType < CUSTOM_XML_MASK) {
             return "JSON[" + (dataType - CUSTOM_JSON_MASK) + ']';
         }
-
         return "XML[" + (dataType - CUSTOM_XML_MASK) + ']';
-
     }
 
     /**

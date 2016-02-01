@@ -22,7 +22,9 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -83,93 +85,65 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
     public Input(IoBuffer buf) {
         super();
         this.buf = buf;
-    }
-
-    /**
-     * Reads the data type.
-     *
-     * @return byte Data type
-     */
-    public byte readDataType() {
-        if (buf != null) {
-            // XXX Paul: prevent an NPE here by returning the current data type
-            // when there is a null buffer
-            currentDataType = buf.get();
-        } else {
-            log.error("Why is buf null?");
+        if (log.isTraceEnabled()) {
+            log.trace("Input: {}", Hex.encodeHexString(Arrays.copyOfRange(buf.array(), buf.position(), buf.limit())));
         }
-        return readDataType(currentDataType);
     }
 
     /**
      * Reads the data type.
      *
-     * @param dataType
-     *            Data type as byte
      * @return One of AMF class constants with type
      * @see org.red5.io.amf.AMF
      */
-    protected byte readDataType(byte dataType) {
-        byte coreType;
-        switch (currentDataType) {
-            case AMF.TYPE_NULL:
-            case AMF.TYPE_UNDEFINED:
-                coreType = DataTypes.CORE_NULL;
-                break;
-            case AMF.TYPE_NUMBER:
-                coreType = DataTypes.CORE_NUMBER;
-                break;
-            case AMF.TYPE_BOOLEAN:
-                coreType = DataTypes.CORE_BOOLEAN;
-                break;
-            case AMF.TYPE_STRING:
-            case AMF.TYPE_LONG_STRING:
-                coreType = DataTypes.CORE_STRING;
-                break;
-            case AMF.TYPE_CLASS_OBJECT:
-            case AMF.TYPE_OBJECT:
-                coreType = DataTypes.CORE_OBJECT;
-                break;
-            case AMF.TYPE_MIXED_ARRAY:
-                coreType = DataTypes.CORE_MAP;
-                break;
-            case AMF.TYPE_ARRAY:
-                coreType = DataTypes.CORE_ARRAY;
-                break;
-            case AMF.TYPE_DATE:
-                coreType = DataTypes.CORE_DATE;
-                break;
-            case AMF.TYPE_XML:
-                coreType = DataTypes.CORE_XML;
-                break;
-            case AMF.TYPE_REFERENCE:
-                coreType = DataTypes.OPT_REFERENCE;
-                break;
-            case AMF.TYPE_UNSUPPORTED:
-            case AMF.TYPE_MOVIECLIP:
-            case AMF.TYPE_RECORDSET:
-                // These types are not handled by core datatypes
-                // So add the amf mask to them, this way the deserializer
-                // will call back to readCustom, we can then handle or return null
-                coreType = (byte) (currentDataType + DataTypes.CUSTOM_AMF_MASK);
-                break;
-            case AMF.TYPE_END_OF_OBJECT:
-            default:
-                // End of object, and anything else lets just skip
-                coreType = DataTypes.CORE_SKIP;
-                break;
-        }
-        return coreType;
+    public byte readDataType() {
+        do {
+            // get the data type
+            currentDataType = buf.get();
+            log.trace("Data type: {}", currentDataType);
+            switch (currentDataType) {
+                case AMF.TYPE_NULL:
+                case AMF.TYPE_UNDEFINED:
+                    return DataTypes.CORE_NULL;
+                case AMF.TYPE_NUMBER:
+                    return DataTypes.CORE_NUMBER;
+                case AMF.TYPE_BOOLEAN:
+                    return DataTypes.CORE_BOOLEAN;
+                case AMF.TYPE_STRING:
+                case AMF.TYPE_LONG_STRING:
+                    return DataTypes.CORE_STRING;
+                case AMF.TYPE_CLASS_OBJECT:
+                case AMF.TYPE_OBJECT:
+                    return DataTypes.CORE_OBJECT;
+                case AMF.TYPE_MIXED_ARRAY:
+                    return DataTypes.CORE_MAP;
+                case AMF.TYPE_ARRAY:
+                    return DataTypes.CORE_ARRAY;
+                case AMF.TYPE_DATE:
+                    return DataTypes.CORE_DATE;
+                case AMF.TYPE_XML:
+                    return DataTypes.CORE_XML;
+                case AMF.TYPE_REFERENCE:
+                    return DataTypes.OPT_REFERENCE;
+                case AMF.TYPE_UNSUPPORTED:
+                case AMF.TYPE_MOVIECLIP:
+                case AMF.TYPE_RECORDSET:
+                    // These types are not handled by core datatypes
+                    // So add the amf mask to them, this way the deserializer
+                    // will call back to readCustom, we can then handle or return null
+                    return (byte) (currentDataType + DataTypes.CUSTOM_AMF_MASK);
+            }
+        } while(hasMoreProperties());
+        log.trace("No more data types available");
+        return DataTypes.CORE_END_OBJECT;
     }
-
-    // Basic
 
     /**
      * Reads a null.
      *
      * @return Object
      */
-    public Object readNull(Type target) {
+    public Object readNull() {
         return null;
     }
 
@@ -178,7 +152,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return boolean
      */
-    public Boolean readBoolean(Type target) {
+    public Boolean readBoolean() {
         return (buf.get() == AMF.VALUE_TRUE) ? Boolean.TRUE : Boolean.FALSE;
     }
 
@@ -187,36 +161,19 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Number
      */
-    public Number readNumber(Type target) {
+    public Number readNumber() {
         int remaining = buf.remaining();
         log.debug("readNumber from {} bytes", remaining);
         // look to see if big enough for double
-        if (remaining > 0) {
-            if (remaining >= 8) {
-                return buf.getDouble();
-            } else if (remaining >= 4) {
-                // try 32 bit int
-                return buf.getInt();
-            } else if (remaining >= 2) {
-                return buf.getShort();
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Remaining not big enough for number - offset: {} limit: {} {}", buf.position(), buf.limit(), Hex.encodeHexString(buf.array()));
-            }
-            return buf.get();
+        if (remaining >= 8) {
+            double d = buf.getDouble();
+            log.debug("Number: {}", d);
+            return d;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Remaining not big enough for number - offset: {} limit: {} {}", buf.position(), buf.limit(), Hex.encodeHexString(buf.array()));
         }
         return 0;
-        // if not make sure big enough for double or int, we'll have BufferUnderflowEx!
-//        double num = buf.getDouble();
-//        if (num == Math.round(num)) {
-//            if (num < Integer.MAX_VALUE) {
-//                return (int) num;
-//            } else {
-//                return Math.round(num);
-//            }
-//        } else {
-//            return num;
-//        }
     }
 
     /**
@@ -225,7 +182,16 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      * @return String
      */
     public String getString() {
-        return getString(buf);
+        log.trace("getString - currentDataType: {}", currentDataType);
+        byte lastDataType = currentDataType;
+        // temporarily set to string for reading
+        if (currentDataType != AMF.TYPE_STRING) {
+            currentDataType = AMF.TYPE_STRING;
+        }
+        String result = readString();
+        // set data type back to what it was
+        currentDataType = lastDataType;
+        return result;
     }
 
     /**
@@ -233,72 +199,73 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return String
      */
-    public String readString(Type target) {
+    public String readString() {
+        int limit = buf.limit();
         int len = 0;
         switch (currentDataType) {
             case AMF.TYPE_LONG_STRING:
+                log.trace("Long string type");
                 len = buf.getInt();
+                if (len > limit) {
+                    len = limit;
+                }
                 break;
             case AMF.TYPE_STRING:
-                len = buf.getShort() & 0xffff; //buf.getUnsignedShort();
+                log.trace("Std string type");
+                len = buf.getUnsignedShort();
                 break;
             default:
                 log.debug("Unknown AMF type: {}", currentDataType);
         }
-        int limit = buf.limit();
-        log.debug("Limit: {}", limit);
-        String string = bufferToString(buf.buf(), len);
-        buf.limit(limit); // Reset the limit
+        log.debug("Length: {} limit: {}", len, limit);
+        byte[] str = new byte[len];
+        buf.get(str);
+        String string = bufferToString(str);
+        //String string = bufferToString(Arrays.copyOfRange(buf.array(), buf.position(), (buf.position() + len)));
+        //buf.skip(len);
         return string;
     }
 
-    /**
-     * Returns a string based on the buffer
-     *
-     * @param buf
-     *            Byte buffer with data
-     * @return String Decoded string
-     */
-    public static String getString(IoBuffer buf) {
-        int len = buf.getShort() & 0xffff; //buf.getUnsignedShort(); XXX is appears to be broken in mina at 2.0.4
-        log.debug("Length: {}", len);
-        int limit = buf.limit();
-        log.debug("Limit: {}", limit);
-        String string = bufferToString(buf.buf(), len);
-        buf.limit(limit); // Reset the limit
-        return string;
-    }
-
-    /**
-     * Returns a string based on the buffer
-     *
-     * @param buf
-     *            Byte buffer with data
-     * @return String Decoded string
-     */
-    public static String getString(java.nio.ByteBuffer buf) {
-        int len = buf.getShort() & 0xffff;
-        log.debug("Length: {}", len);
-        int limit = buf.limit();
-        log.debug("Limit: {}", limit);
-        String string = bufferToString(buf, len);
-        buf.limit(limit); // Reset the limit
-        return string;
-    }
+//    /**
+//     * Returns a string based on the buffer
+//     *
+//     * @param buf
+//     *            Byte buffer with data
+//     * @return String Decoded string
+//     */
+//    public static String getString(IoBuffer buf) {
+//        int len = buf.getUnsignedShort();
+//        log.debug("Length: {} limit: {}", len, buf.limit());
+//        String string = bufferToString(Arrays.copyOfRange(buf.array(), buf.position(), (buf.position() + len)));
+//        buf.skip(len);
+//        return string;
+//    }
+//
+//    /**
+//     * Returns a string based on the buffer
+//     *
+//     * @param buf
+//     *            Byte buffer with data
+//     * @return String Decoded string
+//     */
+//    public static String getString(java.nio.ByteBuffer buf) {
+//        int len = buf.getShort() & 0xffff;
+//        log.debug("Length: {} limit: {}", len, buf.limit());
+//        String string = bufferToString(Arrays.copyOfRange(buf.array(), buf.position(), (buf.position() + len)));
+//        buf.position(buf.position() + len);
+//        return string;
+//    }
 
     /**
      * Converts the bytes into a string.
      * 
-     * @param strBuf
-     * @return contents of the ByteBuffer as a String
+     * @param str string bytes
+     * @return decoded String
      */
-    private final static String bufferToString(final java.nio.ByteBuffer strBuf, int len) {
+    private final static String bufferToString(byte[] str) {
         String string = null;
-        if (strBuf != null) {
-            int pos = strBuf.position();
-            log.debug("String buf - position: {} limit: {}", pos, (pos + len));
-            strBuf.limit(pos + len);
-            string = AMF.CHARSET.decode(strBuf).toString();
+        if (str != null) {
+            string = AMF.CHARSET.decode(ByteBuffer.wrap(str)).toString();
             log.debug("String: {}", string);
         } else {
             log.warn("ByteBuffer was null attempting to read String");
@@ -311,7 +278,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Date Decoded string object
      */
-    public Date readDate(Type target) {
+    public Date readDate() {
         /*
          * Date: 0x0B T7 T6 .. T0 Z1 Z2 T7 to T0 form a 64 bit Big Endian number
          * that specifies the number of nanoseconds that have passed since
@@ -328,20 +295,16 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         return date;
     }
 
-    // Array
-
     public Object readArray(Type target) {
         log.debug("readArray - target: {}", target);
         Object result = null;
         int count = buf.getInt();
         log.debug("Count: {}", count);
         List<Object> resultCollection = new ArrayList<Object>(count);
-        storeReference(result);
         for (int i = 0; i < count; i++) {
             resultCollection.add(Deserializer.deserialize(this, Object.class));
         }
-        // To maintain conformance to the Input API, we should convert the output
-        // into an Array if the Type asks us to.
+        // To conform to the Input API, we should convert the output into an Array if the Type asks us to.
         Class<?> collection = Collection.class;
         if (target instanceof Class<?>) {
             collection = (Class<?>) target;
@@ -351,10 +314,9 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         } else {
             result = resultCollection;
         }
+        storeReference(result);
         return result;
     }
-
-    // Map
 
     /**
      * Read key - value pairs. This is required for the RecordSet deserializer.
@@ -372,7 +334,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *            Map to put resulting pair to
      */
     protected void readKeyValues(Map<String, Object> result) {
-        while (hasMoreProperties()) {
+        do {
             String name = readPropertyName();
             log.debug("property: {}", name);
             Object property = Deserializer.deserialize(this, Object.class);
@@ -381,12 +343,11 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
             if (hasMoreProperties()) {
                 skipPropertySeparator();
             }
-        }
-        skipEndObject();
+        } while (hasMoreProperties());
     }
 
-    public Object readMap(Type target) {
-        // The maximum number used in this mixed array.
+    public Object readMap() {
+        // the maximum number used in this mixed array
         int maxNumber = buf.getInt();
         log.debug("Read start mixed array: {}", maxNumber);
         Object result;
@@ -396,7 +357,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         int reference = storeReference(mixedResult);
         Boolean normalArray = true;
         while (hasMoreProperties()) {
-            String key = getString(buf);
+            String key = getString();
             log.debug("key: {}", key);
             try {
                 Integer.parseInt(key);
@@ -417,7 +378,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
             }
             result = listResult;
         } else {
-            // Convert initial indexes
+            // convert initial indexes
             mixedResult.remove("length");
             for (int i = 0; i < maxNumber; i++) {
                 final Object value = mixedResult.remove(String.valueOf(i));
@@ -425,13 +386,10 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
             }
             result = mixedResult;
         }
-        // Replace the original reference with the final result
+        // replace the original reference with the final result
         storeReference(reference, result);
-        skipEndObject();
         return result;
     }
-
-    // Object
 
     /**
      * Creates a new instance of the className parameter and returns as an Object
@@ -445,7 +403,6 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         log.debug("Loading class: {}", className);
         Object instance = null;
         Class<?> clazz = null;
-        //fix for Trac #604
         if ("".equals(className) || className == null)
             return instance;
         try {
@@ -485,13 +442,13 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Object readBean(Object bean) {
-        log.debug("read bean");
+        log.debug("readBean: {}", bean);
         storeReference(bean);
         Class theClass = bean.getClass();
         while (hasMoreProperties()) {
             String name = readPropertyName();
             Type type = getPropertyType(bean, name);
-            log.debug("property: {}", name);
+            log.debug("property: {} type: {}", name, type);
             Object property = Deserializer.deserialize(this, type);
             log.debug("val: {}", property);
             //log.debug("val: "+property.getClass().getName());
@@ -519,7 +476,6 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
                 skipPropertySeparator();
             }
         }
-        skipEndObject();
         return bean;
     }
 
@@ -529,7 +485,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      * @return Read map
      */
     protected Map<String, Object> readSimpleObject() {
-        log.debug("read map");
+        log.debug("readSimpleObject");
         Map<String, Object> result = new ObjectMap<String, Object>();
         readKeyValues(result);
         storeReference(result);
@@ -541,37 +497,34 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Read object
      */
-    public Object readObject(Type target) {
+    public Object readObject() {
         String className;
         if (currentDataType == AMF.TYPE_CLASS_OBJECT) {
-            className = getString(buf);
-        } else {
-            className = null;
-        }
-        log.debug("readObject: {}", className);
-        Object result = null;
-        if (className != null) {
-            log.debug("read class object");
-            Object instance;
-            if (className.equals("RecordSet")) {
-                result = new RecordSet(this);
-                storeReference(result);
-            } else if (className.equals("RecordSetPage")) {
-                result = new RecordSetPage(this);
-                storeReference(result);
-            } else {
-                instance = newInstance(className);
-                if (instance != null) {
-                    result = readBean(instance);
+            className = getString();
+            log.debug("readObject: {}", className);
+            if (className != null) {
+                log.debug("read class object");
+                Object result = null;
+                Object instance;
+                if (className.equals("RecordSet")) {
+                    result = new RecordSet(this);
+                    storeReference(result);
+                } else if (className.equals("RecordSetPage")) {
+                    result = new RecordSetPage(this);
+                    storeReference(result);
                 } else {
-                    log.debug("Forced to use simple object for class {}", className);
-                    result = readSimpleObject();
+                    instance = newInstance(className);
+                    if (instance != null) {
+                        result = readBean(instance);
+                    } else {
+                        log.debug("Forced to use simple object for class {}", className);
+                        result = readSimpleObject();
+                    }
                 }
+                return result;
             }
-        } else {
-            result = readSimpleObject();
         }
-        return result;
+        return readSimpleObject();
     }
 
     /**
@@ -580,14 +533,18 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      * @return boolean <code>true</code> if there are more properties to read, <code>false</code> otherwise
      */
     public boolean hasMoreProperties() {
-        byte pad = 0x00;
-        byte pad0 = buf.get();
-        byte pad1 = buf.get();
-        byte type = buf.get();
-        boolean isEndOfObject = (pad0 == pad && pad1 == pad && type == AMF.TYPE_END_OF_OBJECT);
-        log.debug("End of object: ? {}", isEndOfObject);
-        buf.position(buf.position() - 3);
-        return !isEndOfObject;
+        if (buf.remaining() >= 3) {
+            byte[] threeBytes = new byte[3];
+            int pos = buf.position();
+            buf.get(threeBytes);
+            if (Arrays.equals(AMF.END_OF_OBJECT_SEQUENCE, threeBytes)) {
+                log.trace("End of object");
+                return false;
+            }
+            buf.position(pos);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -596,33 +553,23 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      * @return String Object property name
      */
     public String readPropertyName() {
-        return getString(buf);
+        return getString();
     }
 
     /**
-     * Skips property seperator
+     * Skips property separator
      */
     public void skipPropertySeparator() {
         // SKIP
     }
 
     /**
-     * Skips end object
-     */
-    public void skipEndObject() {
-        // skip two marker bytes
-        // then end of object byte
-        buf.skip(3);
-    }
-
-    // Others
-    /**
      * Reads XML
      *
      * @return String XML as string
      */
-    public Document readXML(Type target) {
-        final String xmlString = readString(target);
+    public Document readXML() {
+        final String xmlString = readString();
         Document doc = null;
         try {
             doc = XMLUtils.stringToDoc(xmlString);
@@ -638,8 +585,8 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Object Custom type object
      */
-    public Object readCustom(Type target) {
-        // Return null for now
+    public Object readCustom() {
+        // return null for now
         return null;
     }
 
@@ -648,7 +595,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return ByteArray object
      */
-    public ByteArray readByteArray(Type target) {
+    public ByteArray readByteArray() {
         throw new RuntimeException("ByteArray objects not supported with AMF0");
     }
 
@@ -693,9 +640,8 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Object Read reference to object
      */
-    public Object readReference(Type target) {
-        //return getReference(buf.getUnsignedShort());
-        return getReference(buf.getShort() & 0xffff);
+    public Object readReference() {
+        return getReference(buf.getUnsignedShort());
     }
 
     /**

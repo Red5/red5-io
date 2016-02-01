@@ -98,12 +98,6 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
         return buf;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean supportsDataType(byte type) {
-        return true;
-    }
-
     protected void writeAMF3() {
         if (amf3_mode == 0) {
             buf.put(AMF.TYPE_AMF3_OBJECT);
@@ -189,7 +183,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     public void writeNumber(Number num) {
         writeAMF3();
         if (num.longValue() < AMF3.MIN_INTEGER_VALUE || num.longValue() > AMF3.MAX_INTEGER_VALUE) {
-            // Out of range for integer encoding
+            // out of range for integer encoding
             buf.put(AMF3.TYPE_NUMBER);
             buf.putDouble(num.doubleValue());
         } else if (num instanceof Long || num instanceof Integer || num instanceof Short || num instanceof Byte) {

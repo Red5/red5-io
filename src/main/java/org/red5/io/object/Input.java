@@ -50,47 +50,37 @@ public interface Input {
     /**
      * Read Null data type
      * 
-     * @param target
-     *            target type
      * @return Null datatype (AS)
      */
-    Object readNull(Type target);
+    Object readNull();
 
     /**
      * Read Boolean value
      * 
-     * @param target
-     *            target type
      * @return Boolean
      */
-    Boolean readBoolean(Type target);
+    Boolean readBoolean();
 
     /**
      * Read Number object
      * 
-     * @param target
-     *            target type
      * @return Number
      */
-    Number readNumber(Type target);
+    Number readNumber();
 
     /**
      * Read String object
      * 
-     * @param target
-     *            target type
      * @return String
      */
-    String readString(Type target);
+    String readString();
 
     /**
      * Read date object
      * 
-     * @param target
-     *            target type
      * @return Date
      */
-    Date readDate(Type target);
+    Date readDate();
 
     /**
      * Read an array. This can result in a List or Map being deserialized depending on the array type found.
@@ -104,56 +94,44 @@ public interface Input {
     /**
      * Read a map containing key - value pairs. This can result in a List or Map being deserialized depending on the map type found.
      * 
-     * @param target
-     *            target type
      * @return Map
      */
-    Object readMap(Type target);
+    Object readMap();
 
     /**
      * Read an object.
      * 
-     * @param target
-     *            target type
      * @return object
      */
-    Object readObject(Type target);
+    Object readObject();
 
     /**
      * Read XML document
      * 
-     * @param target
-     *            target type
      * @return XML DOM document
      */
-    Document readXML(Type target);
+    Document readXML();
 
     /**
      * Read custom object
      * 
-     * @param target
-     *            target type
      * @return Custom object
      */
-    Object readCustom(Type target);
+    Object readCustom();
 
     /**
      * Read ByteArray object.
      * 
-     * @param target
-     *            target type
      * @return ByteArray object
      */
-    ByteArray readByteArray(Type target);
+    ByteArray readByteArray();
 
     /**
      * Read reference to Complex Data Type. Objects that are collaborators (properties) of other objects must be stored as references in map of id-reference pairs.
      * 
-     * @param target
-     *            target type
      * @return object
      */
-    Object readReference(Type target);
+    Object readReference();
 
     /**
      * Clears all references

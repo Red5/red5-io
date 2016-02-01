@@ -18,8 +18,13 @@
 
 package org.red5.io.object;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.red5.io.amf.Input;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * BaseInput represents a way to map input to a HashMap. This class is meant to be extended.
@@ -29,15 +34,17 @@ import java.util.Map;
  */
 public class BaseInput {
 
+    //protected static Logger log = LoggerFactory.getLogger(BaseInput.class);
+
     /**
      * References map
      */
-    protected Map<Integer, Object> refMap = new HashMap<Integer, Object>();
+    protected ConcurrentMap<Integer, Object> refMap = new ConcurrentHashMap<>();
 
     /**
      * References id
      */
-    protected int refId;
+    protected AtomicInteger refId = new AtomicInteger(0);
 
     /**
      * Store an object into a map.
@@ -47,7 +54,8 @@ public class BaseInput {
      * @return reference id
      */
     protected int storeReference(Object obj) {
-        int newRefId = refId++;
+        int newRefId = refId.getAndIncrement();
+        //log.trace("storeReference - ref id: {} obj: {}", newRefId, obj);
         refMap.put(Integer.valueOf(newRefId), obj);
         return newRefId;
     }
@@ -69,7 +77,7 @@ public class BaseInput {
      */
     public void clearReferences() {
         refMap.clear();
-        refId = 0;
+        refId.set(0);
     }
 
     /**

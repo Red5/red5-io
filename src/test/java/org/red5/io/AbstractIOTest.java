@@ -22,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +35,7 @@ import java.util.Set;
 import org.apache.commons.beanutils.BeanMap;
 import org.junit.Before;
 import org.junit.Test;
+import org.red5.io.amf.AMF;
 import org.red5.io.model.CircularRefBean;
 import org.red5.io.model.SimpleJavaBean;
 import org.red5.io.object.Deserializer;
@@ -49,6 +52,8 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractIOTest {
 
     protected Logger log = LoggerFactory.getLogger(AbstractIOTest.class);
+
+    protected int encoding = 0;
 
     protected Input in;
 
@@ -68,7 +73,7 @@ public abstract class AbstractIOTest {
 
     @Test
     public void testArray() {
-        log.debug("Testing array");
+        log.debug("\ntestArray");
         String[] strArrIn = new String[] { "This", "Is", "An", "Array", "Of", "Strings" };
         Serializer.serialize(out, strArrIn);
         dumpOutput();
@@ -81,7 +86,7 @@ public abstract class AbstractIOTest {
 
     @Test
     public void testArrayReference() {
-        log.debug("Testing array reference");
+        log.debug("\ntestArrayReference");
         TestVO mytest = new TestVO();
         TestVO[] strArrIn = new TestVO[] { mytest, mytest };
         Serializer.serialize(out, strArrIn);
@@ -95,7 +100,7 @@ public abstract class AbstractIOTest {
 
     @Test
     public void testBoolean() {
-        log.debug("Testing boolean");
+        log.debug("\ntestBoolean");
         Serializer.serialize(out, Boolean.TRUE);
         dumpOutput();
         Boolean val = Deserializer.deserialize(in, Boolean.class);
@@ -110,6 +115,7 @@ public abstract class AbstractIOTest {
 
     @Test
     public void testCircularReference() {
+        log.debug("\ntestCircularReference");
         CircularRefBean beanIn = new CircularRefBean();
         beanIn.setRefToSelf(beanIn);
         Serializer.serialize(out, beanIn);
@@ -125,7 +131,7 @@ public abstract class AbstractIOTest {
 
     @Test
     public void testDate() {
-        log.debug("Testing date");
+        log.debug("\ntestDate");
         Date dateIn = new Date();
         Serializer.serialize(out, dateIn);
         dumpOutput();
@@ -137,7 +143,7 @@ public abstract class AbstractIOTest {
     @Test
     @SuppressWarnings({ "rawtypes" })
     public void testJavaBean() {
-        log.debug("Testing list");
+        log.debug("\ntestJavaBean");
         TestJavaBean beanIn = new TestJavaBean();
         beanIn.setTestString("test string here");
         beanIn.setTestBoolean((System.currentTimeMillis() % 2 == 0) ? true : false);
@@ -164,7 +170,7 @@ public abstract class AbstractIOTest {
 
     @Test
     public void testList() {
-        log.debug("Testing list");
+        log.debug("\ntestList");
         List<Comparable<?>> listIn = new LinkedList<Comparable<?>>();
         listIn.add(null);
         listIn.add(Boolean.FALSE);
@@ -172,48 +178,47 @@ public abstract class AbstractIOTest {
         listIn.add(Integer.valueOf(1));
         listIn.add("This is a test string");
         listIn.add(new Date());
+        assertEquals(6, listIn.size());
         Serializer.serialize(out, listIn);
         dumpOutput();
         List<?> listOut = Deserializer.deserialize(in, List.class);
         assertNotNull(listOut);
         assertEquals(listIn.size(), listOut.size());
         for (int i = 0; i < listIn.size(); i++) {
-            assertEquals(listOut.get(i), listIn.get(i));
+            Object in = listIn.get(i);
+            // no integers in AMF0 so convert expected to double
+            if (encoding == 0 && in instanceof Integer) {
+                in = new Double(((Number) in).doubleValue());
+            }
+            Object out = listOut.get(i);
+            assertEquals(in, out);
         }
         resetOutput();
     }
 
     @Test
     public void testMap() {
+        log.debug("\ntestMap");
         Map<String, Object> mapIn = new HashMap<String, Object>();
         mapIn.put("testNumber", Integer.valueOf(34));
-        mapIn.put("testString", "wicked");
+        mapIn.put("testString", "wicked awesome");
         mapIn.put("testBean", new SimpleJavaBean());
         Serializer.serialize(out, mapIn);
-
         dumpOutput();
         Map<?, ?> mapOut = Deserializer.deserialize(in, Map.class);
         assertNotNull(mapOut);
         assertEquals(mapIn.size(), mapOut.size());
-
-        Set<?> entrySet = mapOut.entrySet();
-        Iterator<?> it = entrySet.iterator();
-        while (it.hasNext()) {
-            Map.Entry<?, ?> entry = (Map.Entry<?, ?>) it.next();
-            String propOut = (String) entry.getKey();
-            Object valueOut = entry.getValue();
-
-            assertTrue(mapIn.containsKey(propOut));
-            Object valueIn = mapIn.get(propOut);
-            assertEquals(valueOut, valueIn);
+        for (Map.Entry<String, Object> entry : mapIn.entrySet()) {
+            String key = entry.getKey();
+            assertNotNull(mapOut.get(key));
+            assertTrue(entry.getValue().equals(mapOut.get(key)));
         }
         resetOutput();
-
     }
 
     @Test
     public void testNull() {
-        log.debug("Testing null");
+        log.debug("\ntestNull");
         Serializer.serialize(out, null);
         dumpOutput();
         Object val = Deserializer.deserialize(in, Object.class);
@@ -223,7 +228,7 @@ public abstract class AbstractIOTest {
 
     @Test
     public void testNumber() {
-        log.debug("Testing number");
+        log.debug("\ntestNumber");
         int num = 1000;
         Serializer.serialize(out, Integer.valueOf(num));
         dumpOutput();
@@ -234,30 +239,31 @@ public abstract class AbstractIOTest {
 
     @Test
     public void testInteger() {
-        log.debug("Testing integer");
+        log.debug("\ntestInteger");
         int num = 129;
         Serializer.serialize(out, Integer.valueOf(num));
         dumpOutput();
-        Integer n = Deserializer.deserialize(in, Integer.class);
-        assertEquals(n.intValue(), num);
+        int n = ((Number) Deserializer.deserialize(in, Number.class)).intValue();
+        assertEquals(n, num);
         resetOutput();
     }
 
     @Test
     public void testNegativeInteger() {
-        log.debug("Testing negative integer");
+        log.debug("\ntestNegativeInteger");
         int num = -129;
         Serializer.serialize(out, Integer.valueOf(num));
         dumpOutput();
-        Integer n = Deserializer.deserialize(in, Integer.class);
+        int n = ((Number) Deserializer.deserialize(in, Number.class)).intValue();
         log.debug("Integer: {} {}", n, num);
-        assertEquals(n.intValue(), num);
+        assertEquals(n, num);
         resetOutput();
     }
 
     @Test
     @SuppressWarnings({})
     public void testSimpleReference() {
+        log.debug("\ntestSimpleReference");
         Map<String, Object> mapIn = new HashMap<String, Object>();
         Object bean = new SimpleJavaBean();
         mapIn.put("thebean", bean);
@@ -277,20 +283,35 @@ public abstract class AbstractIOTest {
             String propOut = (String) entry.getKey();
             SimpleJavaBean valueOut = (SimpleJavaBean) entry.getValue();
             assertNotNull("couldn't get output bean", valueOut);
-
             assertTrue(mapIn.containsKey(propOut));
             SimpleJavaBean valueIn = (SimpleJavaBean) mapIn.get(propOut);
             assertNotNull("couldn't get input bean", valueIn);
             assertEquals(valueOut.getNameOfBean(), valueIn.getNameOfBean());
         }
         resetOutput();
-
     }
 
     @Test
     public void testString() {
-        log.debug("Testing string");
-        String inStr = "hello world";
+        log.debug("\ntestString");
+        String inStr = "hello world \u00A3";
+        Serializer.serialize(out, inStr);
+        dumpOutput();
+        String outStr = Deserializer.deserialize(in, String.class);
+        assertEquals(inStr, outStr);
+        resetOutput();
+    }
+
+    @Test
+    public void testLongString() throws UnsupportedEncodingException {
+        log.debug("\ntestLongString");
+        byte[] rndStr = new byte[AMF.LONG_STRING_LENGTH];
+        Arrays.fill(rndStr, (byte) 0x65);
+        //Random rnd = new Random();
+        //rnd.nextBytes(rndStr);
+        String inStr = new String(rndStr, "UTF-8");
+        //String inStr = RandomStringUtils.random(AMF.LONG_STRING_LENGTH);
+        //log.trace(inStr);
         Serializer.serialize(out, inStr);
         dumpOutput();
         String outStr = Deserializer.deserialize(in, String.class);

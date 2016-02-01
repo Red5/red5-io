@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Deserializer {
 
-    // Initialize Logging
     private static final Logger log = LoggerFactory.getLogger(Deserializer.class);
 
     private Deserializer() {
@@ -54,32 +53,28 @@ public class Deserializer {
         if (log.isTraceEnabled()) {
             log.trace("Type: {} target: {}", type, (target != null ? target.toString() : "Target not specified"));
         }
-        while (type == DataTypes.CORE_SKIP) {
-            type = in.readDataType();
-            if (log.isTraceEnabled()) {
-                log.trace("Type (skip): {}", type);
-            }
+        if (log.isDebugEnabled()) {
+            log.debug("Datatype: {}", DataTypes.toStringValue(type));
         }
-        log.debug("Datatype: {}", DataTypes.toStringValue(type));
-        Object result;
+        Object result = null;
         switch (type) {
             case DataTypes.CORE_NULL:
-                result = in.readNull(target);
+                result = in.readNull();
                 break;
             case DataTypes.CORE_BOOLEAN:
-                result = in.readBoolean(target);
+                result = in.readBoolean();
                 break;
             case DataTypes.CORE_NUMBER:
-                result = in.readNumber(target);
+                result = in.readNumber();
                 break;
             case DataTypes.CORE_STRING:
                 try {
                     if (target != null && ((Class) target).isEnum()) {
                         log.warn("Enum target specified");
-                        String name = in.readString(target);
+                        String name = in.readString();
                         result = Enum.valueOf((Class) target, name);
                     } else {
-                        result = in.readString(target);
+                        result = in.readString();
                     }
                 } catch (RuntimeException e) {
                     log.error("failed to deserialize {}", target, e);
@@ -87,22 +82,22 @@ public class Deserializer {
                 }
                 break;
             case DataTypes.CORE_DATE:
-                result = in.readDate(target);
+                result = in.readDate();
                 break;
             case DataTypes.CORE_ARRAY:
                 result = in.readArray(target);
                 break;
             case DataTypes.CORE_MAP:
-                result = in.readMap(target);
+                result = in.readMap();
                 break;
             case DataTypes.CORE_XML:
-                result = in.readXML(target);
+                result = in.readXML();
                 break;
             case DataTypes.CORE_OBJECT:
-                result = in.readObject(target);
+                result = in.readObject();
                 break;
             case DataTypes.CORE_BYTEARRAY:
-                result = in.readByteArray(target);
+                result = in.readByteArray();
                 break;
             case DataTypes.CORE_VECTOR_INT:
                 result = in.readVectorInt();
@@ -117,27 +112,17 @@ public class Deserializer {
                 result = in.readVectorObject();
                 break;
             case DataTypes.OPT_REFERENCE:
-                result = in.readReference(target);
+                result = in.readReference();
+                break;
+            case DataTypes.CORE_END_OBJECT:
+                // end-of-object returned, not sure that we should ever get here
+                log.debug("End-of-object detected");
                 break;
             default:
-                result = in.readCustom(target);
+                result = in.readCustom();
                 break;
         }
-        return (T) postProcessExtension(result, target);
-    }
-
-    /**
-     * Post processes the result TODO Extension Point
-     * 
-     * @param result
-     *            result
-     * @param target
-     *            target
-     * @return object
-     */
-    protected static Object postProcessExtension(Object result, Type target) {
-        // does nothing at the moment, but will later!
-        return result;
+        return (T) result;
     }
 
 }
