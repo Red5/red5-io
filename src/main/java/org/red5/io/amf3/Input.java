@@ -207,7 +207,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
         super(buf);
         this.refStorage = refStorage;
         this.refMap = refStorage.refMap;
-        amf3_mode = 0;
+        amf3_mode = 1;
         if (log.isTraceEnabled()) {
             log.trace("Input: {}", Hex.encodeHexString(Arrays.copyOfRange(buf.array(), buf.position(), buf.limit())));
         }
