@@ -300,21 +300,24 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         Object result = null;
         int count = buf.getInt();
         log.debug("Count: {}", count);
-        List<Object> resultCollection = new ArrayList<Object>(count);
-        for (int i = 0; i < count; i++) {
-            resultCollection.add(Deserializer.deserialize(this, Object.class));
-        }
         // To conform to the Input API, we should convert the output into an Array if the Type asks us to.
         Class<?> collection = Collection.class;
         if (target instanceof Class<?>) {
             collection = (Class<?>) target;
         }
+        List<Object> resultCollection = new ArrayList<>(count);
         if (collection.isArray()) {
-            result = ArrayUtils.toArray(collection.getComponentType(), resultCollection);
+            result = ArrayUtils.getArray(collection.getComponentType(), count);
         } else {
-            result = resultCollection;
+        	result = resultCollection;
         }
-        storeReference(result);
+        storeReference(result); //reference should be stored before reading of objects to get correct refIds
+        for (int i = 0; i < count; i++) {
+            resultCollection.add(Deserializer.deserialize(this, Object.class));
+        }
+        if (collection.isArray()) {
+        	ArrayUtils.fillArray(collection.getComponentType(), result, resultCollection);
+        }
         return result;
     }
 
@@ -474,6 +477,8 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
             }
             if (hasMoreProperties()) {
                 skipPropertySeparator();
+            } else {
+            	break; //hasMoreProperties == false, position moved to +3
             }
         }
         return bean;
