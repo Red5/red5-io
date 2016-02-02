@@ -220,7 +220,7 @@ public class AMFIOTest extends AbstractIOTest {
         @SuppressWarnings("rawtypes")
         ObjectMap param2 = (ObjectMap) in0.readObject();
         log.debug("Invoke: {}", param2);
-        assertEquals(param1.get("code"), "NetConnection.Connect.Success");
+        assertEquals(param2.get("code"), "NetConnection.Connect.Success");
     }
 
     public static int readUnsignedMediumInt(IoBuffer in) {
