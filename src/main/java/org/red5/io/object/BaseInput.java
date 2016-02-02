@@ -22,10 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.red5.io.amf.Input;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * BaseInput represents a way to map input to a HashMap. This class is meant to be extended.
  * 

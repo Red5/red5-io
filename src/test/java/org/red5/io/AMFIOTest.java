@@ -118,7 +118,7 @@ public class AMFIOTest extends AbstractIOTest {
          */
         // AMF packet
         IoBuffer data = IoBuffer.wrap(IOUtils.hexStringToByteArray("03 00 00 00 00 01 05 14 00 00 00 00 02 00 07 5F 72 65 73 75 6C 74 00 3F F0 00 00 00 00 00 00 03 00 06 66 6D 73 56 65 72 02 00 0E 46 4D 53 2F 33 2C 35 2C 35 2C 32 30 30 34 00 0C 63 61 70 61 62 69 6C 69 74 69 65 73 00 40 3F 00 00 00 00 00 00 00 04 6D 6F 64 65 00 3F F0 00 00 00 00 00 00 00 00 09 03 00 05 6C 65 76 65 6C 02 00 06 73 74 61 74 75 73 00 04 63 6F 64 65 02 00 1D 4E 65 74 43 6F 6E 6E 65 63 74 69 6F 6E 2E 43 6F 6E 6E 65 63 74 2E 53 75 63 63 65 73 73 00 0B 64 65 73 63 72 69 70 74 69 6F 6E 02 00 15 43 6F 6E 6E 65 63 74 69 6F 6E 20 73 75 63 63 65 65 64 65 64 2E 00 04 64 61 74 61 08 00 00 00 01 00 07 76 65 72 73 69 6F 6E 02 00 0A 33 2C 35 2C 35 2C 32 30 30 34 00 00 09 00 08 63 6C 69 65 6E 74 69 64 00 41 D7 9B 78 7C C0 00 00 00 0E 6F 62 6A 65 63 74 45 6E 63 6F 64 69 6E 67 00 40 08 00 00 00 00 00 00 00 00 09"));
-        byte headerByte = data.get(); // 0x00 Header type 0
+        byte headerByte = data.get();
         int headerValue, byteCount;
         if ((headerByte & 0x3f) == 0) {
             // two byte header
@@ -262,9 +262,12 @@ public class AMFIOTest extends AbstractIOTest {
         log.trace("Before reading number type: {}", data.position());
         byte type = in0.readDataType();
         log.trace("After reading number type({}): {}", type, data.position());
-        Assert.assertEquals(DataTypes.CORE_NUMBER, type);
-        Number d = (Number) Deserializer.deserialize(in0, Number.class);
-        System.out.printf("Number - i: %d d: %f%n", d.intValue(), d.doubleValue());
+//        Assert.assertEquals(DataTypes.CORE_NUMBER, type);
+//        Number d = (Number) Deserializer.deserialize(in0, Number.class);
+//        System.out.printf("Number - i: %d d: %f%n", d.intValue(), d.doubleValue());
+        String s = (String) Deserializer.deserialize(in0, String.class);
+        System.out.printf("String: %s%n", s);
+        assertEquals("oflaDemo", s);
         //        Invoke invoke = new Invoke();
         //        invoke.setTransactionId(d);
         // now go back to the actual encoding to decode parameters
