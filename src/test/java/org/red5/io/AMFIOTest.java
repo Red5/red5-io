@@ -205,10 +205,22 @@ public class AMFIOTest extends AbstractIOTest {
         Input in0 = new Input(data);
         // object
         assertEquals(DataTypes.CORE_STRING, in0.readDataType());
+        String command = in0.readString();
+        assertEquals(command, "_result");
+        assertEquals(DataTypes.CORE_NUMBER, in0.readDataType());
+        Number transactionId = in0.readNumber();
+        assertTrue(new Double(1.0d).equals(transactionId.doubleValue()));
+        assertEquals(DataTypes.CORE_OBJECT, in0.readDataType());
+        
         @SuppressWarnings("rawtypes")
-        ObjectMap invoke = (ObjectMap) in0.readObject();
-        log.debug("Invoke: {}", invoke);
-        assertTrue(((double) invoke.get("_result")) == 1.0d);
+        ObjectMap param1 = (ObjectMap) in0.readObject();
+        log.debug("Invoke: {}", param1);
+        assertTrue(((double) param1.get("capabilities")) == 31.0d);
+        assertEquals(DataTypes.CORE_OBJECT, in0.readDataType());
+        @SuppressWarnings("rawtypes")
+        ObjectMap param2 = (ObjectMap) in0.readObject();
+        log.debug("Invoke: {}", param2);
+        assertEquals(param2.get("code"), "NetConnection.Connect.Success");
     }
 
     public static int readUnsignedMediumInt(IoBuffer in) {

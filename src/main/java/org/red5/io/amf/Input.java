@@ -345,6 +345,8 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
             result.put(name, property);
             if (hasMoreProperties()) {
                 skipPropertySeparator();
+            } else {
+            	break;
             }
         } while (hasMoreProperties());
     }
