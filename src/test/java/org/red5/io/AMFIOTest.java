@@ -18,14 +18,12 @@
 
 package org.red5.io;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -262,41 +260,12 @@ public class AMFIOTest extends AbstractIOTest {
         log.trace("Before reading number type: {}", data.position());
         byte type = in0.readDataType();
         log.trace("After reading number type({}): {}", type, data.position());
-//        Assert.assertEquals(DataTypes.CORE_NUMBER, type);
-//        Number d = (Number) Deserializer.deserialize(in0, Number.class);
-//        System.out.printf("Number - i: %d d: %f%n", d.intValue(), d.doubleValue());
-        String s = (String) Deserializer.deserialize(in0, String.class);
-        System.out.printf("String: %s%n", s);
-        assertEquals("oflaDemo", s);
-        //        Invoke invoke = new Invoke();
-        //        invoke.setTransactionId(d);
-        // now go back to the actual encoding to decode parameters
-        Input in1 = new Input(data);
-        // get / set the parameters if there any
-        Object[] params = handleParameters(data, in1);
-        log.debug("Parameters: {}", Arrays.toString(params));
-    }
-
-    private Object[] handleParameters(IoBuffer in, Input input) {
-        Object[] params = new Object[] {};
-        List<Object> paramList = new ArrayList<Object>();
-        final Object obj = Deserializer.deserialize(input, Object.class);
-        log.debug("Object: {}", obj.getClass().getName());
-        if (obj instanceof Map) {
-            //final Map<String, Object> connParams = (Map<String, Object>) obj;
-            //notify.setConnectionParams(connParams);
-        } else if (obj != null) {
-            paramList.add(obj);
-        }
-        while (in.hasRemaining()) {
-            log.info("In: {}", Hex.encodeHexString(Arrays.copyOfRange(in.array(), in.position(), in.limit())));
-            paramList.add(Deserializer.deserialize(input, Object.class));
-        }
-        params = paramList.toArray();
-        log.debug("Num params: {}", paramList.size());
-        for (int i = 0; i < params.length; i++) {
-            log.debug(" > {}: {}", i, params[i]);
-        }
-        return params;
+        Assert.assertEquals(DataTypes.CORE_NUMBER, type);
+        Number transactionId = in0.readNumber();
+        System.out.printf("Number - i: %d d: %f%n", transactionId.intValue(), transactionId.doubleValue());
+        Map<String, Object> obj1 = Deserializer.deserialize(in0, Map.class);
+        assertNotNull("Connection parameters should be valid", obj1);
+        log.debug("Parameters: {}", obj1.toString());
+        assertEquals("Application does not match", "oflaDemo", obj1.get("app"));
     }
 }
