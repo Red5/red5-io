@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractIOTest {
 
     protected Logger log = LoggerFactory.getLogger(AbstractIOTest.class);
+
     protected Random rnd;
 
     protected int encoding = 0;
