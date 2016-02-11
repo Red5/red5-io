@@ -99,7 +99,7 @@ public class BufferUtils {
      */
     public final static int put(IoBuffer out, IoBuffer in, int numBytesMax) {
         if (log.isTraceEnabled()) {
-            log.trace("Put\nout buffer: {}\nin buffer: {}\nmax bytes: {}", new Object[] { out, in, numBytesMax });
+            log.trace("Put\nin buffer: {}\nout buffer: {}\nmax bytes: {}", new Object[] { out, in, numBytesMax });
         }
         int numBytesRead = 0;
         if (in != null) {

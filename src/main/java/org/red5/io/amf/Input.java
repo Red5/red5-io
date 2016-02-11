@@ -135,11 +135,6 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
                 case AMF.TYPE_AMF3_OBJECT:
                     log.debug("Switch to AMF3");
                     break;
-                case 0x3f:
-                    // marker, if followed by 0xf0, skip 12 bytes
-                    log.debug("3F! pos: {}", buf.position());
-                    log.debug("Skipping 13 bytes");
-                    buf.skip(13);
             }
         } while(hasMoreProperties());
         log.trace("No more data types available");
