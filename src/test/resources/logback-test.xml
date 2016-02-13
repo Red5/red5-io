@@ -5,22 +5,24 @@
             <pattern>[%p] [%thread] %logger - %msg%n</pattern>
         </encoder>
     </appender>
-
+<!-- 
     <appender class="ch.qos.logback.core.FileAppender" name="FILE">
-        <File>log/red5-io-test.log</File>
+        <File>target/test.log</File>
         <Append>false</Append>
         <encoder>
             <pattern>%d{ISO8601} [%thread] %-5level %logger{35} - %msg%n
             </pattern>
         </encoder>
     </appender>
-
+-->
     <root>
-        <level value="TRACE" />
+        <level value="WARN" />
         <appender-ref ref="CONSOLE" />
+<!-- 
         <appender-ref ref="FILE" />
+-->
     </root>
-
+<!-- 
     <logger name="org.red5.io.object.Serializer">
         <level value="DEBUG" />
     </logger>
@@ -40,7 +42,7 @@
     <logger name="net.sf">
         <level value="WARN" />
     </logger>
-
+ -->
     <logger name="org.quartz">
         <level value="OFF" />
     </logger>
