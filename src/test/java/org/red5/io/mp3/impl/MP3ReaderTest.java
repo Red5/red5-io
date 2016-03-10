@@ -35,6 +35,7 @@ public class MP3ReaderTest extends TestCase {
     public void testCtor() throws Exception {
 
         File file = new File("target/test-classes/fixtures/p-ok.mp3");
+        @SuppressWarnings("unused")
         File file2 = new File("target/test-classes/fixtures/p-err.mp3");
         //File file = new File("target/test-classes/fixtures/01 Cherub Rock.mp3");
         //File file = new File("target/test-classes/fixtures/CodeMonkey.mp3");
