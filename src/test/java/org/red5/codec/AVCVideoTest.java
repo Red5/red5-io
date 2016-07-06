@@ -79,6 +79,33 @@ public class AVCVideoTest {
     }
 
     @Test
+    public void testSimpleFlowNoInterframeBuffer() {
+        log.info("testSimpleFlowNoInterframeBuffer");
+        IoBuffer data = IoBuffer.allocate(128);
+        data.put((byte) 0x17);
+        data.put((byte) 0x01);
+        data.put(RandomStringUtils.random(24).getBytes());
+        data.flip();
+
+        AVCVideo video = new AVCVideo();
+        video.setBufferInterframes(false);
+        assertTrue(video.canHandleData(data));
+        assertTrue(video.addData(data));
+        for (int i = 0; i < 10; i++) {
+            // interframe
+            IoBuffer inter = IoBuffer.allocate(128);
+            inter.put((byte) 0x27);
+            inter.put((byte) 0x01);
+            inter.put(RandomStringUtils.random(24).getBytes());
+            inter.flip();
+            // add it
+            assertTrue(video.addData(inter));
+        }
+        assertTrue(video.getNumInterframes() == 0);
+        log.info("testSimpleFlowNoInterframeBuffer end\n");
+    }
+
+    @Test
     public void testRealisticFlow() {
         log.info("testRealisticFlow");
         IoBuffer data = IoBuffer.allocate(128);

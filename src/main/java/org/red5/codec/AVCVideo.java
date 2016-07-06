@@ -56,6 +56,11 @@ public class AVCVideo implements IVideoStreamCodec {
      */
     private final AtomicInteger numInterframes = new AtomicInteger(0);
 
+    /**
+     * Whether or not to buffer interframes
+     */
+    private boolean bufferInterframes = true;
+
     /** Constructs a new AVCVideo. */
     public AVCVideo() {
         this.reset();
@@ -75,6 +80,8 @@ public class AVCVideo implements IVideoStreamCodec {
     public void reset() {
         keyframe = new FrameData();
         decoderConfiguration = new FrameData();
+        interframes.clear();
+        numInterframes.set(0);
     }
 
     /** {@inheritDoc} */
@@ -113,7 +120,7 @@ public class AVCVideo implements IVideoStreamCodec {
                     }
                     // store last keyframe
                     keyframe.setData(data);
-                } else {
+                } else if (bufferInterframes) {
                     data.rewind();
                     try {
                         int lastInterframe = numInterframes.getAndIncrement();
@@ -123,9 +130,6 @@ public class AVCVideo implements IVideoStreamCodec {
                         } else {
                             interframes.add(new FrameData(data));
                         }
-                        //                        if (log.isTraceEnabled()) {
-                        //                            log.trace("Interframes size: {} last: {}", interframes.size(), lastInterframe);
-                        //                        }
                     } catch (Throwable e) {
                         log.error("Failed to buffer interframe", e);
                     }
@@ -158,12 +162,18 @@ public class AVCVideo implements IVideoStreamCodec {
 
     /** {@inheritDoc} */
     public FrameData getInterframe(int index) {
-        //        if (log.isTraceEnabled()) {
-        //            log.trace("getInterframe: {} interframes count: {} has frame: {}", index, numInterframes.get(), (index < numInterframes.get()));
-        //        }
         if (index < numInterframes.get()) {
             return interframes.get(index);
         }
         return null;
     }
+
+    public boolean isBufferInterframes() {
+        return bufferInterframes;
+    }
+
+    public void setBufferInterframes(boolean bufferInterframes) {
+        this.bufferInterframes = bufferInterframes;
+    }
+
 }
