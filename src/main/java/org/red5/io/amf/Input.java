@@ -655,12 +655,10 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         return getReference(buf.getUnsignedShort());
     }
 
-    /**
-     * Resets map
-     *
-     */
+    /** {@inheritDoc} */
+    @Override
     public void reset() {
-        this.clearReferences();
+        clearReferences();
     }
 
     protected Type getPropertyType(Object instance, String propertyName) {

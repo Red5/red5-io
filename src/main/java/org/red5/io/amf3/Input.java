@@ -162,12 +162,12 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      */
     public static class RefStorage {
         // informations about previously deserialized classes
-        private List<ClassReference> classReferences = new ArrayList<ClassReference>();
+        private List<ClassReference> classReferences = new ArrayList<>();
 
         // list of string values found in the input stream
-        private List<String> stringReferences = new ArrayList<String>();
+        private List<String> stringReferences = new ArrayList<>();
 
-        private ConcurrentMap<Integer, Object> refMap = new ConcurrentHashMap<Integer, Object>(4);
+        private ConcurrentMap<Integer, Object> refMap = new ConcurrentHashMap<>(4);
     }
 
     /**
@@ -1066,9 +1066,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
         return doc;
     }
 
-    /**
-     * Resets map
-     */
+    /** {@inheritDoc} */
     @Override
     public void reset() {
         super.reset();
