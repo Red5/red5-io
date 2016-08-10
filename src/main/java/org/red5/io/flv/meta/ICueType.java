@@ -23,6 +23,7 @@ package org.red5.io.flv.meta;
  *
  * @author The Red5 Project
  * @author daccattato(daccattato@gmail.com)
+ * @author Paul Gregoire (mondain@gmail.com)
  */
 public interface ICueType {
     /**
@@ -34,5 +35,10 @@ public interface ICueType {
      * Cue point type of navigation
      */
     String NAVIGATION = "navigation";
+
+    /**
+     * Cue point type of orientation
+     */
+    String ORIENTATION = "orientation";
 
 }

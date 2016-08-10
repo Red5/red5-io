@@ -26,7 +26,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.io.amf.AMF;
 import org.red5.io.object.DataTypes;
@@ -70,6 +68,9 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      * Holds informations about already deserialized classes.
      */
     protected static class ClassReference {
+
+        private static Logger log = LoggerFactory.getLogger(ClassReference.class);
+
         /** Name of the deserialized class. */
         protected String className;
 
@@ -103,6 +104,8 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      * Dummy class that is stored as reference for objects currently being deserialized that reference themselves.
      */
     protected static class PendingObject {
+
+        private static Logger log = LoggerFactory.getLogger(PendingObject.class);
 
         public PendingObject() {
             if (log.isDebugEnabled()) {
@@ -158,7 +161,8 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
     }
 
     /**
-     * Class used to collect AMF3 references. In AMF3 references should be collected through the whole "body" (across several Input objects).
+     * Class used to collect AMF3 references. In AMF3 references should be collected through the whole "body" (across several Input
+     * objects).
      */
     public static class RefStorage {
         // informations about previously deserialized classes
@@ -169,11 +173,6 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 
         private ConcurrentMap<Integer, Object> refMap = new ConcurrentHashMap<>(4);
     }
-
-    /**
-     * Logger
-     */
-    protected static Logger log = LoggerFactory.getLogger(Input.class);
 
     /**
      * Set to a value above <tt>0</tt> to enforce AMF3 decoding mode.
@@ -207,10 +206,6 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
         super(buf);
         this.refStorage = refStorage;
         this.refMap = refStorage.refMap;
-        amf3_mode = 1;
-        if (log.isTraceEnabled()) {
-            log.trace("Input: {}", Hex.encodeHexString(Arrays.copyOfRange(buf.array(), buf.position(), buf.limit())));
-        }
     }
 
     /**
@@ -236,16 +231,52 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      */
     @Override
     public byte readDataType() {
-        log.trace("readDataType");
+        log.trace("readDataType - amf3_mode: {}", amf3_mode);
         byte coreType = AMF3.TYPE_UNDEFINED;
         if (buf != null) {
             currentDataType = buf.get();
             log.debug("Current data type: {}", currentDataType);
-            if (currentDataType == AMF.TYPE_AMF3_OBJECT) {
-                currentDataType = buf.get();
-            } else if (amf3_mode == 0) {
+            switch (currentDataType) {
+                case AMF.TYPE_AMF3_OBJECT:
+                    log.trace("Got AMF3 object indicator");
+                    amf3_mode = 1;
+                    currentDataType = buf.get();
+                    break;
+                case AMF3.TYPE_VECTOR_INT:
+                case AMF3.TYPE_VECTOR_UINT:
+                case AMF3.TYPE_VECTOR_NUMBER:
+                case AMF3.TYPE_VECTOR_OBJECT:
+                    log.trace("Assuming Vector type");
+                    amf3_mode = 1;
+                    break;
+            }
+            if (amf3_mode == 0) {
                 // AMF0 object
-                return readDataType();
+                switch (currentDataType) {
+                    case AMF.TYPE_NULL:
+                    case AMF.TYPE_UNDEFINED:
+                        return DataTypes.CORE_NULL;
+                    case AMF.TYPE_NUMBER:
+                        return DataTypes.CORE_NUMBER;
+                    case AMF.TYPE_BOOLEAN:
+                        return DataTypes.CORE_BOOLEAN;
+                    case AMF.TYPE_STRING:
+                    case AMF.TYPE_LONG_STRING:
+                        return DataTypes.CORE_STRING;
+                    case AMF.TYPE_CLASS_OBJECT:
+                    case AMF.TYPE_OBJECT:
+                        return DataTypes.CORE_OBJECT;
+                    case AMF.TYPE_MIXED_ARRAY:
+                        return DataTypes.CORE_MAP;
+                    case AMF.TYPE_ARRAY:
+                        return DataTypes.CORE_ARRAY;
+                    case AMF.TYPE_DATE:
+                        return DataTypes.CORE_DATE;
+                    case AMF.TYPE_XML:
+                        return DataTypes.CORE_XML;
+                    case AMF.TYPE_REFERENCE:
+                        return DataTypes.OPT_REFERENCE;
+                }
             }
             log.debug("Current data type (after amf checks): {}", currentDataType);
             switch (currentDataType) {
@@ -368,40 +399,47 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      */
     @Override
     public String readString() {
-        int len = readInteger();
-        log.debug("readString - length: {}", len);
-        // get the length of the string (0x03 = 1, 0x05 = 2, 0x07 = 3 etc..)
-        // 0x01 is special and it means "empty"
-        if (len == 1) {
-            // Empty string
-            return "";
-        }
-        if ((len & 1) == 0) {
-            //if the refs are empty an IndexOutOfBoundsEx will be thrown
-            if (refStorage.stringReferences.isEmpty()) {
-                log.debug("String reference list is empty");
+        log.trace("readString - amf3_mode: {}", amf3_mode);
+        String string;
+        // check current type to ensure reading the string as AMF3 is intended
+        if (currentDataType == AMF3.TYPE_STRING || amf3_mode > 0) {
+            int len = readInteger();
+            log.debug("readString - length: {}", len);
+            // get the length of the string (0x03 = 1, 0x05 = 2, 0x07 = 3 etc..)
+            // 0x01 is special and it means "empty"
+            if (len == 1) {
+                // Empty string
+                return "";
             }
-            // Reference
-            return refStorage.stringReferences.get(len >> 1);
+            if ((len & 1) == 0) {
+                //if the refs are empty an IndexOutOfBoundsEx will be thrown
+                if (refStorage.stringReferences.isEmpty()) {
+                    log.debug("String reference list is empty");
+                }
+                // Reference
+                return refStorage.stringReferences.get(len >> 1);
+            }
+            len >>= 1;
+            log.debug("readString - new length: {}", len);
+            int limit = buf.limit();
+            log.debug("readString - limit: {}", limit);
+            final ByteBuffer strBuf = buf.buf();
+            strBuf.limit(strBuf.position() + len);
+            string = AMF.CHARSET.decode(strBuf).toString();
+            log.debug("String: {}", string);
+            buf.limit(limit); // reset the limit
+            refStorage.stringReferences.add(string);
+        } else {
+            // read the string as AMF0
+            string = super.readString();
         }
-        len >>= 1;
-        log.debug("readString - new length: {}", len);
-        int limit = buf.limit();
-        log.debug("readString - limit: {}", limit);
-        final ByteBuffer strBuf = buf.buf();
-        strBuf.limit(strBuf.position() + len);
-        final String string = AMF.CHARSET.decode(strBuf).toString();
-        log.debug("String: {}", string);
-        buf.limit(limit); // reset the limit
-        refStorage.stringReferences.add(string);
         return string;
     }
 
     /**
      * Reads a string of a set length. This does not use the string reference table.
      * 
-     * @param length
-     *            the length of the string
+     * @param length the length of the string
      * @return String
      */
     public String readString(int length) {
@@ -412,7 +450,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
         final String string = AMF.CHARSET.decode(strBuf).toString();
         log.debug("String: {}", string);
         buf.limit(limit);
-        //check for null termination
+        // check for null termination
         byte b = buf.get();
         if (b != 0) {
             buf.position(buf.position() - 1);
@@ -555,20 +593,20 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
 
     @SuppressWarnings({ "unchecked", "rawtypes", "serial" })
     public Object readObject() {
+        log.trace("readObject - amf3_mode: {}", amf3_mode);
         int type = readInteger();
         log.debug("Type: {} and {} ref {}", new Object[] { type, (type & 1), (type >> 1) });
         if ((type & 1) == 0) {
-            //Reference
+            // Reference
             Object ref = getReference(type >> 1);
             if (ref != null) {
                 return ref;
             }
             byte b = buf.get();
             if (b == 7) {
-                log.debug("BEL: {}", b); //7			
+                log.debug("BEL: {}", b); //7
             } else {
-                log.debug("Non-BEL byte: {}", b);
-                log.debug("Extra byte: {}", buf.get());
+                log.debug("Non-BEL byte: {} extra byte: {}", b, buf.get());
             }
         }
         type >>= 1;
@@ -627,13 +665,13 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
                 int count = type >> 2;
                 log.debug("Count: {}", count);
                 if (attributes == null) {
-                    attributes = new ArrayList<String>(count);
+                    attributes = new ArrayList<>(count);
                     for (int i = 0; i < count; i++) {
                         attributes.add(readString());
                     }
                     refStorage.classReferences.add(new ClassReference(className, AMF3.TYPE_OBJECT_PROPERTY, attributes));
                 }
-                properties = new ObjectMap<String, Object>();
+                properties = new ObjectMap<>();
                 for (int i = 0; i < count; i++) {
                     String name = attributes.get(i);
                     properties.put(name, Deserializer.deserialize(this, getPropertyType(instance, name)));
@@ -672,7 +710,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
                     log.debug("Count: {}", count);
                 }
                 if (attributes == null) {
-                    attributes = new ArrayList<String>(count);
+                    attributes = new ArrayList<>(count);
                     for (int i = 0; i < count; i++) {
                         attributes.add(readString());
                     }
@@ -697,7 +735,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
                 // create a single reference for attributes
                 refStorage.classReferences.add(new ClassReference(className, AMF3.TYPE_OBJECT_VALUE, attributes));
                 // create props
-                properties = new ObjectMap<String, Object>();
+                properties = new ObjectMap<>();
                 for (String key : attributes) {
                     if (log.isDebugEnabled()) {
                         log.debug("Looking for property: {}", key);
@@ -711,14 +749,20 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
                 if (log.isTraceEnabled()) {
                     log.trace("Buffer - position: {} limit: {}", buf.position(), buf.limit());
                 }
-                //no more items to read if we are at the end of the buffer
-                if (buf.position() < buf.limit()) {
+                // no more items to read if we are at the end of the buffer
+                if (buf.hasRemaining()) {
                     // Now we should read dynamic properties which are stored as name-value pairs.
                     // Dynamic properties are NOT remembered in 'classReferences'.
                     String key = readString();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Looking for property: {}", key);
+                    }
                     while (!"".equals(key)) {
                         Object value = Deserializer.deserialize(this, getPropertyType(instance, key));
                         properties.put(key, value);
+                        if (!buf.hasRemaining()) {
+                            break;
+                        }
                         key = readString();
                     }
                 }
@@ -986,35 +1030,37 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
     }
 
     /**
-     * 
      * Parser of AMF3 "compressed" integer data type
      * 
      * @return a converted integer value
      */
     private int readInteger() {
-        int n = 0;
         int b = buf.get();
-        int result = 0;
-        while ((b & 0x80) != 0 && n < 3) {
-            result <<= 7;
-            result |= (b & 0x7f);
-            b = buf.get();
-            n++;
-        }
-        if (n < 3) {
-            result <<= 7;
-            result |= b;
-        } else {
-            // use all 8 bits from the 4th byte
-            result <<= 8;
-            result |= b & 0x0ff;
-            // check if the integer should be negative
-            if ((result & 0x10000000) != 0) {
-                // extend the sign bit
-                result |= 0xe0000000;
+        if (buf.hasRemaining()) {
+            int n = 0;
+            int result = 0;
+            while ((b & 0x80) != 0 && n < 3) {
+                result <<= 7;
+                result |= (b & 0x7f);
+                b = buf.get();
+                n++;
             }
+            if (n < 3) {
+                result <<= 7;
+                result |= b;
+            } else {
+                // use all 8 bits from the 4th byte
+                result <<= 8;
+                result |= b & 0x0ff;
+                // check if the integer should be negative
+                if ((result & 0x10000000) != 0) {
+                    // extend the sign bit
+                    result |= 0xe0000000;
+                }
+            }
+            return result;
         }
-        return result;
+        return b;
     }
 
     //Read UInt29 style

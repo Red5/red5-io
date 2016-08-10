@@ -89,17 +89,6 @@ public class DataTypes {
     public static final byte CORE_BYTEARRAY = 0x10; //16
 
     /**
-     * Vector type markers
-     */
-    public static final byte CORE_VECTOR_INT = 0x0D + 0x30; //61
-
-    public static final byte CORE_VECTOR_UINT = 0x0E + 0x30; //62
-
-    public static final byte CORE_VECTOR_NUMBER = 0x0F + 0x30; //63
-
-    public static final byte CORE_VECTOR_OBJECT = 0x10 + 0x30; //64
-
-    /**
      * Reference type, this is optional for codecs to support
      */
     public static final byte OPT_REFERENCE = 0x11; //17
@@ -131,6 +120,17 @@ public class DataTypes {
      * Custom datatype XML mask
      */
     public static final byte CUSTOM_XML_MASK = 0x60;
+
+    /**
+     * Vector type markers
+     */
+    public static final byte CORE_VECTOR_INT = 0x0D + 0x30; //61
+
+    public static final byte CORE_VECTOR_UINT = 0x0E + 0x30; //62
+
+    public static final byte CORE_VECTOR_NUMBER = 0x0F + 0x30; //63
+
+    public static final byte CORE_VECTOR_OBJECT = 0x10 + 0x30; //64
 
     // Some helper methods..
 

@@ -205,7 +205,7 @@ public abstract class AbstractIOTest {
     @Test
     public void testMap() {
         log.debug("\ntestMap");
-        Map<String, Object> mapIn = new HashMap<String, Object>();
+        Map<String, Object> mapIn = new HashMap<>();
         mapIn.put("testNumber", 34d); //numbers are stored as double
         mapIn.put("testString", "wicked awesome");
         mapIn.put("testBean", new SimpleJavaBean());

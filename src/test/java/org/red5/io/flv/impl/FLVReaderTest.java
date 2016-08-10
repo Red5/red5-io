@@ -3,26 +3,15 @@ package org.red5.io.flv.impl;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.red5.io.ITag;
 import org.red5.io.flv.IKeyFrameDataAnalyzer.KeyFrameMeta;
-import org.red5.io.flv.impl.FLVReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FLVReaderTest {
 
     private static Logger log = LoggerFactory.getLogger(FLVReaderTest.class);
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
 
     @Test
     public void testFLVReaderFileWithPreProcessInfo() {
@@ -66,5 +55,27 @@ public class FLVReaderTest {
             e.printStackTrace();
         }
     }
+
+//    @Test
+//    public void testFLVReaderFileWithMetaData() {
+//        File[] files = new File[] { new File("target/test-classes/fixtures/flashContent.flv") };
+//        try {
+//            for (File file : files) {
+//                log.info("\nFile: {}", file.getName());
+//                FLVReader reader = new FLVReader(file, false);
+//                ITag tag = null;
+//                while (reader.hasMoreTags()) {
+//                    tag = reader.readTag();
+//                    if (tag.getDataType() > 9) {
+//                        log.debug("Tag: {}", tag);
+//                    }
+//                }
+//                reader.close();
+//                log.info("----------------------------------------------------------------------------------");
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 }

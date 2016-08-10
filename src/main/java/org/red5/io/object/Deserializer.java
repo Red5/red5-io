@@ -52,8 +52,7 @@ public class Deserializer {
         byte type = in.readDataType();
         if (log.isTraceEnabled()) {
             log.trace("Type: {} target: {}", type, (target != null ? target.toString() : "Target not specified"));
-        }
-        if (log.isDebugEnabled()) {
+        } else if (log.isDebugEnabled()) {
             log.debug("Datatype: {}", DataTypes.toStringValue(type));
         }
         Object result = null;

@@ -43,7 +43,7 @@ public class AbstractMessage implements Message, Serializable {
 
     public long timestamp;
 
-    public Map<String, Object> headers = new ObjectMap<String, Object>();
+    public Map<String, Object> headers = new ObjectMap<>();
 
     public Object body;
 
