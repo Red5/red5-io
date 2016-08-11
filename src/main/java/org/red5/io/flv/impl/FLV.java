@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.cache.ICacheStore;
@@ -37,6 +39,7 @@ import org.red5.io.flv.meta.IMetaData;
 import org.red5.io.flv.meta.IMetaService;
 import org.red5.io.flv.meta.MetaData;
 import org.red5.io.flv.meta.MetaService;
+import org.red5.media.processor.IPostProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +56,9 @@ public class FLV implements IFLV {
     protected static Logger log = LoggerFactory.getLogger(FLV.class);
 
     private static ICacheStore cache;
+
+    // stores (in-order) the writer post-process implementations
+    private static LinkedList<Class<IPostProcessor>> writePostProcessors;
 
     private File file;
 
@@ -105,11 +111,11 @@ public class FLV implements IFLV {
     public FLV(File file, boolean generateMetadata) {
         this.file = file;
         this.generateMetadata = generateMetadata;
-        int count = 0;
         if (!generateMetadata) {
             try {
                 FLVReader reader = new FLVReader(this.file);
                 ITag tag = null;
+                int count = 0;
                 while (reader.hasMoreTags() && (++count < 5)) {
                     tag = reader.readTag();
                     if (tag.getDataType() == IoConstants.TYPE_METADATA) {
@@ -137,6 +143,42 @@ public class FLV implements IFLV {
     }
 
     /**
+     * Sets a writer post processor.
+     * 
+     * @param writerPostProcessor IPostProcess implementation class name
+     */
+    @SuppressWarnings("unchecked")
+    public void setWriterPostProcessors(String writerPostProcessor) {
+        if (writePostProcessors == null) {
+            writePostProcessors = new LinkedList<>();
+        }
+        try {
+            writePostProcessors.add((Class<IPostProcessor>) Class.forName(writerPostProcessor));
+        } catch (Exception e) {
+            log.debug("Write post process implementation: {} was not found", writerPostProcessor);
+        }
+    }
+
+    /**
+     * Sets a group of writer post processors.
+     * 
+     * @param writerPostProcessors IPostProcess implementation class names
+     */
+    @SuppressWarnings("unchecked")
+    public void setWriterPostProcessors(Set<String> writerPostProcessors) {
+        if (writePostProcessors == null) {
+            writePostProcessors = new LinkedList<>();
+        }
+        for (String writerPostProcessor : writerPostProcessors) {
+            try {
+                writePostProcessors.add((Class<IPostProcessor>) Class.forName(writerPostProcessor));
+            } catch (Exception e) {
+                log.debug("Write post process implementation: {} was not found", writerPostProcessor);
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     public boolean hasMetaData() {
@@ -156,9 +198,9 @@ public class FLV implements IFLV {
      * {@inheritDoc}
      */
     public boolean hasKeyFrameData() {
-        //		if (hasMetaData()) {
-        //			return !((MetaData) metaData).getKeyframes().isEmpty();
-        //		}
+        //if (hasMetaData()) {
+        //    return !((MetaData) metaData).getKeyframes().isEmpty();
+        //}
         return false;
     }
 
@@ -172,9 +214,8 @@ public class FLV implements IFLV {
         }
         //The map is expected to contain two entries named "times" and "filepositions",
         //both of which contain a map keyed by index and time or position values.
-        Map<String, Double> times = new HashMap<String, Double>();
-        Map<String, Double> filepositions = new HashMap<String, Double>();
-        //
+        Map<String, Double> times = new HashMap<>();
+        Map<String, Double> filepositions = new HashMap<>();
         if (keyframedata.containsKey("times")) {
             Map inTimes = (Map) keyframedata.get("times");
             for (Object o : inTimes.entrySet()) {
@@ -200,9 +241,9 @@ public class FLV implements IFLV {
     @SuppressWarnings({ "rawtypes" })
     public Map getKeyFrameData() {
         Map keyframes = null;
-        //		if (hasMetaData()) {
-        //			keyframes = ((MetaData) metaData).getKeyframes();
-        //		}
+        //if (hasMetaData()) {
+        //    keyframes = ((MetaData) metaData).getKeyframes();
+        //}
         return keyframes;
     }
 
@@ -271,18 +312,29 @@ public class FLV implements IFLV {
         }
         file.createNewFile();
         ITagWriter writer = new FLVWriter(file, false);
+        if (writePostProcessors != null) {
+            for (Class<IPostProcessor> postProcessor : writePostProcessors) {
+                try {
+                    writer.addPostProcessor(postProcessor.newInstance());
+                } catch (Exception e) {
+                    log.warn("Post processor: {} instance creation failed", postProcessor, e);
+                }
+            }
+        }
         return writer;
     }
 
     /** {@inheritDoc} */
     public ITagWriter getAppendWriter() throws IOException {
+        ITagWriter writer = null;
         // If the file doesn't exist, we can't append to it, so return a writer
         if (!file.exists()) {
             log.info("File does not exist, calling writer. This will create a new file.");
-            return getWriter();
+            writer = getWriter();
+        } else {
+            //Fix by Mhodgson: FLVWriter constructor allows for passing of file object
+            writer = new FLVWriter(file, true);
         }
-        //Fix by Mhodgson: FLVWriter constructor allows for passing of file object
-        ITagWriter writer = new FLVWriter(file, true);
         return writer;
     }
 

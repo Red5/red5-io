@@ -26,9 +26,14 @@ import java.nio.InvalidMarkException;
 import java.nio.channels.ClosedChannelException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.codec.AudioCodec;
@@ -40,6 +45,7 @@ import org.red5.io.amf.Output;
 import org.red5.io.flv.FLVHeader;
 import org.red5.io.flv.IFLV;
 import org.red5.io.utils.IOUtils;
+import org.red5.media.processor.IPostProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +81,11 @@ public class FLVWriter implements ITagWriter {
      * For now all recorded streams carry a stream id of 0.
      */
     private final static byte[] DEFAULT_STREAM_ID = new byte[] { (byte) (0 & 0xff), (byte) (0 & 0xff), (byte) (0 & 0xff) };
+
+    /**
+     * Executor for tasks within this instance
+     */
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /**
      * FLV object
@@ -151,7 +162,7 @@ public class FLVWriter implements ITagWriter {
      */
     private RandomAccessFile dataFile;
 
-    private Map<Long, ITag> metaTags = new HashMap<Long, ITag>();
+    private Map<Long, ITag> metaTags = new HashMap<>();
 
     // path to the original file passed to the writer
     private String filePath;
@@ -160,6 +171,12 @@ public class FLVWriter implements ITagWriter {
 
     // the size of the last tag written, which includes the tag header length
     private volatile int lastTagSize;
+
+    // to be executed after flv is finalized
+    private LinkedList<IPostProcessor> postProcessors;
+
+    // state of flv finalization
+    private AtomicBoolean finalized = new AtomicBoolean(false);
 
     /**
      * Creates writer implementation with for a given file
@@ -800,88 +817,107 @@ public class FLVWriter implements ITagWriter {
      * @return bytes transferred
      */
     private long finalizeFlv() {
-        log.debug("Finalizing {}", filePath);
         long bytesTransferred = 0L;
-        try {
-            // read file info if it exists
-            File tmpFile = new File(filePath + ".info");
-            if (tmpFile.exists()) {
-                int[] info = readInfoFile(tmpFile);
-                if (audioCodecId == -1 && info[0] > 0) {
-                    audioCodecId = info[0];
-                }
-                if (videoCodecId == -1 && info[1] > 0) {
-                    videoCodecId = info[1];
-                }
-                if (duration == 0 && info[2] > 0) {
-                    duration = info[2];
-                }
-                if (audioDataSize == 0 && info[3] > 0) {
-                    audioDataSize = info[3];
-                }
-                if (soundRate == 0 && info[4] > 0) {
-                    soundRate = info[4];
-                }
-                if (soundSize == 0 && info[5] > 0) {
-                    soundSize = info[5];
-                }
-                if (!soundType && info[6] > 0) {
-                    soundType = true;
-                }
-                if (videoDataSize == 0 && info[7] > 0) {
-                    videoDataSize = info[7];
-                }
-            } else {
-                log.debug("Flv info file not found");
-            }
-            tmpFile = null;
-            if (!append) {
-                // write the file header
-                writeHeader();
-                // write the metadata with the final duration
-                writeMetadataTag(duration * 0.001d, videoCodecId, audioCodecId);
-                // ensure we have the data file (*.ser)
-                if (dataFile == null) {
-                    dataFile = new RandomAccessFile(filePath + ".ser", "r");
-                }
-                // set the data file the beginning 
-                dataFile.seek(0);
-                // transfer / write data file into final flv
-                bytesTransferred = file.getChannel().transferFrom(dataFile.getChannel(), bytesWritten, dataFile.length());
-            } else {
-                updateMetadataTag(dataFile, duration * 0.001d, videoCodecId, audioCodecId);
-                bytesTransferred = 1;//avoid to start a job to finish up on close() method 
-            }
-            // close and remove the ser file if write was successful
-            if (dataFile != null && bytesTransferred > 0) {
-                // close the file
-                dataFile.close();
-                dataFile = null;
-                // delete the data files only if the bytes were transferred to the flv destination
-                if (bytesTransferred > 0) {
-                    File dat = new File(filePath + ".ser");
-                    if (dat.exists()) {
-                        dat.delete();
+        if (!finalized.get()) {
+            log.debug("Finalizing {}", filePath);
+            try {
+                // read file info if it exists
+                File tmpFile = new File(filePath + ".info");
+                if (tmpFile.exists()) {
+                    int[] info = readInfoFile(tmpFile);
+                    if (audioCodecId == -1 && info[0] > 0) {
+                        audioCodecId = info[0];
                     }
-                    File inf = new File(filePath + ".info");
-
-                    if (inf.exists()) {
-                        inf.delete();
+                    if (videoCodecId == -1 && info[1] > 0) {
+                        videoCodecId = info[1];
+                    }
+                    if (duration == 0 && info[2] > 0) {
+                        duration = info[2];
+                    }
+                    if (audioDataSize == 0 && info[3] > 0) {
+                        audioDataSize = info[3];
+                    }
+                    if (soundRate == 0 && info[4] > 0) {
+                        soundRate = info[4];
+                    }
+                    if (soundSize == 0 && info[5] > 0) {
+                        soundSize = info[5];
+                    }
+                    if (!soundType && info[6] > 0) {
+                        soundType = true;
+                    }
+                    if (videoDataSize == 0 && info[7] > 0) {
+                        videoDataSize = info[7];
                     }
                 } else {
-                    log.warn("FLV serial file not deleted due to transfer error");
+                    log.debug("Flv info file not found");
                 }
-            }
-        } catch (Exception e) {
-            log.warn("Finalization of flv file failed; new finalize job will be spawned", e);
-        } finally {
-            if (file != null) {
-                // close the file
-                try {
-                    file.close();
-                } catch (Exception e) {
+                tmpFile = null;
+                if (!append) {
+                    // write the file header
+                    writeHeader();
+                    // write the metadata with the final duration
+                    writeMetadataTag(duration * 0.001d, videoCodecId, audioCodecId);
+                    // ensure we have the data file (*.ser)
+                    if (dataFile == null) {
+                        dataFile = new RandomAccessFile(filePath + ".ser", "r");
+                    }
+                    // set the data file the beginning 
+                    dataFile.seek(0);
+                    // transfer / write data file into final flv
+                    bytesTransferred = file.getChannel().transferFrom(dataFile.getChannel(), bytesWritten, dataFile.length());
+                } else {
+                    updateMetadataTag(dataFile, duration * 0.001d, videoCodecId, audioCodecId);
+                    bytesTransferred = 1;//avoid to start a job to finish up on close() method 
                 }
+                // close and remove the ser file if write was successful
+                if (dataFile != null && bytesTransferred > 0) {
+                    // close the file
+                    dataFile.close();
+                    dataFile = null;
+                    // delete the data files only if the bytes were transferred to the flv destination
+                    if (bytesTransferred > 0) {
+                        File dat = new File(filePath + ".ser");
+                        if (dat.exists()) {
+                            dat.delete();
+                        }
+                        File inf = new File(filePath + ".info");
+                        if (inf.exists()) {
+                            inf.delete();
+                        }
+                    } else {
+                        log.warn("FLV serial file not deleted due to transfer error");
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Finalization of flv file failed; new finalize job will be spawned", e);
+            } finally {
+                if (file != null) {
+                    // close the file
+                    try {
+                        file.close();
+                    } catch (Exception e) {
+                    }
+                }
+                // run post process
+                if (postProcessors != null) {
+                    for (IPostProcessor postProcessor : postProcessors) {
+                        log.debug("Execute: {}", postProcessor);
+                        try {
+                            // set properties that the post processor requires or may require
+                            postProcessor.init(filePath);
+                            // execute and block
+                            executor.submit(postProcessor).get();
+                        } catch (Exception e) {
+                            log.warn("Exception during post process on: {}", filePath);
+                        }
+                    }
+                    postProcessors.clear();
+                }
+                finalized.compareAndSet(false, true);
             }
+        } else {
+            log.trace("Finalization already completed");
         }
         return bytesTransferred;
     }
@@ -975,28 +1011,34 @@ public class FLVWriter implements ITagWriter {
             if (locked) {
                 lock.release();
             }
-            log.debug("{} closed", filePath);
+            log.debug("Closed: {}", filePath);
             // if write failed, spawn a job to finish up
             if (bytesTransferred == 0L) {
                 log.info("Spawning flv finalizer for {}", filePath);
                 // spawn job to write the finalized FLV file based on the ser file
-                spawnFinalizer().start();
+                Future<?> future = executor.submit(new FLVFinalizer());
+                // get result / blocking
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    log.warn("Exception while finalizing: {}", filePath, e);
+                }
             }
+        }
+        if (executor != null && !executor.isTerminated()) {
+            executor.shutdown();
         }
     }
 
-    /**
-     * Spawn a finalizer thread and return it (unstarted).
-     * 
-     * @return Thread containing finalizer
-     */
-    Thread spawnFinalizer() {
-        return new Thread(new FLVFinalizer(), "FLVFinalizer#" + System.currentTimeMillis());
+    /** {@inheritDoc} */
+    public void addPostProcessor(IPostProcessor postProcessor) {
+        if (postProcessors == null) {
+            postProcessors = new LinkedList<>();
+        }
+        postProcessors.add(postProcessor);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public IStreamableFile getFile() {
         return flv;
     }
@@ -1146,17 +1188,32 @@ public class FLVWriter implements ITagWriter {
             System.err.println("Serial file was not found or could not be read");
         }
         if (writer != null) {
-            // spawn a flv finalizer 
-            Thread job = writer.spawnFinalizer();
-            // start the work
-            job.start();
-            // wait for it to finish
-            job.join();
-            log.debug("File repair completed");
-            System.out.println("File repair completed");
-            result = true;
+            // spawn a flv finalizer
+            Future<?> future = writer.submit(writer.new FLVFinalizer());
+            try {
+                // get result / blocking
+                future.get();
+                log.debug("File repair completed");
+                System.out.println("File repair completed");
+                result = true;
+            } catch (Exception e) {
+                log.warn("Exception while finalizing: {}", path, e);
+            }
         }
         return result;
+    }
+
+    /**
+     * Submits a finalizer internally.
+     * 
+     * @param flvFinalizer
+     * @return Future representing task
+     */
+    private Future<?> submit(FLVFinalizer flvFinalizer) {
+        if (executor != null && !executor.isTerminated()) {
+            return executor.submit(flvFinalizer);
+        }
+        return null;
     }
 
     /**

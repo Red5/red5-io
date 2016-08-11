@@ -157,7 +157,10 @@ public class AMF3IOTest extends AbstractIOTest {
         resetOutput();
         ///////////////////////////////////////////////
 //        log.debug("\n onCuePoint");
+//        // OSMF CuePoint object
 //        buf.put(IOUtils.hexStringToByteArray("0002000a6f6e437565506f696e74110a03"));
+//        // AS3 Object with cuepoint properties
+//        buf.put(IOUtils.hexStringToByteArray("0002000a6f6e437565506f696e74110a0b01096e616d6506176e6176437565506f696e740974797065060b6576656e740974696d65040115706172616d65746572730a01176f7269656e746174696f6e045a01"));
 //        buf.flip();
 //        // skip the first byte
 //        assertEquals(0, buf.get());

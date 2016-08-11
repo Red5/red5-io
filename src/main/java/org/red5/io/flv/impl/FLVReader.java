@@ -47,7 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A Reader is used to read the contents of a FLV file. NOTE: This class is not implemented as threading-safe. The caller should make sure the threading-safety.
+ * A Reader is used to read the contents of a FLV file. NOTE: This class is not implemented as threading-safe. The caller should make sure
+ * the threading-safety.
  *
  * @author The Red5 Project
  * @author Dominick Accattato (daccattato@gmail.com)
@@ -314,7 +315,8 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     }
 
     /**
-     * Load enough bytes from channel to buffer. After the loading process, the caller can make sure the amount in buffer is of size 'amount' if we haven't reached the end of channel.
+     * Load enough bytes from channel to buffer. After the loading process, the caller can make sure the amount in buffer is of size
+     * 'amount' if we haven't reached the end of channel.
      *
      * @param amount
      *            The amount of bytes in buffer after returning, no larger than bufferSize
