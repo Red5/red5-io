@@ -148,7 +148,7 @@ public class FLV implements IFLV {
      * @param writerPostProcessor IPostProcess implementation class name
      */
     @SuppressWarnings("unchecked")
-    public void setWriterPostProcessors(String writerPostProcessor) {
+    public void setWriterPostProcessor(String writerPostProcessor) {
         if (writePostProcessors == null) {
             writePostProcessors = new LinkedList<>();
         }
