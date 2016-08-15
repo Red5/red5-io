@@ -21,7 +21,6 @@ package org.red5.io;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -31,7 +30,6 @@ import org.junit.Test;
 import org.red5.io.amf3.ByteArray;
 import org.red5.io.amf3.Input;
 import org.red5.io.amf3.Output;
-import org.red5.io.flv.meta.MetaCue;
 import org.red5.io.object.DataTypes;
 import org.red5.io.object.Deserializer;
 import org.red5.io.object.Serializer;
@@ -76,6 +74,7 @@ public class AMF3IOTest extends AbstractIOTest {
         out = new Output(buf);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testStreamData() {
         log.debug("\n Testing StreamData");
