@@ -292,8 +292,9 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
         int count = 0;
         for (int i = 0; i < map.size(); i++) {
             try {
-                if (!map.containsKey(i))
+                if (!map.containsKey(i)) {
                     break;
+                }
             } catch (ClassCastException err) {
                 // Map has non-number keys.
                 break;
