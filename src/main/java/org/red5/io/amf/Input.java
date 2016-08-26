@@ -37,6 +37,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.io.amf3.ByteArray;
 import org.red5.io.object.BaseInput;
@@ -336,9 +337,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         while (hasMoreProperties()) {
             String key = getString();
             log.debug("key: {}", key);
-            try {
-                Integer.parseInt(key);
-            } catch (NumberFormatException e) {
+            if (!NumberUtils.isParsable(key)) {
                 log.debug("key {} is causing non normal array", key);
                 normalArray = false;
             }
