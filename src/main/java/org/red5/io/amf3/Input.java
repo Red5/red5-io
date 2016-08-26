@@ -588,7 +588,8 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
     }
 
     public Object readMap() {
-        throw new UnsupportedOperationException("AMF3 doesn't support maps");
+        //throw new UnsupportedOperationException("AMF3 doesn't support maps");
+        return super.readMap();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes", "serial" })

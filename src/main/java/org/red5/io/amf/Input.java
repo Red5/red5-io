@@ -134,7 +134,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
                     return (byte) (currentDataType + DataTypes.CUSTOM_AMF_MASK);
                 case AMF.TYPE_AMF3_OBJECT:
                     log.debug("Switch to AMF3");
-                    break;
+                    return DataTypes.CORE_SWITCH;
             }
         } while (hasMoreProperties());
         log.trace("No more data types available");

@@ -32,6 +32,11 @@ public class DataTypes {
     public static final byte CORE_END_OBJECT = (byte) 0xff;
 
     /**
+     * Switch decoding marker
+     */
+    public static final byte CORE_SWITCH = (byte) 0xef;
+
+    /**
      * Padding marker
      */
     public static final byte CORE_SKIP = 0x00; // padding
