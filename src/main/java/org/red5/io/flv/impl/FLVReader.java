@@ -28,9 +28,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.mina.core.buffer.IoBuffer;
+import org.red5.codec.AudioCodec;
+import org.red5.codec.VideoCodec;
 import org.red5.io.BufferType;
 import org.red5.io.IKeyFrameMetaCache;
 import org.red5.io.IStreamableFile;
@@ -94,6 +97,16 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
 
     /** Position of first audio tag. */
     private long firstAudioTag = -1;
+
+    /**
+     * If audio configuration data has been read
+     */
+    private AtomicBoolean audioConfigRead = new AtomicBoolean(false);
+
+    /**
+     * If video configuration data has been read
+     */
+    private AtomicBoolean videoConfigRead = new AtomicBoolean(false);
 
     /** metadata sent flag */
     private boolean metadataSent = false;
@@ -561,30 +574,36 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
         if (firstVideoTag != -1) {
             long old = getCurrentPosition();
             setCurrentPosition(firstVideoTag);
-            readTagHeader();
-            fillBuffer(1);
-            byte frametype = in.get();
-            // Video codec id
-            props.put("videocodecid", frametype & MASK_VIDEO_CODEC);
+            try {
+                readTagHeader();
+                fillBuffer(1);
+                int codecId = in.get() & MASK_VIDEO_CODEC;
+                // Video codec id
+                props.put("videocodecid", codecId);
+            } catch (UnsupportedDataTypeException e) {
+                log.warn("createFileMeta for video", e);
+            }
             setCurrentPosition(old);
         }
         if (firstAudioTag != -1) {
             long old = getCurrentPosition();
             setCurrentPosition(firstAudioTag);
-            readTagHeader();
-            fillBuffer(1);
-            byte frametype = in.get();
-            // Audio codec id
-            props.put("audiocodecid", (frametype & MASK_SOUND_FORMAT) >> 4);
+            try {
+                readTagHeader();
+                fillBuffer(1);
+                int codecId = (in.get() & MASK_SOUND_FORMAT) >> 4;
+                // Audio codec id
+                props.put("audiocodecid", codecId);
+            } catch (UnsupportedDataTypeException e) {
+                log.warn("createFileMeta for audio", e);
+            }
             setCurrentPosition(old);
         }
         props.put("canSeekToEnd", true);
         out.writeMap(props);
         buf.flip();
-
         ITag result = new Tag(IoConstants.TYPE_METADATA, 0, buf.limit(), null, 0);
         result.setBody(buf);
-        //
         out = null;
         return result;
     }
@@ -610,7 +629,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                 }
                 int bodySize = tag.getBodySize();
                 IoBuffer body = IoBuffer.allocate(bodySize, false);
-                // XXX Paul: this assists in 'properly' handling damaged FLV files		
+                // XXX Paul: this assists in 'properly' handling damaged FLV files
                 long newPosition = getCurrentPosition() + bodySize;
                 if (newPosition <= getTotalBytes()) {
                     int limit;
@@ -628,9 +647,41 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                     body.flip();
                     tag.setBody(body);
                 }
+                // now that we have a tag body, check that config has been sent for codecs that require them
+                if (body.array().length > 0) {
+                    int firstByte = body.array()[0] & 0xff;
+                    if (((firstByte & ITag.MASK_SOUND_FORMAT) >> 4) == AudioCodec.AAC.getId()) {
+                        // read second byte to see if its config data
+                        if (body.array()[1] != 0 && !audioConfigRead.get()) {
+                            log.debug("Skipping AAC since config has not beean read yet");
+                            body.clear();
+                            body.free();
+                            tag = null;
+                        } else if (body.array()[1] == 0 && audioConfigRead.compareAndSet(false, true)) {
+                            log.debug("AAC config read");
+                        }
+                    } else if ((firstByte & ITag.MASK_VIDEO_CODEC) == VideoCodec.AVC.getId()) {
+                        // read second byte to see if its config data
+                        if (body.array()[1] != 0 && !videoConfigRead.get()) {
+                            log.debug("Skipping AVC since config has not beean read yet");
+                            body.clear();
+                            body.free();
+                            tag = null;
+                        } else if (body.array()[1] == 0 && videoConfigRead.compareAndSet(false, true)) {
+                            log.debug("AVC config read");
+                        }
+                    } else {
+                        log.trace("Media without configuration read");
+                    }
+                } else {
+                    log.debug("Tag body was empty");
+                }
             } else {
                 log.debug("Tag was null");
             }
+        } catch (UnsupportedDataTypeException e) {
+            log.warn("readTag", e);
+            close();
         } catch (InterruptedException e) {
             log.warn("Exception acquiring lock", e);
         } finally {
@@ -657,7 +708,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                     channel.close();
                     fis.close();
                 } catch (IOException e) {
-                    log.error("FLVReader :: close ::>\n", e);
+                    log.error("FLVReader close", e);
                 }
             }
             log.debug("Reader closed: {}", file.getName());
@@ -709,8 +760,13 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
             boolean audioOnly = true;
             while (hasMoreTags()) {
                 long pos = getCurrentPosition();
-                // Read tag header and duration
-                ITag tmpTag = this.readTagHeader();
+                // read tag header and duration
+                ITag tmpTag = null;
+                try {
+                    tmpTag = readTagHeader();
+                } catch (UnsupportedDataTypeException e) {
+                    log.warn("analyzeKeyFrames", e);
+                }
                 if (tmpTag != null) {
                     totalValidTags++;
                 } else {
@@ -758,12 +814,8 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                 if (newPosition >= getTotalBytes()) {
                     log.error("New position exceeds limit");
                     if (log.isDebugEnabled()) {
-                        log.debug("-----");
-                        log.debug("Keyframe analysis");
-                        log.debug(" data type=" + tmpTag.getDataType() + " bodysize=" + tmpTag.getBodySize());
-                        log.debug(" remaining=" + getRemainingBytes() + " limit=" + getTotalBytes() + " new pos=" + newPosition);
-                        log.debug(" pos=" + pos);
-                        log.debug("-----");
+                        log.debug("-----\nKeyframe analysis\n\tdata type={} bodysize={}\n\tremaining={} limit={}\n\tnew pos={} pos={}\n-----", 
+                                new Object[] { tmpTag.getDataType(), tmpTag.getBodySize(), getRemainingBytes(), getTotalBytes(), newPosition, pos });
                     }
                     //XXX Paul: A runtime exception is probably not needed here
                     log.info("New position {} exceeds limit {}", newPosition, getTotalBytes());
@@ -819,17 +871,11 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
      * Read only header part of a tag.
      *
      * @return Tag header
+     * @throws UnsupportedDataTypeException
      */
-    private ITag readTagHeader() {
+    private ITag readTagHeader() throws UnsupportedDataTypeException {
         // previous tag size (4 bytes) + flv tag header size (11 bytes)
         fillBuffer(15);
-        //		if (log.isDebugEnabled()) {
-        //			in.mark();
-        //			StringBuilder sb = new StringBuilder();
-        //			HexDump.dumpHex(sb, in.array());
-        //			log.debug("\n{}", sb);
-        //			in.reset();
-        //		}		
         // previous tag's size
         int previousTagSize = in.getInt();
         // start of the flv tag
@@ -853,24 +899,19 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                 log.debug("Found meta/script data");
                 break;
             default:
-                log.debug("Invalid data type detected ({}), reading ahead", dataType);
-                log.debug("Current position: {} limit: {}", in.position(), in.limit());
+                log.debug("Invalid data type detected ({}), reading ahead\n current position: {} limit: {}", dataType, in.position(), in.limit());
                 // loop a few times to see if we find a usable data type
-                int i = 0;
-                while (dataType != 8 && dataType != 9 && dataType != 18) {
-                    // only allow 10 loops
-                    if (i++ > 10) {
-                        return null;
-                    }
-                    // move ahead and see if we get a valid datatype		
-                    dataType = in.get();
-                }
+                //                int i = 0;
+                //                while (dataType != 8 && dataType != 9 && dataType != 18) {
+                //                    // only allow 10 loops
+                //                    if (i++ > 10) {
+                //                        return null;
+                //                    }
+                //                    // move ahead and see if we get a valid datatype		
+                //                    dataType = in.get();
+                //                }
+                throw new UnsupportedDataTypeException("Invalid data type detected (" + dataType + ")");
         }
-        //		byte aacType = 0;
-        //		if (dataType == 8 && keyframeMeta.audioCodecId == AudioCodec.AAC.getId()) {
-        //			// flv spec indicates that aac contains an extra byte after the data type
-        //			aacType = in.get();
-        //		}
         int bodySize = IOUtils.readUnsignedMediumInt(in);
         int timestamp = IOUtils.readExtendedMediumInt(in);
         if (log.isDebugEnabled()) {
@@ -957,4 +998,17 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
         }
         return duration;
     }
+
+    /**
+     * Used when an unsupported datatype is found in a file.
+     */
+    final class UnsupportedDataTypeException extends IOException {
+
+        private static final long serialVersionUID = 4892905470375245996L;
+
+        UnsupportedDataTypeException(String message) {
+            super(message);
+        }
+    }
+
 }

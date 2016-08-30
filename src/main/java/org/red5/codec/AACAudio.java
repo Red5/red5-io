@@ -80,22 +80,20 @@ public class AACAudio implements IAudioStreamCodec {
         if (dataLength > 1) {
             //ensure we are at the beginning
             data.rewind();
+            data.mark();
             byte frameType = data.get();
             log.trace("Frame type: {}", frameType);
             byte header = data.get();
-            //go back to beginning
-            data.rewind();
-            //If we don't have the AACDecoderConfigurationRecord stored...
+            // if we don't have the AACDecoderConfigurationRecord stored
             if (blockDataAACDCR == null) {
-                if ((((frameType & 0xF0) >> 4) == AudioCodec.AAC.getId()) && (header == 0)) {
-                    //go back to beginning
+                if ((((frameType & 0xf0) >> 4) == AudioCodec.AAC.getId()) && (header == 0)) {
+                    // back to the beginning
                     data.rewind();
                     blockDataAACDCR = new byte[dataLength];
                     data.get(blockDataAACDCR);
-                    //go back to beginning
-                    data.rewind();
                 }
             }
+            data.reset();
         }
         return true;
     }

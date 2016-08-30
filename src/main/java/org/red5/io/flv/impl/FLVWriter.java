@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.codec.AudioCodec;
+import org.red5.codec.VideoCodec;
 import org.red5.io.IStreamableFile;
 import org.red5.io.ITag;
 import org.red5.io.ITagWriter;
@@ -108,14 +109,24 @@ public class FLVWriter implements ITagWriter {
     private int timeOffset;
 
     /**
+     * Id of the audio codec used.
+     */
+    private volatile int audioCodecId = -1;
+
+    /**
      * Id of the video codec used.
      */
     private volatile int videoCodecId = -1;
 
     /**
-     * Id of the audio codec used.
+     * If audio configuration data has been written
      */
-    private volatile int audioCodecId = -1;
+    private AtomicBoolean audioConfigWritten = new AtomicBoolean(false);
+
+    /**
+     * If video configuration data has been written
+     */
+    private AtomicBoolean videoConfigWritten = new AtomicBoolean(false);
 
     /**
      * Sampling rate
@@ -282,6 +293,8 @@ public class FLVWriter implements ITagWriter {
      * {@inheritDoc}
      */
     public boolean writeTag(ITag tag) throws IOException {
+        // a/v config written flags
+        boolean onWrittenSetVideoFlag = false, onWrittenSetAudioFlag = false;
         try {
             lock.acquire();
             /*
@@ -375,11 +388,20 @@ public class FLVWriter implements ITagWriter {
                                 soundRate = 44100;
                                 soundSize = 16;
                                 soundType = true;
+                                // this is aac data, so a config chunk should be written before any media data
+                                if (bodyBuf[1] == 0) {
+                                    // when this config is written set the flag
+                                    onWrittenSetAudioFlag = true;
+                                } else {
+                                    // reject packet since config hasnt been written yet
+                                    log.debug("Rejecting AAC data since config has not yet been written");
+                                    return false;
+                                }
                             } else if (audioCodecId == AudioCodec.SPEEX.getId()) {
                                 log.trace("Speex audio type");
                                 soundRate = 5500; // actually 16kHz
                                 soundSize = 16;
-                                soundType = false; // mono								
+                                soundType = false; // mono
                             } else {
                                 switch ((id & ITag.MASK_SOUND_RATE) >> 2) {
                                     case ITag.FLAG_RATE_5_5_KHZ:
@@ -409,14 +431,43 @@ public class FLVWriter implements ITagWriter {
                                 soundType = (id & ITag.MASK_SOUND_TYPE) > 0;
                                 log.debug("Sound type: {}", soundType);
                             }
+                        } else if (!audioConfigWritten.get() && (((bodyBuf[0] & 0xff) & ITag.MASK_SOUND_FORMAT) >> 4) == AudioCodec.AAC.getId()) {
+                            // this is aac data, so a config chunk should be written before any media data
+                            if (bodyBuf[1] == 0) {
+                                // when this config is written set the flag
+                                onWrittenSetAudioFlag = true;
+                            } else {
+                                // reject packet since config hasnt been written yet
+                                return false;
+                            }
                         }
-                        // XXX is AACPacketType needed here?
                     } else if (dataType == ITag.TYPE_VIDEO) {
                         videoDataSize += bodySize;
                         if (videoCodecId == -1) {
                             int id = bodyBuf[0] & 0xff; // must be unsigned
                             videoCodecId = id & ITag.MASK_VIDEO_CODEC;
                             log.debug("Video codec id: {}", videoCodecId);
+                            if (videoCodecId == VideoCodec.AVC.getId()) {
+                                // this is avc/h264 data, so a config chunk should be written before any media data
+                                if (bodyBuf[1] == 0) {
+                                    // when this config is written set the flag
+                                    onWrittenSetVideoFlag = true;
+                                } else {
+                                    // reject packet since config hasnt been written yet
+                                    log.debug("Rejecting AVC data since config has not yet been written");
+                                    return false;
+                                }
+                            }
+                        } else if (!videoConfigWritten.get() && (((bodyBuf[0] & 0xff) & ITag.MASK_VIDEO_CODEC)) == VideoCodec.AVC.getId()) {
+                            // this is avc/h264 data, so a config chunk should be written before any media data
+                            if (bodyBuf[1] == 0) {
+                                // when this config is written set the flag
+                                onWrittenSetVideoFlag = true;
+                            } else {
+                                // reject packet since config hasnt been written yet
+                                log.debug("Rejecting AVC data since config has not yet been written");
+                                return false;
+                            }
                         }
                     }
                 }
@@ -447,9 +498,6 @@ public class FLVWriter implements ITagWriter {
                 // flip so we can process from the beginning
                 tagBuffer.flip();
                 if (log.isDebugEnabled()) {
-                    //StringBuilder sb = new StringBuilder();
-                    //HexDump.dumpHex(sb, tagBuffer.array());
-                    //log.debug("\n{}", sb);
                 }
                 // write the tag
                 dataFile.write(tagBuffer.array());
@@ -477,6 +525,12 @@ public class FLVWriter implements ITagWriter {
         } finally {
             // update the file information
             updateInfoFile();
+            // mark config written flags
+            if (onWrittenSetAudioFlag && audioConfigWritten.compareAndSet(false, true)) {
+                log.trace("Audio configuration written");
+            } else if (onWrittenSetVideoFlag && videoConfigWritten.compareAndSet(false, true)) {
+                log.trace("Video configuration written");
+            }
             // release lock
             lock.release();
         }

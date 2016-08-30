@@ -17,12 +17,12 @@
     </appender>
     <root level="TRACE">
         <appender-ref ref="CONSOLE" />
-        <!-- 
+        <!--
         <appender-ref ref="FILE" />
-         -->
+        -->
     </root>
-    <logger name="org.red5.io.flv.impl.FLVReader" level="INFO"/>
 <!-- 
+    <logger name="org.red5.io.flv.impl.FLVReader" level="INFO"/>
     <logger name="org.red5.io.object.Serializer" level="DEBUG" />
     <logger name="org.springframework" level="INFO" />
     <logger name="org.apache" level="INFO" />

@@ -124,7 +124,7 @@ public class IOUtils {
      * @return int value
      */
     public final static int readUnsignedMediumInt(IoBuffer in) {
-        return ((in.get() & 0xff) << 16) + ((in.get() & 0xff) << 8) + ((in.get() & 0xff));
+        return ((in.get() & 0xff) << 16) + ((in.get() & 0xff) << 8) + (in.get() & 0xff);
     }
 
     /**
@@ -135,7 +135,7 @@ public class IOUtils {
      * @return int value
      */
     public final static int readMediumInt(ByteBuffer in) {
-        return ((in.get() & 0x000000ff) << 16) + ((in.get() & 0x000000ff) << 8) + ((in.get() & 0x000000ff));
+        return ((in.get() & 0x000000ff) << 16) + ((in.get() & 0x000000ff) << 8) + (in.get() & 0x000000ff);
     }
 
     /**
@@ -146,7 +146,7 @@ public class IOUtils {
      * @return int value
      */
     public final static int readMediumInt(IoBuffer in) {
-        return ((in.get() & 0x000000ff) << 16) + ((in.get() & 0x000000ff) << 8) + ((in.get() & 0x000000ff));
+        return ((in.get() & 0x000000ff) << 16) + ((in.get() & 0x000000ff) << 8) + (in.get() & 0x000000ff);
     }
 
     /**
