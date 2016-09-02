@@ -97,7 +97,9 @@ public class AVCVideo implements IVideoStreamCodec {
 
     /** {@inheritDoc} */
     public boolean addData(IoBuffer data) {
-        if (data.limit() > 0) {
+        if (data.hasRemaining()) {
+            // mark
+            int start = data.position();
             // get frame type
             byte frameType = data.get();
             if ((frameType & 0x0f) == VideoCodec.AVC.getId()) {
@@ -121,6 +123,7 @@ public class AVCVideo implements IVideoStreamCodec {
                     // store last keyframe
                     keyframe.setData(data);
                 } else if (bufferInterframes) {
+                    // rewind
                     data.rewind();
                     try {
                         int lastInterframe = numInterframes.getAndIncrement();
@@ -134,13 +137,15 @@ public class AVCVideo implements IVideoStreamCodec {
                         log.error("Failed to buffer interframe", e);
                     }
                 }
-                // finished with the data, rewind one last time
-                data.rewind();
             } else {
                 // not AVC data
                 log.debug("Non-AVC data, rejecting");
+                // go back to where we started
+                data.position(start);
                 return false;
             }
+            // go back to where we started
+            data.position(start);
         }
         return true;
     }

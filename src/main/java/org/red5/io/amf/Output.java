@@ -332,7 +332,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
         Element element = getSerializeCache().get(objectClass);
         Map<String, Boolean> serializeMap = (element == null ? null : (Map<String, Boolean>) element.getObjectValue());
         if (serializeMap == null) {
-            serializeMap = new HashMap<String, Boolean>();
+            serializeMap = new HashMap<>();
             getSerializeCache().put(new Element(objectClass, serializeMap));
         }
         boolean serialize;

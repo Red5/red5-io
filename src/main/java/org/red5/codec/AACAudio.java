@@ -76,11 +76,11 @@ public class AACAudio implements IAudioStreamCodec {
 
     /** {@inheritDoc} */
     public boolean addData(IoBuffer data) {
-        int dataLength = data.limit();
-        if (dataLength > 1) {
-            //ensure we are at the beginning
+        if (data.hasRemaining()) {
+            // mark
+            int start = data.position();
+            // ensure we are at the beginning
             data.rewind();
-            data.mark();
             byte frameType = data.get();
             log.trace("Frame type: {}", frameType);
             byte header = data.get();
@@ -89,11 +89,11 @@ public class AACAudio implements IAudioStreamCodec {
                 if ((((frameType & 0xf0) >> 4) == AudioCodec.AAC.getId()) && (header == 0)) {
                     // back to the beginning
                     data.rewind();
-                    blockDataAACDCR = new byte[dataLength];
+                    blockDataAACDCR = new byte[data.remaining()];
                     data.get(blockDataAACDCR);
                 }
             }
-            data.reset();
+            data.position(start);
         }
         return true;
     }
