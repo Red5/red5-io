@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.InvalidMarkException;
 import java.nio.channels.ClosedChannelException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -41,7 +40,6 @@ import org.red5.codec.VideoCodec;
 import org.red5.io.IStreamableFile;
 import org.red5.io.ITag;
 import org.red5.io.ITagWriter;
-import org.red5.io.amf.Input;
 import org.red5.io.amf.Output;
 import org.red5.io.flv.FLVHeader;
 import org.red5.io.flv.IFLV;
@@ -172,8 +170,6 @@ public class FLVWriter implements ITagWriter {
      * File to which stream data is stored without an flv header or metadata.
      */
     private RandomAccessFile dataFile;
-
-    private Map<Long, ITag> metaTags = new HashMap<>();
 
     // path to the original file passed to the writer
     private String filePath;
@@ -327,37 +323,15 @@ public class FLVWriter implements ITagWriter {
                 // when tag is ImmutableTag which is in red5-server-common.jar, tag.getBody().reset() will throw InvalidMarkException because 
                 // ImmutableTag.getBody() returns a new IoBuffer instance everytime.
                 IoBuffer tagBody = tag.getBody();
-                // if we're writing non-meta tags do seeking and tag size update
-                if (dataType != ITag.TYPE_METADATA) {
-                    // get the current file offset
-                    long fileOffset = dataFile.getFilePointer();
-                    log.debug("Current file offset: {} expected offset: {}", fileOffset, prevBytesWritten);
-                    if (fileOffset < prevBytesWritten) {
-                        log.debug("Seeking to expected offset");
-                        // it's necessary to seek to the length of the file
-                        // so that we can append new tags
-                        dataFile.seek(prevBytesWritten);
-                        log.debug("New file position: {}", dataFile.getChannel().position());
-                    }
-                } else {
-                    tagBody.mark();
-                    // get input data
-                    Input metadata = new Input(tagBody);
-                    // initialize type so that readString knows what to do
-                    metadata.readDataType();
-                    String metaType = metadata.readString();
-                    log.debug("Metadata tag type: {}", metaType);
-                    try {
-                        tagBody.reset();
-                    } catch (InvalidMarkException e) {
-                        //TDJ: this error is probably caused by the setter of limit on readString method
-                        log.debug("Exception reseting position of buffer: {}", e.getMessage(), e);
-                    }
-                    if (!"onCuePoint".equals(metaType)) {
-                        // store any incoming onMetaData tags until we close the file, allow onCuePoint tags to continue
-                        metaTags.put(System.currentTimeMillis(), tag);
-                        return true;
-                    }
+                // get the current file offset
+                long fileOffset = dataFile.getFilePointer();
+                log.debug("Current file offset: {} expected offset: {}", fileOffset, prevBytesWritten);
+                if (fileOffset < prevBytesWritten) {
+                    log.debug("Seeking to expected offset");
+                    // it's necessary to seek to the length of the file
+                    // so that we can append new tags
+                    dataFile.seek(prevBytesWritten);
+                    log.debug("New file position: {}", dataFile.getChannel().position());
                 }
                 // set a var holding the entire tag size including the previous tag length
                 int totalTagSize = TAG_HEADER_LENGTH + bodySize + 4;
@@ -567,32 +541,15 @@ public class FLVWriter implements ITagWriter {
             // ensure that the channel is still open
             if (dataFile != null) {
                 log.debug("Current file position: {}", dataFile.getChannel().position());
-                // if we're writing non-meta tags do seeking and tag size update
-                if (dataType != ITag.TYPE_METADATA) {
-                    // get the current file offset
-                    long fileOffset = dataFile.getFilePointer();
-                    log.debug("Current file offset: {} expected offset: {}", fileOffset, prevBytesWritten);
-                    if (fileOffset < prevBytesWritten) {
-                        log.debug("Seeking to expected offset");
-                        // it's necessary to seek to the length of the file
-                        // so that we can append new tags
-                        dataFile.seek(prevBytesWritten);
-                        log.debug("New file position: {}", dataFile.getChannel().position());
-                    }
-                } else {
-                    data.mark();
-                    // get input data
-                    Input metadata = new Input(data);
-                    // initialize type so that readString knows what to do
-                    metadata.readDataType();
-                    String metaType = metadata.readString();
-                    log.debug("Metadata tag type: {}", metaType);
-                    data.reset();
-                    if (!"onCuePoint".equals(metaType)) {
-                        // store any incoming onMetaData tags until we close the file, allow onCuePoint tags to continue
-                        //metaTags.put(System.currentTimeMillis(), tag);
-                        return true;
-                    }
+                // get the current file offset
+                long fileOffset = dataFile.getFilePointer();
+                log.debug("Current file offset: {} expected offset: {}", fileOffset, prevBytesWritten);
+                if (fileOffset < prevBytesWritten) {
+                    log.debug("Seeking to expected offset");
+                    // it's necessary to seek to the length of the file
+                    // so that we can append new tags
+                    dataFile.seek(prevBytesWritten);
+                    log.debug("New file position: {}", dataFile.getChannel().position());
                 }
                 // set a var holding the entire tag size including the previous tag length
                 int totalTagSize = TAG_HEADER_LENGTH + bodySize + 4;
@@ -687,7 +644,7 @@ public class FLVWriter implements ITagWriter {
         buf.setAutoExpand(true);
         Output out = new Output(buf);
         out.writeString("onMetaData");
-        Map<Object, Object> params = new HashMap<Object, Object>();
+        Map<Object, Object> params = new HashMap<>();
         params.put("server", "Red5");
         params.put("creationdate", GregorianCalendar.getInstance().getTime().toString());
         params.put("duration", (Number) duration);
@@ -1050,7 +1007,6 @@ public class FLVWriter implements ITagWriter {
     public void close() {
         log.debug("close");
         // spawn a thread to finish up our flv writer work
-        log.debug("Meta tags: {}", metaTags);
         boolean locked = false;
         long bytesTransferred = 0L;
         try {

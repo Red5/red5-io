@@ -109,7 +109,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     /**
      * Container for metadata and any other tags that should be sent prior to media data.
      */
-    private LinkedList<ITag> firstTags = new LinkedList<ITag>();
+    private LinkedList<ITag> firstTags = new LinkedList<>();
 
     private long fileSize;
 
@@ -306,7 +306,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
                 props.put("samplerate", metaData.sampleRate);
             }
             if (metaData.hasCoverImage()) {
-                Map<Object, Object> covr = new HashMap<Object, Object>(1);
+                Map<Object, Object> covr = new HashMap<>(1);
                 covr.put("covr", new Object[] { metaData.getCovr() });
                 props.put("tags", covr);
             }
@@ -486,7 +486,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
                     // frame data loaded, create other mappings
                     duration = frameMeta.duration;
                     frameMeta.audioOnly = true;
-                    posTimeMap = new HashMap<Long, Float>();
+                    posTimeMap = new HashMap<>();
                     for (int i = 0; i < frameMeta.positions.length; i++) {
                         posTimeMap.put(frameMeta.positions[i], (float) frameMeta.timestamps[i]);
                     }
@@ -501,10 +501,10 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
             @SuppressWarnings("resource")
             MP3Stream stream = new MP3Stream(fis);
             // frame holder
-            frameList = new LinkedList<AudioFrame>();
+            frameList = new LinkedList<>();
             // position and timestamp lists
-            List<Long> positionList = new ArrayList<Long>();
-            List<Float> timestampList = new ArrayList<Float>();
+            List<Long> positionList = new ArrayList<>();
+            List<Float> timestampList = new ArrayList<>();
             dataRate = 0;
             long rate = 0;
             float time = 0f;
@@ -539,7 +539,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
             log.trace("Finished with frame count: {}", frameCount);
             duration = (long) time;
             dataRate = (int) (rate / frameCount);
-            posTimeMap = new HashMap<Long, Float>();
+            posTimeMap = new HashMap<>();
             frameMeta = new KeyFrameMeta();
             frameMeta.duration = duration;
             frameMeta.positions = new long[positionList.size()];
