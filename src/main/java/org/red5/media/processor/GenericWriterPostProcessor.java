@@ -54,16 +54,18 @@ public class GenericWriterPostProcessor implements IPostProcessor {
                 int audio = 0, video = 0, meta = 0;
                 while (reader.hasMoreTags()) {
                     tag = reader.readTag();
-                    switch (tag.getDataType()) {
-                        case IoConstants.TYPE_AUDIO:
-                            audio++;
-                            break;
-                        case IoConstants.TYPE_VIDEO:
-                            video++;
-                            break;
-                        case IoConstants.TYPE_METADATA:
-                            meta++;
-                            break;
+                    if (tag != null) {
+                        switch (tag.getDataType()) {
+                            case IoConstants.TYPE_AUDIO:
+                                audio++;
+                                break;
+                            case IoConstants.TYPE_VIDEO:
+                                video++;
+                                break;
+                            case IoConstants.TYPE_METADATA:
+                                meta++;
+                                break;
+                        }
                     }
                 }
                 reader.close();
