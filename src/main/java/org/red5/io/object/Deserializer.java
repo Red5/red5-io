@@ -18,7 +18,14 @@
 
 package org.red5.io.object;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +39,34 @@ import org.slf4j.LoggerFactory;
 public class Deserializer {
 
     private static final Logger log = LoggerFactory.getLogger(Deserializer.class);
+    static Set<String> BLACK_LIST = null;
 
     private Deserializer() {
+    }
+
+    public synchronized static void loadBlackList() throws IOException {
+        if (BLACK_LIST != null) {
+            return;
+        }
+        try (InputStream is = Deserializer.class.getClassLoader().getResourceAsStream("org/red5/io/object/black-list.properties")) {
+            Properties bl = new Properties();
+            bl.load(is);
+            Set<String> set = new HashSet<>();
+            for (Entry<?, ?> e : bl.entrySet()) {
+                String val = (String)e.getValue();
+                if (val != null) {
+                    val = val.trim();
+                }
+                if (val == null || val.length() == 0 || "class".equalsIgnoreCase(val)) {
+                    set.add(val);
+                }
+                //TODO not sure if it is necessary
+                //if ("*".equals(val) || "package".equalsIgnoreCase(val)) {
+                    //Deserializer.class.
+                //}
+            }
+            BLACK_LIST = Collections.unmodifiableSet(set);
+        }
     }
 
     /**
@@ -49,6 +82,14 @@ public class Deserializer {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T> T deserialize(Input in, Type target) {
+        if (BLACK_LIST == null) {
+            log.warn("Black list is not yet initialized");
+            try {
+                loadBlackList();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to init black-list");
+            }
+        }
         byte type = in.readDataType();
         if (log.isTraceEnabled()) {
             log.trace("Type: {} target: {}", type, (target != null ? target.toString() : "Target not specified"));
