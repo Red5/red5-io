@@ -490,6 +490,9 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
                 } else if (className.equals("RecordSetPage")) {
                     result = new RecordSetPage(this);
                     storeReference(result);
+                } else if (!classAllowed(className)) {
+                    log.debug("Class creation is not allowed {}", className);
+                    result = readSimpleObject();
                 } else {
                     instance = newInstance(className);
                     if (instance != null) {
