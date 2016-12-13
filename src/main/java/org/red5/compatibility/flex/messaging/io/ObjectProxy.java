@@ -64,12 +64,14 @@ public class ObjectProxy<T, V> implements Map<T, V>, IExternalizable {
     }
 
     /** {@inheritDoc} */
+    @Override
     @SuppressWarnings("unchecked")
     public void readExternal(IDataInput input) {
         item = (Map<T, V>) input.readObject();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeExternal(IDataOutput output) {
         output.writeObject(item);
     }
@@ -79,10 +81,12 @@ public class ObjectProxy<T, V> implements Map<T, V>, IExternalizable {
      * 
      * @return string
      */
+    @Override
     public String toString() {
         return item.toString();
     }
 
+    @Override
     public void clear() {
         item.clear();
     }
@@ -94,14 +98,17 @@ public class ObjectProxy<T, V> implements Map<T, V>, IExternalizable {
      *            name
      * @return boolean
      */
+    @Override
     public boolean containsKey(Object name) {
         return item.containsKey(name);
     }
 
+    @Override
     public boolean containsValue(Object value) {
         return item.containsValue(value);
     }
 
+    @Override
     public Set<Entry<T, V>> entrySet() {
         return Collections.unmodifiableSet(item.entrySet());
     }
@@ -113,14 +120,17 @@ public class ObjectProxy<T, V> implements Map<T, V>, IExternalizable {
      *            name
      * @return value
      */
+    @Override
     public V get(Object name) {
         return item.get(name);
     }
 
+    @Override
     public boolean isEmpty() {
         return item.isEmpty();
     }
 
+    @Override
     public Set<T> keySet() {
         return item.keySet();
     }
@@ -134,11 +144,13 @@ public class ObjectProxy<T, V> implements Map<T, V>, IExternalizable {
      *            value
      * @return old value
      */
+    @Override
     public V put(T name, V value) {
         return item.put(name, value);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
     public void putAll(Map values) {
         item.putAll(values);
     }
@@ -150,14 +162,17 @@ public class ObjectProxy<T, V> implements Map<T, V>, IExternalizable {
      *            name
      * @return old value
      */
+    @Override
     public V remove(Object name) {
         return item.remove(name);
     }
 
+    @Override
     public int size() {
         return item.size();
     }
 
+    @Override
     public Collection<V> values() {
         return Collections.unmodifiableCollection(item.values());
     }

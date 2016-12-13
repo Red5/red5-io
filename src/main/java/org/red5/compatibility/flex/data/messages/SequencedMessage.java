@@ -41,6 +41,7 @@ public class SequencedMessage extends AsyncMessage {
     public String dataMessage;
 
     /** {@inheritDoc} */
+    @Override
     protected void addParameters(StringBuilder result) {
         super.addParameters(result);
         result.append(",sequenceId=" + sequenceId);

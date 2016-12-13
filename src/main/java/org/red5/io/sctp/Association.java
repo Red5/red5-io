@@ -105,6 +105,7 @@ public class Association implements IAssociationControl {
         return state == State.ESTABLISHED;
     }
 
+    @Override
     public State getState() {
         return state;
     }
@@ -113,6 +114,7 @@ public class Association implements IAssociationControl {
         this.source = source;
     }
 
+    @Override
     public int getVerificationTag() {
         return verificationTagDestination;
     }

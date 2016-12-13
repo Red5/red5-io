@@ -163,6 +163,7 @@ public class MP4Frame implements Comparable<MP4Frame> {
     /**
      * The frames are expected to be sorted by their timestamp
      */
+    @Override
     public int compareTo(MP4Frame that) {
         int ret = 0;
         if (this.time > that.getTime()) {

@@ -53,17 +53,7 @@ public class Deserializer {
             bl.load(is);
             Set<String> set = new HashSet<>();
             for (Entry<?, ?> e : bl.entrySet()) {
-                String val = (String)e.getValue();
-                if (val != null) {
-                    val = val.trim();
-                }
-                if (val == null || val.length() == 0 || "class".equalsIgnoreCase(val)) {
-                    set.add(val);
-                }
-                //TODO not sure if it is necessary
-                //if ("*".equals(val) || "package".equalsIgnoreCase(val)) {
-                    //Deserializer.class.
-                //}
+                set.add((String)e.getKey());
             }
             BLACK_LIST = Collections.unmodifiableSet(set);
         }

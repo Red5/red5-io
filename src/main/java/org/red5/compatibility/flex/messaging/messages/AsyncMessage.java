@@ -46,6 +46,7 @@ public class AsyncMessage extends AbstractMessage {
     protected byte[] correlationIdBytes;
 
     /** {@inheritDoc} */
+    @Override
     protected void addParameters(StringBuilder result) {
         super.addParameters(result);
         result.append(",correlationId=");

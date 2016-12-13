@@ -183,6 +183,7 @@ public class AbstractMessage implements Message, Serializable {
      * 
      * @return value
      */
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append(getClass().getName());

@@ -97,6 +97,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      * @return One of AMF class constants with type
      * @see org.red5.io.amf.AMF
      */
+    @Override
     public byte readDataType() {
         do {
             // get the data type
@@ -147,6 +148,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Object
      */
+    @Override
     public Object readNull() {
         return null;
     }
@@ -156,6 +158,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return boolean
      */
+    @Override
     public Boolean readBoolean() {
         return (buf.get() == AMF.VALUE_TRUE) ? Boolean.TRUE : Boolean.FALSE;
     }
@@ -165,6 +168,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Number
      */
+    @Override
     public Number readNumber() {
         int remaining = buf.remaining();
         log.debug("readNumber from {} bytes", remaining);
@@ -185,6 +189,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      * 
      * @return String
      */
+    @Override
     public String getString() {
         log.trace("getString - currentDataType: {}", currentDataType);
         byte lastDataType = currentDataType;
@@ -203,6 +208,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return String
      */
+    @Override
     public String readString() {
         int limit = buf.limit();
         int len = 0;
@@ -251,6 +257,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Date Decoded string object
      */
+    @Override
     public Date readDate() {
         /*
          * Date: 0x0B T7 T6 .. T0 Z1 Z2 T7 to T0 form a 64 bit Big Endian number
@@ -268,6 +275,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         return date;
     }
 
+    @Override
     public Object readArray(Type target) {
         log.debug("readArray - target: {}", target);
         Object result = null;
@@ -297,6 +305,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
     /**
      * Read key - value pairs. This is required for the RecordSet deserializer.
      */
+    @Override
     public Map<String, Object> readKeyValues() {
         Map<String, Object> result = new HashMap<String, Object>();
         readKeyValues(result);
@@ -324,6 +333,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         } while (hasMoreProperties());
     }
 
+    @Override
     public Object readMap() {
         // the maximum number used in this mixed array
         int maxNumber = buf.getInt();
@@ -391,8 +401,12 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
                 className = "org.red5.compatibility." + className;
                 log.debug("Modified classname: {}", className);
             }
-            clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-            instance = clazz.newInstance();
+            if (!classAllowed(className)) {
+                log.error("Class creation is not allowed {}", className);
+            } else {
+                clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+                instance = clazz.newInstance();
+            }
         } catch (InstantiationException iex) {
             try {
                 //check for default ctor
@@ -475,6 +489,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Read object
      */
+    @Override
     public Object readObject() {
         String className;
         if (currentDataType == AMF.TYPE_CLASS_OBJECT) {
@@ -550,6 +565,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return String XML as string
      */
+    @Override
     public Document readXML() {
         final String xmlString = readString();
         Document doc = null;
@@ -567,6 +583,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Object Custom type object
      */
+    @Override
     public Object readCustom() {
         // return null for now
         return null;
@@ -577,6 +594,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return ByteArray object
      */
+    @Override
     public ByteArray readByteArray() {
         throw new RuntimeException("ByteArray objects not supported with AMF0");
     }
@@ -586,6 +604,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Vector&lt;Integer&gt; object
      */
+    @Override
     public Vector<Integer> readVectorInt() {
         throw new RuntimeException("Vector objects not supported with AMF0");
     }
@@ -595,6 +614,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Vector&lt;Long&gt; object
      */
+    @Override
     public Vector<Long> readVectorUInt() {
         throw new RuntimeException("Vector objects not supported with AMF0");
     }
@@ -604,6 +624,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Vector&lt;Double&gt; object
      */
+    @Override
     public Vector<Double> readVectorNumber() {
         throw new RuntimeException("Vector objects not supported with AMF0");
     }
@@ -613,6 +634,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Vector&lt;Object&gt; object
      */
+    @Override
     public Vector<Object> readVectorObject() {
         throw new RuntimeException("Vector objects not supported with AMF0");
     }
@@ -622,6 +644,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *
      * @return Object Read reference to object
      */
+    @Override
     public Object readReference() {
         return getReference(buf.getUnsignedShort());
     }

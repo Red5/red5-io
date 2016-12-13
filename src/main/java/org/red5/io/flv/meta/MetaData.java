@@ -52,6 +52,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean getCanSeekToEnd() {
         return (Boolean) this.get("canSeekToEnd");
     }
@@ -59,6 +60,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setCanSeekToEnd(boolean b) {
         this.put("canSeekToEnd", b);
     }
@@ -66,6 +68,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getVideoCodecId() {
         return (Integer) this.get("videocodecid");
     }
@@ -73,14 +76,17 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setVideoCodecId(int id) {
         this.put("videocodecid", id);
     }
 
+    @Override
     public int getAudioCodecId() {
         return (Integer) this.get("audiocodecid");
     }
 
+    @Override
     public void setAudioCodecId(int id) {
         this.put("audiocodecid", id);
     }
@@ -88,6 +94,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public double getFrameRate() {
         return (Double) this.get("framerate");
     }
@@ -95,6 +102,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setFrameRate(double rate) {
         this.put("framerate", Double.valueOf(rate));
     }
@@ -102,6 +110,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getVideoDataRate() {
         return (Integer) this.get("videodatarate");
     }
@@ -109,6 +118,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setVideoDataRate(int rate) {
         this.put("videodatarate", rate);
     }
@@ -116,6 +126,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getWidth() {
         return (Integer) this.get("width");
     }
@@ -123,6 +134,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setWidth(int w) {
         this.put("width", w);
     }
@@ -130,6 +142,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public double getDuration() {
         return (Double) this.get("duration");
     }
@@ -137,6 +150,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setDuration(double d) {
         this.put("duration", d);
     }
@@ -144,6 +158,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getHeight() {
         return (Integer) this.get("height");
     }
@@ -151,6 +166,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setHeight(int h) {
         this.put("height", h);
     }
@@ -161,6 +177,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
      * @param cuePoints
      *            The cuePoints to set.
      */
+    @Override
     public void setMetaCue(IMetaCue[] cuePoints) {
         Map<String, Object> cues = new HashMap<String, Object>();
         this.cuePoints = cuePoints;
@@ -188,6 +205,7 @@ public class MetaData<K, V> extends HashMap<String, Object> implements IMetaData
      *
      * @return Array of cue points
      */
+    @Override
     public IMetaCue[] getMetaCue() {
         return this.cuePoints;
     }

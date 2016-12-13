@@ -112,6 +112,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean isCustom(Object custom) {
         return false;
     }
@@ -125,6 +126,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeArray(Collection<?> array) {
         if (!checkWriteReference(array)) {
             storeReference(array);
@@ -137,6 +139,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeArray(Object[] array) {
         log.debug("writeArray - array: {}", array);
         if (array != null) {
@@ -154,6 +157,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeArray(Object array) {
         if (array != null) {
             if (!checkWriteReference(array)) {
@@ -170,6 +174,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeMap(Map<Object, Object> map) {
         if (!checkWriteReference(map)) {
             storeReference(map);
@@ -205,6 +210,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeMap(Collection<?> array) {
         if (!checkWriteReference(array)) {
             storeReference(array);
@@ -226,6 +232,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeRecordSet(RecordSet recordset) {
         if (!checkWriteReference(recordset)) {
             storeReference(recordset);
@@ -244,17 +251,19 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBoolean(Boolean bol) {
         buf.put(AMF.TYPE_BOOLEAN);
         buf.put(bol ? AMF.VALUE_TRUE : AMF.VALUE_FALSE);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeCustom(Object custom) {
-
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeDate(Date date) {
         buf.put(AMF.TYPE_DATE);
         buf.putDouble(date.getTime());
@@ -262,18 +271,21 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeNull() {
         // System.err.println("Write null");
         buf.put(AMF.TYPE_NULL);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeNumber(Number num) {
         buf.put(AMF.TYPE_NUMBER);
         buf.putDouble(num.doubleValue());
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeReference(Object obj) {
         log.debug("Write reference");
         buf.put(AMF.TYPE_REFERENCE);
@@ -282,6 +294,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
 
     /** {@inheritDoc} */
     @SuppressWarnings({ "rawtypes" })
+    @Override
     public void writeObject(Object object) {
         if (!checkWriteReference(object)) {
             storeReference(object);
@@ -394,6 +407,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeObject(Map<Object, Object> map) {
         if (!checkWriteReference(map)) {
             storeReference(map);
@@ -454,6 +468,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeString(String string) {
         final byte[] encoded = encodeString(string);
         final int len = encoded.length;
@@ -470,26 +485,31 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeByteArray(ByteArray array) {
         throw new RuntimeException("ByteArray objects not supported with AMF0");
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeVectorInt(Vector<Integer> vector) {
         throw new RuntimeException("Vector objects not supported with AMF0");
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeVectorUInt(Vector<Long> vector) {
         throw new RuntimeException("Vector objects not supported with AMF0");
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeVectorNumber(Vector<Double> vector) {
         throw new RuntimeException("Vector objects not supported with AMF0");
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeVectorObject(Vector<Object> vector) {
         throw new RuntimeException("Vector objects not supported with AMF0");
     }
@@ -534,11 +554,13 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void putString(String string) {
         putString(buf, string);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeXML(Document xml) {
         buf.put(AMF.TYPE_XML);
         putString(XMLUtils.docToString(xml));

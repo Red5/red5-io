@@ -189,6 +189,7 @@ public class M4AReader implements IoConstants, ITagReader {
     /**
      * This handles the moov atom being at the beginning or end of the file, so the mdat may also be before or after the moov atom.
      */
+    @Override
     public void decodeHeader() {
         try {
             // we want a moov and an mdat, anything else will throw the invalid file type error
@@ -481,6 +482,7 @@ public class M4AReader implements IoConstants, ITagReader {
         }
     }
 
+    @Override
     public long getTotalBytes() {
         try {
             return dataSource.size();
@@ -510,6 +512,7 @@ public class M4AReader implements IoConstants, ITagReader {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean hasVideo() {
         return false;
     }
@@ -526,6 +529,7 @@ public class M4AReader implements IoConstants, ITagReader {
     /**
      * {@inheritDoc}
      */
+    @Override
     public IStreamableFile getFile() {
         // TODO wondering if we need to have a reference
         return null;
@@ -534,6 +538,7 @@ public class M4AReader implements IoConstants, ITagReader {
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getOffset() {
         // XXX what's the difference from getBytesRead
         return 0;
@@ -542,11 +547,13 @@ public class M4AReader implements IoConstants, ITagReader {
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getBytesRead() {
         return getCurrentPosition();
     }
 
     /** {@inheritDoc} */
+    @Override
     public long getDuration() {
         return duration;
     }
@@ -558,6 +565,7 @@ public class M4AReader implements IoConstants, ITagReader {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasMoreTags() {
         return currentFrame < frames.size();
     }
@@ -629,6 +637,7 @@ public class M4AReader implements IoConstants, ITagReader {
      * Packages media data for return to providers.
      *
      */
+    @Override
     public ITag readTag() {
         //log.debug("Read tag");
         ITag tag = null;
@@ -793,6 +802,7 @@ public class M4AReader implements IoConstants, ITagReader {
      * @param pos
      *            position to move to in file / channel
      */
+    @Override
     public void position(long pos) {
         log.debug("position: {}", pos);
         currentFrame = getFrame(pos);
@@ -822,6 +832,7 @@ public class M4AReader implements IoConstants, ITagReader {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close() {
         log.debug("Close");
         if (dataSource != null) {
