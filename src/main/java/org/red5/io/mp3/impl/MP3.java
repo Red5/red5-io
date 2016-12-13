@@ -45,16 +45,19 @@ public class MP3 implements IMP3 {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ITagReader getReader() throws IOException {
         return new MP3Reader(file);
     }
 
     /** {@inheritDoc} */
+    @Override
     public ITagWriter getWriter() throws IOException {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public ITagWriter getAppendWriter() throws IOException {
         return null;
     }

@@ -248,6 +248,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
      *
      * @return Total readable bytes
      */
+    @Override
     public long getTotalBytes() {
         if (!useLoadBuf) {
             return in.capacity();
@@ -396,6 +397,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean hasVideo() {
         KeyFrameMeta meta = analyzeKeyFrames();
         if (meta == null) {
@@ -483,6 +485,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     }
 
     /** {@inheritDoc} */
+    @Override
     public void decodeHeader() {
         // flv header is 9 bytes
         fillBuffer(9);
@@ -499,6 +502,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public IStreamableFile getFile() {
         // TODO wondering if we need to have a reference
         return null;
@@ -507,6 +511,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getOffset() {
         // XXX what's the difference from getBytesRead
         return 0;
@@ -515,6 +520,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getBytesRead() {
         // XXX should summarize the total bytes read or
         // just the current position?
@@ -522,6 +528,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     }
 
     /** {@inheritDoc} */
+    @Override
     public long getDuration() {
         return duration;
     }
@@ -543,6 +550,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasMoreTags() {
         try {
             lock.lockInterruptibly();
@@ -609,6 +617,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     }
 
     /** {@inheritDoc} */
+    @Override
     public ITag readTag() {
         ITag tag = null;
         try {
@@ -695,6 +704,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close() {
         log.debug("Reader close: {}", file.getName());
         try {
@@ -724,6 +734,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
      *
      * @return Keyframe metadata
      */
+    @Override
     public KeyFrameMeta analyzeKeyFrames() {
         if (keyframeMeta != null) {
             return keyframeMeta;
@@ -863,6 +874,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
      * @param pos
      *            New position in file. Pass <code>Long.MAX_VALUE</code> to seek to end of file.
      */
+    @Override
     public void position(long pos) {
         setCurrentPosition(pos);
     }

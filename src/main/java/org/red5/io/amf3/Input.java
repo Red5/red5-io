@@ -462,6 +462,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
         return refStorage;
     }
 
+    @Override
     public String getString() {
         return readString();
     }
@@ -492,6 +493,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      * @return int Length of array
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
     public Object readArray(Type target) {
         int count = readInteger();
         log.debug("Count: {} and {} ref {}", new Object[] { count, (count & 1), (count >> 1) });
@@ -587,12 +589,14 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
         return result;
     }
 
+    @Override
     public Object readMap() {
         //throw new UnsupportedOperationException("AMF3 doesn't support maps");
         return super.readMap();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes", "serial" })
+    @Override
     public Object readObject() {
         log.trace("readObject - amf3_mode: {}", amf3_mode);
         int type = readInteger();
@@ -864,6 +868,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      *
      * @return ByteArray object
      */
+    @Override
     public ByteArray readByteArray() {
         int type = readInteger();
         if ((type & 1) == 0) {
@@ -881,6 +886,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      * @return Vector&lt;Integer&gt; object
      */
     @SuppressWarnings("unchecked")
+    @Override
     public Vector<Integer> readVectorInt() {
         log.debug("readVectorInt");
         int type = readInteger();
@@ -904,6 +910,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      * @return Vector&lt;Long&gt; object
      */
     @SuppressWarnings("unchecked")
+    @Override
     public Vector<Long> readVectorUInt() {
         log.debug("readVectorUInt");
         int type = readInteger();
@@ -931,6 +938,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      * @return Vector&lt;Double&gt; object
      */
     @SuppressWarnings("unchecked")
+    @Override
     public Vector<Double> readVectorNumber() {
         log.debug("readVectorNumber");
         int type = readInteger();
@@ -958,6 +966,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
      * @return Vector&lt;Object&gt; object
      */
     @SuppressWarnings("unchecked")
+    @Override
     public Vector<Object> readVectorObject() {
         log.debug("readVectorObject");
         int type = readInteger();
@@ -1026,6 +1035,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
     }
 
     /** {@inheritDoc} */
+    @Override
     public Object readReference() {
         throw new RuntimeException("AMF3 doesn't support direct references.");
     }
@@ -1087,6 +1097,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
     }
 
     /** {@inheritDoc} */
+    @Override
     public Document readXML() {
         int len = readInteger();
         if (len == 1) {

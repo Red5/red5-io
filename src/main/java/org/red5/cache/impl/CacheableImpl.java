@@ -79,31 +79,37 @@ public class CacheableImpl implements ICacheable {
     }
 
     /** {@inheritDoc} */
+    @Override
     public byte[] getBytes() {
         return bytes;
     }
 
     /** {@inheritDoc} */
+    @Override
     public IoBuffer getByteBuffer() {
         return IoBuffer.wrap(bytes).asReadOnlyBuffer();
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName() {
         return name;
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean isCached() {
         return cached;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setCached(boolean cached) {
         this.cached = cached;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setName(String name) {
         this.name = name;
     }

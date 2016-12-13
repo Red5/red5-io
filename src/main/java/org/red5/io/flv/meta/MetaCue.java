@@ -52,6 +52,7 @@ public class MetaCue<K, V> extends HashMap<String, Object> implements IMetaCue {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setName(String name) {
         this.put("name", name);
     }
@@ -59,6 +60,7 @@ public class MetaCue<K, V> extends HashMap<String, Object> implements IMetaCue {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getName() {
         return (String) this.get("name");
     }
@@ -66,6 +68,7 @@ public class MetaCue<K, V> extends HashMap<String, Object> implements IMetaCue {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setType(String type) {
         this.put("type", type);
     }
@@ -73,6 +76,7 @@ public class MetaCue<K, V> extends HashMap<String, Object> implements IMetaCue {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getType() {
         return (String) this.get("type");
     }
@@ -80,6 +84,7 @@ public class MetaCue<K, V> extends HashMap<String, Object> implements IMetaCue {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setTime(double d) {
         this.put("time", d);
     }
@@ -87,11 +92,13 @@ public class MetaCue<K, V> extends HashMap<String, Object> implements IMetaCue {
     /**
      * {@inheritDoc}
      */
+    @Override
     public double getTime() {
         return (Double) this.get("time");
     }
 
     /** {@inheritDoc} */
+    @Override
     public int compareTo(Object arg0) {
         MetaCue<?, ?> cp = (MetaCue<?, ?>) arg0;
         double cpTime = cp.getTime();

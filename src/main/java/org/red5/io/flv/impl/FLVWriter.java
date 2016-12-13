@@ -258,6 +258,7 @@ public class FLVWriter implements ITagWriter {
      * @throws IOException
      *             Any I/O exception
      */
+    @Override
     public void writeHeader() throws IOException {
         FLVHeader flvHeader = new FLVHeader();
         flvHeader.setFlagAudio(audioCodecId != -1 ? true : false);
@@ -288,6 +289,7 @@ public class FLVWriter implements ITagWriter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean writeTag(ITag tag) throws IOException {
         // a/v config written flags
         boolean onWrittenSetVideoFlag = false, onWrittenSetAudioFlag = false;
@@ -514,6 +516,7 @@ public class FLVWriter implements ITagWriter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean writeTag(byte dataType, IoBuffer data) throws IOException {
         if (timeOffset == 0) {
             timeOffset = (int) System.currentTimeMillis();
@@ -616,6 +619,7 @@ public class FLVWriter implements ITagWriter {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean writeStream(byte[] b) {
         try {
             dataFile.write(b);
@@ -939,11 +943,9 @@ public class FLVWriter implements ITagWriter {
      * @param tmpFile
      * @return array containing audio codec id, video codec id, and duration
      */
-    private int[] readInfoFile(File tmpFile) {
+    private static int[] readInfoFile(File tmpFile) {
         int[] info = new int[8];
-        RandomAccessFile infoFile = null;
-        try {
-            infoFile = new RandomAccessFile(tmpFile, "r");
+        try (RandomAccessFile infoFile = new RandomAccessFile(tmpFile, "r")) {
             // audio codec id
             info[0] = infoFile.readInt();
             // video codec id
@@ -962,13 +964,6 @@ public class FLVWriter implements ITagWriter {
             info[7] = infoFile.readInt();
         } catch (Exception e) {
             log.warn("Exception reading flv file information data", e);
-        } finally {
-            if (infoFile != null) {
-                try {
-                    infoFile.close();
-                } catch (IOException e) {
-                }
-            }
         }
         return info;
     }
@@ -977,9 +972,7 @@ public class FLVWriter implements ITagWriter {
      * Write or update flv file information into the pre-finalization file.
      */
     private void updateInfoFile() {
-        RandomAccessFile infoFile = null;
-        try {
-            infoFile = new RandomAccessFile(filePath + ".info", "rw");
+        try (RandomAccessFile infoFile = new RandomAccessFile(filePath + ".info", "rw")) {
             infoFile.writeInt(audioCodecId);
             infoFile.writeInt(videoCodecId);
             infoFile.writeInt(duration);
@@ -991,19 +984,13 @@ public class FLVWriter implements ITagWriter {
             infoFile.writeInt(videoDataSize);
         } catch (Exception e) {
             log.warn("Exception writing flv file information data", e);
-        } finally {
-            if (infoFile != null) {
-                try {
-                    infoFile.close();
-                } catch (IOException e) {
-                }
-            }
         }
     }
 
     /**
      * Ends the writing process, then merges the data file with the flv file header and metadata.
      */
+    @Override
     public void close() {
         log.debug("close");
         // spawn a thread to finish up our flv writer work
@@ -1041,6 +1028,7 @@ public class FLVWriter implements ITagWriter {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addPostProcessor(IPostProcessor postProcessor) {
         if (postProcessors == null) {
             postProcessors = new LinkedList<>();
@@ -1049,6 +1037,7 @@ public class FLVWriter implements ITagWriter {
     }
 
     /** {@inheritDoc} */
+    @Override
     public IStreamableFile getFile() {
         return flv;
     }
@@ -1067,6 +1056,7 @@ public class FLVWriter implements ITagWriter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getOffset() {
         return offset;
     }
@@ -1084,6 +1074,7 @@ public class FLVWriter implements ITagWriter {
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getBytesWritten() {
         return bytesWritten;
     }
@@ -1122,6 +1113,7 @@ public class FLVWriter implements ITagWriter {
 
     private final class FLVFinalizer implements Runnable {
 
+        @Override
         public void run() {
             log.debug("Finalizer run");
             try {

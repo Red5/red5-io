@@ -53,16 +53,19 @@ public class AACAudio implements IAudioStreamCodec {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName() {
         return CODEC_NAME;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void reset() {
         blockDataAACDCR = null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean canHandleData(IoBuffer data) {
         if (data.limit() == 0) {
             // Empty buffer
@@ -75,6 +78,7 @@ public class AACAudio implements IAudioStreamCodec {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean addData(IoBuffer data) {
         if (data.hasRemaining()) {
             // mark
@@ -99,6 +103,7 @@ public class AACAudio implements IAudioStreamCodec {
     }
 
     /** {@inheritDoc} */
+    @Override
     public IoBuffer getDecoderConfiguration() {
         if (blockDataAACDCR == null) {
             return null;
@@ -111,7 +116,7 @@ public class AACAudio implements IAudioStreamCodec {
     }
 
     @SuppressWarnings("unused")
-    private long sample2TC(long time, int sampleRate) {
+    private static long sample2TC(long time, int sampleRate) {
         return (time * 1000L / sampleRate);
     }
 

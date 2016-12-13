@@ -62,13 +62,9 @@ public class XMLUtils {
      */
     public static Document stringToDoc(String str) throws IOException {
         if (StringUtils.isNotEmpty(str)) {
-            try {
-                Reader reader = new StringReader(str);
-
+            try (Reader reader = new StringReader(str)) {
                 DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                 Document doc = db.parse(new InputSource(reader));
-
-                reader.close();
 
                 return doc;
             } catch (Exception ex) {

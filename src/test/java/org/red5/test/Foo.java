@@ -11,9 +11,11 @@ import org.red5.io.amf3.IExternalizable;
  */
 public class Foo implements IExternalizable {
 
+	@Override
 	public void readExternal(IDataInput input) {
 	}
 
+	@Override
 	public void writeExternal(IDataOutput output) {
 	}
 

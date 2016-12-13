@@ -54,56 +54,67 @@ public class DataOutput implements IDataOutput {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ByteOrder getEndian() {
         return buffer.order();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setEndian(ByteOrder endian) {
         buffer.order(endian);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBoolean(boolean value) {
         buffer.put((byte) (value ? 1 : 0));
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeByte(byte value) {
         buffer.put(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBytes(byte[] bytes) {
         buffer.put(bytes);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBytes(byte[] bytes, int offset) {
         buffer.put(bytes, offset, bytes.length - offset);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBytes(byte[] bytes, int offset, int length) {
         buffer.put(bytes, offset, length);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeDouble(double value) {
         buffer.putDouble(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeFloat(float value) {
         buffer.putFloat(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeInt(int value) {
         buffer.putInt(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeMultiByte(String value, String encoding) {
         final Charset cs = Charset.forName(encoding);
         final ByteBuffer strBuf = cs.encode(value);
@@ -111,21 +122,25 @@ public class DataOutput implements IDataOutput {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeObject(Object value) {
         Serializer.serialize(output, value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeShort(short value) {
         buffer.putShort(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeUnsignedInt(long value) {
         buffer.putInt((int) value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeUTF(String value) {
         // fix from issue #97
         try {
@@ -138,6 +153,7 @@ public class DataOutput implements IDataOutput {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeUTFBytes(String value) {
         final java.nio.ByteBuffer strBuf = AMF.CHARSET.encode(value);
         buffer.put(strBuf);

@@ -72,6 +72,7 @@ public enum StreamAction {
         return getActionString().equals(actionString);
     }
 
+    @Override
     public String toString() {
         return actionString;
     }

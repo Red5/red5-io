@@ -135,24 +135,16 @@ public class ByteArray implements IDataInput, IDataOutput {
     public void compress() {
         IoBuffer tmp = IoBuffer.allocate(0);
         tmp.setAutoExpand(true);
-        DeflaterOutputStream deflater = new DeflaterOutputStream(tmp.asOutputStream(), new Deflater(Deflater.BEST_COMPRESSION));
         byte[] tmpData = new byte[data.limit()];
         data.position(0);
         data.get(tmpData);
-        try {
+        try (DeflaterOutputStream deflater = new DeflaterOutputStream(tmp.asOutputStream(), new Deflater(Deflater.BEST_COMPRESSION))) {
             deflater.write(tmpData);
             deflater.finish();
         } catch (IOException e) {
             //docs state that free is optional
             tmp.free();
             throw new RuntimeException("could not compress data", e);
-        } finally {
-            if (deflater != null) {
-                try {
-                    deflater.close();
-                } catch (IOException e1) {
-                }
-            }
         }
         data.free();
         data = tmp;
@@ -165,11 +157,10 @@ public class ByteArray implements IDataInput, IDataOutput {
      */
     public void uncompress() {
         data.position(0);
-        InflaterInputStream inflater = new InflaterInputStream(data.asInputStream());
         byte[] buffer = new byte[8192];
         IoBuffer tmp = IoBuffer.allocate(0);
         tmp.setAutoExpand(true);
-        try {
+        try (InflaterInputStream inflater = new InflaterInputStream(data.asInputStream())) {
             while (inflater.available() > 0) {
                 int decompressed = inflater.read(buffer);
                 if (decompressed <= 0) {
@@ -181,13 +172,6 @@ public class ByteArray implements IDataInput, IDataOutput {
         } catch (IOException e) {
             tmp.free();
             throw new RuntimeException("could not uncompress data", e);
-        } finally {
-            if (inflater != null) {
-                try {
-                    inflater.close();
-                } catch (IOException e1) {
-                }
-            }
         }
         data.free();
         data = tmp;
@@ -196,56 +180,67 @@ public class ByteArray implements IDataInput, IDataOutput {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ByteOrder getEndian() {
         return dataInput.getEndian();
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean readBoolean() {
         return dataInput.readBoolean();
     }
 
     /** {@inheritDoc} */
+    @Override
     public byte readByte() {
         return dataInput.readByte();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void readBytes(byte[] bytes) {
         dataInput.readBytes(bytes);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void readBytes(byte[] bytes, int offset) {
         dataInput.readBytes(bytes, offset);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void readBytes(byte[] bytes, int offset, int length) {
         dataInput.readBytes(bytes, offset, length);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double readDouble() {
         return dataInput.readDouble();
     }
 
     /** {@inheritDoc} */
+    @Override
     public float readFloat() {
         return dataInput.readFloat();
     }
 
     /** {@inheritDoc} */
+    @Override
     public int readInt() {
         return dataInput.readInt();
     }
 
     /** {@inheritDoc} */
+    @Override
     public String readMultiByte(int length, String charSet) {
         return dataInput.readMultiByte(length, charSet);
     }
 
     /** {@inheritDoc} */
+    @Override
     public Object readObject() {
         // according to AMF3 spec, each object should have its own "reference" tables,
         // so we must recreate Input object before reading each object 
@@ -254,87 +249,104 @@ public class ByteArray implements IDataInput, IDataOutput {
     }
 
     /** {@inheritDoc} */
+    @Override
     public short readShort() {
         return dataInput.readShort();
     }
 
     /** {@inheritDoc} */
+    @Override
     public String readUTF() {
         return dataInput.readUTF();
     }
 
     /** {@inheritDoc} */
+    @Override
     public String readUTFBytes(int length) {
         return dataInput.readUTFBytes(length);
     }
 
     /** {@inheritDoc} */
+    @Override
     public int readUnsignedByte() {
         return dataInput.readUnsignedByte();
     }
 
     /** {@inheritDoc} */
+    @Override
     public long readUnsignedInt() {
         return dataInput.readUnsignedInt();
     }
 
     /** {@inheritDoc} */
+    @Override
     public int readUnsignedShort() {
         return dataInput.readUnsignedShort();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setEndian(ByteOrder endian) {
         dataInput.setEndian(endian);
         dataOutput.setEndian(endian);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBoolean(boolean value) {
         dataOutput.writeBoolean(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeByte(byte value) {
         dataOutput.writeByte(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBytes(byte[] bytes) {
         dataOutput.writeBytes(bytes);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBytes(byte[] bytes, int offset) {
         dataOutput.writeBytes(bytes, offset);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeBytes(byte[] bytes, int offset, int length) {
         dataOutput.writeBytes(bytes, offset, length);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeDouble(double value) {
         dataOutput.writeDouble(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeFloat(float value) {
         dataOutput.writeFloat(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeInt(int value) {
         dataOutput.writeInt(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeMultiByte(String value, String encoding) {
         dataOutput.writeMultiByte(value, encoding);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeObject(Object value) {
         // according to AMF3 spec, each object should have its own "reference" tables,
         // so we must recreate Input object before writing each object 
@@ -343,21 +355,25 @@ public class ByteArray implements IDataInput, IDataOutput {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeShort(short value) {
         dataOutput.writeShort(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeUTF(String value) {
         dataOutput.writeUTF(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeUTFBytes(String value) {
         dataOutput.writeUTFBytes(value);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeUnsignedInt(long value) {
         dataOutput.writeUnsignedInt(value);
     }

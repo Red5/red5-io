@@ -48,12 +48,15 @@ public abstract class UnsignedNumber extends Number {
      */
     public abstract void shiftLeft(int nBits);
 
+    @Override
     public abstract String toString();
 
     public abstract int compareTo(UnsignedNumber other);
 
+    @Override
     public abstract boolean equals(Object other);
 
+    @Override
     public abstract int hashCode();
 
     public String toHexString() {

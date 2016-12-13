@@ -70,6 +70,7 @@ public class MetaService implements IMetaService {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void write(IMetaData<?, ?> meta) throws IOException {
         // Get cue points, FLV reader and writer
         IMetaCue[] metaArr = meta.getMetaCue();
@@ -207,7 +208,7 @@ public class MetaService implements IMetaService {
      *            Tag
      * @return New tag with injected metadata
      */
-    private ITag injectMetaData(IMetaData<?, ?> meta, ITag tag) {
+    private static ITag injectMetaData(IMetaData<?, ?> meta, ITag tag) {
         IoBuffer bb = IoBuffer.allocate(1000);
         bb.setAutoExpand(true);
         Output out = new Output(bb);
@@ -228,7 +229,7 @@ public class MetaService implements IMetaService {
      *            Tag
      * @return ITag tag New tag with injected metadata
      */
-    private ITag injectMetaCue(IMetaCue meta, ITag tag) {
+    private static ITag injectMetaCue(IMetaCue meta, ITag tag) {
         // IMeta meta = (MetaCue) cue;
         Output out = new Output(IoBuffer.allocate(1000));
         Serializer.serialize(out, "onCuePoint");
@@ -249,13 +250,14 @@ public class MetaService implements IMetaService {
      *            Cue point
      * @return int time Timestamp of given cue point (in milliseconds)
      */
-    private int getTimeInMilliseconds(IMetaCue metaCue) {
+    private static int getTimeInMilliseconds(IMetaCue metaCue) {
         return (int) (metaCue.getTime() * 1000.00);
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void writeMetaData(IMetaData<?, ?> metaData) {
         IMetaCue meta = (MetaCue<?, ?>) metaData;
         Output out = new Output(IoBuffer.allocate(1000));
@@ -266,13 +268,14 @@ public class MetaService implements IMetaService {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void writeMetaCue() {
-
     }
 
     /**
      * @return Returns the file.
      */
+    @Override
     public File getFile() {
         return file;
     }
@@ -281,12 +284,14 @@ public class MetaService implements IMetaService {
      * @param file
      *            The file to set.
      */
+    @Override
     public void setFile(File file) {
         this.file = file;
     }
 
     /** {@inheritDoc} */
     // TODO need to fix
+    @Override
     public MetaData<?, ?> readMetaData(IoBuffer buffer) {
         MetaData<?, ?> retMeta = new MetaData<String, Object>();
         Input input = new Input(buffer);
@@ -298,6 +303,7 @@ public class MetaService implements IMetaService {
     }
 
     /** {@inheritDoc} */
+    @Override
     public IMetaCue[] readMetaCue() {
         return null;
     }

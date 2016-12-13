@@ -81,6 +81,7 @@ public class MP4 implements IMP4 {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasMetaData() {
         return metaData != null;
     }
@@ -88,6 +89,7 @@ public class MP4 implements IMP4 {
     /**
      * {@inheritDoc}
      */
+    @Override
     public IMetaData<?, ?> getMetaData() throws FileNotFoundException {
         metaService.setFile(file);
         return null;
@@ -96,6 +98,7 @@ public class MP4 implements IMP4 {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasKeyFrameData() {
         return false;
     }
@@ -103,12 +106,14 @@ public class MP4 implements IMP4 {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setKeyFrameData(Map<?, ?> keyframedata) {
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<?, ?> getKeyFrameData() {
         return null;
     }
@@ -116,18 +121,21 @@ public class MP4 implements IMP4 {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void refreshHeaders() throws IOException {
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void flushHeaders() throws IOException {
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public ITagReader getReader() throws IOException {
         MP4Reader reader = null;
         IoBuffer fileData = null;
@@ -148,6 +156,7 @@ public class MP4 implements IMP4 {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ITagReader readerFromNearestKeyFrame(int seekPoint) {
         return null;
     }
@@ -155,6 +164,7 @@ public class MP4 implements IMP4 {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ITagWriter getWriter() throws IOException {
         return null;
     }
@@ -162,11 +172,13 @@ public class MP4 implements IMP4 {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ITagWriter writerFromNearestKeyFrame(int seekPoint) {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setMetaData(IMetaData<?, ?> meta) throws IOException {
         if (metaService == null) {
             metaService = new MetaService(file);
@@ -180,10 +192,12 @@ public class MP4 implements IMP4 {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setMetaService(IMetaService service) {
         metaService = service;
     }
 
+    @Override
     public ITagWriter getAppendWriter() throws IOException {
         return null;
     }
