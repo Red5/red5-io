@@ -89,7 +89,12 @@ public class BaseInput {
         return refMap.get(Integer.valueOf(id));
     }
 
-    protected boolean classAllowed(String name) {
-        return BLACK_LIST.contains(name);
+    protected static boolean classAllowed(String name) {
+        for (String _name: BLACK_LIST) {
+            if (name.startsWith(_name)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

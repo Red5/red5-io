@@ -401,8 +401,12 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
                 className = "org.red5.compatibility." + className;
                 log.debug("Modified classname: {}", className);
             }
-            clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-            instance = clazz.newInstance();
+            if (!classAllowed(className)) {
+                log.error("Class creation is not allowed {}", className);
+            } else {
+                clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+                instance = clazz.newInstance();
+            }
         } catch (InstantiationException iex) {
             try {
                 //check for default ctor
