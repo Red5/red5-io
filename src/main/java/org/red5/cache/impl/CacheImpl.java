@@ -77,6 +77,7 @@ public class CacheImpl implements ICacheStore, ApplicationContextAware {
     private static ApplicationContext applicationContext = null;
 
     /** {@inheritDoc} */
+    @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         CacheImpl.applicationContext = context;
     }
@@ -105,11 +106,13 @@ public class CacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Iterator<String> getObjectNames() {
         return Collections.unmodifiableSet(CACHE.keySet()).iterator();
     }
 
     /** {@inheritDoc} */
+    @Override
     public Iterator<SoftReference<? extends ICacheable>> getObjects() {
         return Collections.unmodifiableCollection(CACHE.values()).iterator();
     }
@@ -119,6 +122,7 @@ public class CacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean offer(String name, Object obj) {
         boolean accepted = false;
         // check map size
@@ -156,6 +160,7 @@ public class CacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void put(String name, Object obj) {
         if (obj instanceof ICacheable) {
             put(name, (ICacheable) obj);
@@ -177,6 +182,7 @@ public class CacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ICacheable get(String name) {
         if (log.isDebugEnabled()) {
             log.debug("Looking up " + name + " in the cache. Current size: " + CACHE.size());
@@ -201,12 +207,14 @@ public class CacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean remove(ICacheable obj) {
         log.debug("Looking up {} in the cache. Current size: {}", obj.getName(), CACHE.size());
         return remove(obj.getName());
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean remove(String name) {
         return CACHE.remove(name) != null ? true : false;
     }
@@ -230,12 +238,14 @@ public class CacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setMaxEntries(int max) {
         log.info("Setting max entries for this cache to {}", max);
         CacheImpl.capacity = max;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void destroy() {
         // Shut down the cache manager
         try {

@@ -58,6 +58,7 @@ public class M4A implements IM4A {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ITagReader getReader() throws IOException {
         return new M4AReader(file);
     }
@@ -65,10 +66,12 @@ public class M4A implements IM4A {
     /**
      * {@inheritDoc}
      */
+    @Override
     public ITagWriter getWriter() throws IOException {
         return null;
     }
 
+    @Override
     public ITagWriter getAppendWriter() throws IOException {
         return null;
     }

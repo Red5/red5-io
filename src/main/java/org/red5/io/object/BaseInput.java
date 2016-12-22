@@ -18,6 +18,8 @@
 
 package org.red5.io.object;
 
+import static org.red5.io.object.Deserializer.BLACK_LIST;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -87,4 +89,12 @@ public class BaseInput {
         return refMap.get(Integer.valueOf(id));
     }
 
+    protected static boolean classAllowed(String name) {
+        for (String _name: BLACK_LIST) {
+            if (name.startsWith(_name)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

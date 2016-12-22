@@ -116,6 +116,7 @@ public class Tag implements ITag {
     /**
      * {@inheritDoc}
      */
+    @Override
     public IoBuffer getData() {
         return null;
     }
@@ -125,6 +126,7 @@ public class Tag implements ITag {
      * 
      * @return Tag body
      */
+    @Override
     public IoBuffer getBody() {
         return body;
     }
@@ -134,6 +136,7 @@ public class Tag implements ITag {
      * 
      * @return Tag body size
      */
+    @Override
     public int getBodySize() {
         return bodySize;
     }
@@ -143,6 +146,7 @@ public class Tag implements ITag {
      * 
      * @return Tag data type
      */
+    @Override
     public byte getDataType() {
         return dataType;
     }
@@ -152,6 +156,7 @@ public class Tag implements ITag {
      * 
      * @return Tag timestamp
      */
+    @Override
     public int getTimestamp() {
         return timestamp;
     }
@@ -161,6 +166,7 @@ public class Tag implements ITag {
      * 
      * @return Previous tag size
      */
+    @Override
     public int getPreviousTagSize() {
         return previousTagSize;
     }
@@ -200,21 +206,25 @@ public class Tag implements ITag {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setBody(IoBuffer body) {
         this.body = body;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setBodySize(int bodySize) {
         this.bodySize = bodySize;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setDataType(byte dataType) {
         this.dataType = dataType;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setTimestamp(int timestamp) {
         this.timestamp = timestamp;
     }
@@ -226,6 +236,7 @@ public class Tag implements ITag {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setPreviousTagSize(int size) {
         this.previousTagSize = size;
     }

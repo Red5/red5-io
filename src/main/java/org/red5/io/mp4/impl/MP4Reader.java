@@ -288,6 +288,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * This handles the moov atom being at the beginning or end of the file, so the mdat may also be before or after the moov atom.
      */
+    @Override
     public void decodeHeader() {
         try {
             // we want a moov and an mdat, anything else will throw the invalid file type error
@@ -913,6 +914,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
      *
      * @return Total readable bytes
      */
+    @Override
     public long getTotalBytes() {
         try {
             return dataSource.size();
@@ -942,6 +944,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean hasVideo() {
         return hasVideo;
     }
@@ -962,6 +965,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public IStreamableFile getFile() {
         // TODO wondering if we need to have a reference
         return null;
@@ -970,6 +974,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getOffset() {
         // XXX what's the difference from getBytesRead
         return 0;
@@ -978,6 +983,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getBytesRead() {
         // XXX should summarize the total bytes read or
         // just the current position?
@@ -985,6 +991,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     }
 
     /** {@inheritDoc} */
+    @Override
     public long getDuration() {
         return duration;
     }
@@ -1000,6 +1007,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasMoreTags() {
         return currentFrame < frames.size();
     }
@@ -1193,6 +1201,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * Packages media data for return to providers
      */
+    @Override
     public ITag readTag() {
         ITag tag = null;
         if (log.isTraceEnabled()) {
@@ -1491,6 +1500,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
      * @param pos
      *            position to move to in file / channel
      */
+    @Override
     public void position(long pos) {
         log.debug("Position: {}", pos);
         log.debug("Current frame: {}", currentFrame);
@@ -1521,6 +1531,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close() {
         log.debug("Close");
         if (dataSource != null) {

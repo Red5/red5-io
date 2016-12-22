@@ -233,6 +233,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
      * 
      * @return always returns <code>false</code>
      */
+    @Override
     public boolean hasVideo() {
         return false;
     }
@@ -336,16 +337,19 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     }
 
     /** {@inheritDoc} */
+    @Override
     public IStreamableFile getFile() {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getOffset() {
         return 0;
     }
 
     /** {@inheritDoc} */
+    @Override
     public long getBytesRead() {
         try {
             return fileChannel != null ? fileChannel.position() : 0;
@@ -355,6 +359,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     }
 
     /** {@inheritDoc} */
+    @Override
     public long getDuration() {
         return duration;
     }
@@ -364,17 +369,20 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
      * 
      * @return Total readable bytes
      */
+    @Override
     public long getTotalBytes() {
         return fileSize;
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean hasMoreTags() {
         log.debug("hasMoreTags");
         return fileChannel.isOpen() && frameIndex < frameCount;
     }
 
     /** {@inheritDoc} */
+    @Override
     public ITag readTag() {
         log.debug("readTag");
         try {
@@ -439,6 +447,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void close() {
         if (posTimeMap != null) {
             posTimeMap.clear();
@@ -452,10 +461,12 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void decodeHeader() {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void position(long pos) {
         if (pos == Long.MAX_VALUE) {
             // seek at EOF
@@ -472,6 +483,7 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
     }
 
     /** {@inheritDoc} */
+    @Override
     public KeyFrameMeta analyzeKeyFrames() {
         log.debug("analyzeKeyFrames");
         if (frameMeta != null) {

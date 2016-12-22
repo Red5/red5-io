@@ -69,6 +69,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     private static ApplicationContext applicationContext;
 
     /** {@inheritDoc} */
+    @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         EhCacheImpl.applicationContext = context;
     }
@@ -137,6 +138,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ICacheable get(String name) {
         ICacheable ic = null;
         try {
@@ -147,6 +149,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void put(String name, Object obj) {
         if (obj instanceof ICacheable) {
             cache.put(new Element(name, obj));
@@ -157,16 +160,19 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
+    @Override
     public Iterator<String> getObjectNames() {
         return cache.getKeys().iterator();
     }
 
     /** {@inheritDoc} */
+    @Override
     public Iterator<SoftReference<? extends ICacheable>> getObjects() {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean offer(String name, Object obj) {
         boolean result = false;
         try {
@@ -184,11 +190,13 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean remove(ICacheable obj) {
         return cache.remove(obj.getName());
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean remove(String name) {
         return cache.remove(name);
     }
@@ -204,6 +212,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setMaxEntries(int capacity) {
         if (log.isDebugEnabled()) {
             log.debug("Setting max entries for this cache to " + capacity);
@@ -305,6 +314,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void destroy() {
         // Shut down the cache manager
         try {

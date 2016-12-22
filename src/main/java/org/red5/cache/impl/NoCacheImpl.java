@@ -63,6 +63,7 @@ public class NoCacheImpl implements ICacheStore, ApplicationContextAware {
     private static ApplicationContext applicationContext = null;
 
     /** {@inheritDoc} */
+    @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         NoCacheImpl.applicationContext = context;
     }
@@ -77,11 +78,13 @@ public class NoCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Iterator<String> getObjectNames() {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public Iterator<SoftReference<? extends ICacheable>> getObjects() {
         return null;
     }
@@ -91,25 +94,30 @@ public class NoCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean offer(String name, Object obj) {
         return false;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void put(String name, Object obj) {
     }
 
     /** {@inheritDoc} */
+    @Override
     public ICacheable get(String name) {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean remove(ICacheable obj) {
         return false;
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean remove(String name) {
         return false;
     }
@@ -133,10 +141,12 @@ public class NoCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setMaxEntries(int max) {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void destroy() {
     }
 }

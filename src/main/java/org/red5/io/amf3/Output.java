@@ -223,6 +223,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeArray(Collection<?> array) {
         writeAMF3();
         buf.put(AMF3.TYPE_ARRAY);
@@ -242,6 +243,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeArray(Object[] array) {
         writeAMF3();
         buf.put(AMF3.TYPE_ARRAY);
@@ -261,6 +263,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeArray(Object array) {
         writeAMF3();
         buf.put(AMF3.TYPE_ARRAY);
@@ -280,6 +283,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeMap(Map<Object, Object> map) {
         writeAMF3();
         buf.put(AMF3.TYPE_ARRAY);
@@ -332,6 +336,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeMap(Collection<?> array) {
         writeAMF3();
         buf.put(AMF3.TYPE_ARRAY);
@@ -397,6 +402,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 
     /** {@inheritDoc} */
     @SuppressWarnings({ "rawtypes" })
+    @Override
     public void writeObject(Object object) {
         log.debug("writeObject: {} {}", object.getClass().getName(), object);
         writeAMF3();
@@ -514,6 +520,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     }
 
     /** {@inheritDoc} */
+    @Override
     public void writeByteArray(ByteArray array) {
         writeAMF3();
         buf.put(AMF3.TYPE_BYTEARRAY);

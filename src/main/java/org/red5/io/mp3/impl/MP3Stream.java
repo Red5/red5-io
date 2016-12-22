@@ -176,7 +176,7 @@ public class MP3Stream extends PushbackInputStream {
      *            the header bit field
      * @return the {@code AudioFrame}
      */
-    private AudioFrame createHeader(HeaderBitField bits) {
+    private static AudioFrame createHeader(HeaderBitField bits) {
         if (bits.get(21, 23) != 7) {
             return null;
         }

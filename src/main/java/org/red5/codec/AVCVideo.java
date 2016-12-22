@@ -67,16 +67,19 @@ public class AVCVideo implements IVideoStreamCodec {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName() {
         return CODEC_NAME;
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean canDropFrames() {
         return true;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void reset() {
         keyframe = new FrameData();
         decoderConfiguration = new FrameData();
@@ -85,6 +88,7 @@ public class AVCVideo implements IVideoStreamCodec {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean canHandleData(IoBuffer data) {
         boolean result = false;
         if (data.limit() > 0) {
@@ -96,6 +100,7 @@ public class AVCVideo implements IVideoStreamCodec {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean addData(IoBuffer data) {
         if (data.hasRemaining()) {
             // mark
@@ -151,21 +156,25 @@ public class AVCVideo implements IVideoStreamCodec {
     }
 
     /** {@inheritDoc} */
+    @Override
     public IoBuffer getKeyframe() {
         return keyframe.getFrame();
     }
 
     /** {@inheritDoc} */
+    @Override
     public IoBuffer getDecoderConfiguration() {
         return decoderConfiguration.getFrame();
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getNumInterframes() {
         return numInterframes.get();
     }
 
     /** {@inheritDoc} */
+    @Override
     public FrameData getInterframe(int index) {
         if (index < numInterframes.get()) {
             return interframes.get(index);

@@ -19,20 +19,22 @@
 package org.red5.io;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.red5.io.flv.IKeyFrameDataAnalyzer.KeyFrameMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +51,6 @@ import org.xml.sax.SAXException;
  * @author The Red5 Project
  * @author Joachim Bauch (jojo@struktur.de)
  */
-@SuppressWarnings("deprecation")
 public class FileKeyFrameMetaCache implements IKeyFrameMetaCache {
 
     /**
@@ -192,13 +193,12 @@ public class FileKeyFrameMetaCache implements IKeyFrameMetaCache {
 
         String filename = file.getAbsolutePath() + ".meta";
 
-        OutputFormat format = new OutputFormat(dom);
-        format.setIndenting(true);
-
         try {
-            XMLSerializer serializer = new XMLSerializer(new FileOutputStream(new File(filename)), format);
-            serializer.serialize(dom);
-        } catch (IOException err) {
+            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t.setOutputProperty(OutputKeys.INDENT, "yes");
+            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            t.transform(new DOMSource(dom), new StreamResult(new File(filename)));
+        } catch (Exception err) {
             log.error("could not save keyframe data", err);
         }
     }

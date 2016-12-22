@@ -21,10 +21,12 @@ public class Foo3 implements IExternalizable {
 		return foo;
 	}
 
+	@Override
 	public void readExternal(IDataInput input) {
 		this.foo = input.readInt();
 	}
 
+	@Override
 	public void writeExternal(IDataOutput output) {
 		output.writeInt(foo);
 	}

@@ -53,6 +53,7 @@ public class CommandMessage extends AsyncMessage {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void addParameters(StringBuilder result) {
         super.addParameters(result);
         result.append(",messageRefType=");
