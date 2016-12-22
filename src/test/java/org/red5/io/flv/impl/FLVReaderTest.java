@@ -19,8 +19,8 @@ public class FLVReaderTest {
     @Test
     public void testFLVReaderFileWithPreProcessInfo() {
         log.info("\n testFLVReaderFileWithPreProcessInfo");
-        Path path = Paths.get("target/test-classes/fixtures/flv1_nelly.flv");
-        //File file = new File("target/test-classes/fixtures/test.flv");
+        //Path path = Paths.get("target/test-classes/fixtures/flv1_nelly.flv");
+        Path path = Paths.get("target/test-classes/fixtures/webrtctestrecord.flv");
         try {
             File file = path.toFile();
             log.info("Reading: {}", file.getName());
