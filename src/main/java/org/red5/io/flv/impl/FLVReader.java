@@ -747,7 +747,7 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                 if (keyframeMeta != null) {
                     // Keyframe data loaded, create other mappings
                     duration = keyframeMeta.duration;
-                    posTimeMap = new HashMap<Long, Long>();
+                    posTimeMap = new HashMap<>();
                     for (int i = 0; i < keyframeMeta.positions.length; i++) {
                         posTimeMap.put(keyframeMeta.positions[i], (long) keyframeMeta.timestamps[i]);
                     }
@@ -757,11 +757,11 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
             // create a holder for the metadata
             keyframeMeta = new KeyFrameMeta();
             // Lists of video positions and timestamps
-            List<Long> positionList = new ArrayList<Long>();
-            List<Integer> timestampList = new ArrayList<Integer>();
+            List<Long> positionList = new ArrayList<>();
+            List<Integer> timestampList = new ArrayList<>();
             // Lists of audio positions and timestamps
-            List<Long> audioPositionList = new ArrayList<Long>();
-            List<Integer> audioTimestampList = new ArrayList<Integer>();
+            List<Long> audioPositionList = new ArrayList<>();
+            List<Integer> audioTimestampList = new ArrayList<>();
             long origPos = getCurrentPosition();
             // point to the first tag
             setCurrentPosition(9);

@@ -99,48 +99,53 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      */
     @Override
     public byte readDataType() {
-        do {
-            // get the data type
-            currentDataType = buf.get();
-            log.trace("Data type: {}", currentDataType);
-            switch (currentDataType) {
-                case AMF.TYPE_NULL:
-                case AMF.TYPE_UNDEFINED:
-                    return DataTypes.CORE_NULL;
-                case AMF.TYPE_NUMBER:
-                    return DataTypes.CORE_NUMBER;
-                case AMF.TYPE_BOOLEAN:
-                    return DataTypes.CORE_BOOLEAN;
-                case AMF.TYPE_STRING:
-                case AMF.TYPE_LONG_STRING:
-                    return DataTypes.CORE_STRING;
-                case AMF.TYPE_CLASS_OBJECT:
-                case AMF.TYPE_OBJECT:
-                    return DataTypes.CORE_OBJECT;
-                case AMF.TYPE_MIXED_ARRAY:
-                    return DataTypes.CORE_MAP;
-                case AMF.TYPE_ARRAY:
-                    return DataTypes.CORE_ARRAY;
-                case AMF.TYPE_DATE:
-                    return DataTypes.CORE_DATE;
-                case AMF.TYPE_XML:
-                    return DataTypes.CORE_XML;
-                case AMF.TYPE_REFERENCE:
-                    return DataTypes.OPT_REFERENCE;
-                case AMF.TYPE_UNSUPPORTED:
-                case AMF.TYPE_MOVIECLIP:
-                case AMF.TYPE_RECORDSET:
-                    // These types are not handled by core datatypes
-                    // So add the amf mask to them, this way the deserializer
-                    // will call back to readCustom, we can then handle or return null
-                    return (byte) (currentDataType + DataTypes.CUSTOM_AMF_MASK);
-                case AMF.TYPE_AMF3_OBJECT:
-                    log.debug("Switch to AMF3");
-                    return DataTypes.CORE_SWITCH;
-            }
-        } while (hasMoreProperties());
-        log.trace("No more data types available");
-        return DataTypes.CORE_END_OBJECT;
+        // prevent the handling of an empty Object
+        if (buf.hasRemaining()) {
+            do {
+                // get the data type
+                currentDataType = buf.get();
+                log.trace("Data type: {}", currentDataType);
+                switch (currentDataType) {
+                    case AMF.TYPE_NULL:
+                    case AMF.TYPE_UNDEFINED:
+                        return DataTypes.CORE_NULL;
+                    case AMF.TYPE_NUMBER:
+                        return DataTypes.CORE_NUMBER;
+                    case AMF.TYPE_BOOLEAN:
+                        return DataTypes.CORE_BOOLEAN;
+                    case AMF.TYPE_STRING:
+                    case AMF.TYPE_LONG_STRING:
+                        return DataTypes.CORE_STRING;
+                    case AMF.TYPE_CLASS_OBJECT:
+                    case AMF.TYPE_OBJECT:
+                        return DataTypes.CORE_OBJECT;
+                    case AMF.TYPE_MIXED_ARRAY:
+                        return DataTypes.CORE_MAP;
+                    case AMF.TYPE_ARRAY:
+                        return DataTypes.CORE_ARRAY;
+                    case AMF.TYPE_DATE:
+                        return DataTypes.CORE_DATE;
+                    case AMF.TYPE_XML:
+                        return DataTypes.CORE_XML;
+                    case AMF.TYPE_REFERENCE:
+                        return DataTypes.OPT_REFERENCE;
+                    case AMF.TYPE_UNSUPPORTED:
+                    case AMF.TYPE_MOVIECLIP:
+                    case AMF.TYPE_RECORDSET:
+                        // These types are not handled by core datatypes
+                        // So add the amf mask to them, this way the deserializer
+                        // will call back to readCustom, we can then handle or return null
+                        return (byte) (currentDataType + DataTypes.CUSTOM_AMF_MASK);
+                    case AMF.TYPE_AMF3_OBJECT:
+                        log.debug("Switch to AMF3");
+                        return DataTypes.CORE_SWITCH;
+                }
+            } while (hasMoreProperties());
+            log.trace("No more data types available");
+            return DataTypes.CORE_END_OBJECT;
+        }
+        // empty object, may as well be null
+        return DataTypes.CORE_NULL;
     }
 
     /**
