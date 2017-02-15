@@ -1,14 +1,14 @@
 /*
  * RED5 Open Source Media Server - https://github.com/Red5/
- * 
+ *
  * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import net.sf.ehcache.Element;
 
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.mina.core.buffer.IoBuffer;
@@ -142,13 +140,12 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     }
 
     protected static byte[] encodeString(String string) {
-        Element element = getStringCache().get(string);
-        byte[] encoded = (element == null ? null : (byte[]) element.getObjectValue());
+        byte[] encoded = getStringCache().get(string);
         if (encoded == null) {
             ByteBuffer buf = AMF.CHARSET.encode(string);
             encoded = new byte[buf.limit()];
             buf.get(encoded);
-            getStringCache().put(new Element(string, encoded));
+            getStringCache().put(string, encoded);
         }
         return encoded;
     }
@@ -544,7 +541,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 
     /**
      * Write a Vector&lt;int&gt;.
-     * 
+     *
      * @param vector
      *            vector
      */
@@ -576,7 +573,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 
     /**
      * Write a Vector&lt;uint&gt;.
-     * 
+     *
      * @param vector
      *            vector
      */
@@ -602,7 +599,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 
     /**
      * Write a Vector&lt;Number&gt;.
-     * 
+     *
      * @param vector
      *            vector
      */
@@ -625,7 +622,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 
     /**
      * Write a Vector&lt;Object&gt;.
-     * 
+     *
      * @param vector
      *            vector
      */
