@@ -346,6 +346,16 @@ public class FLV implements IFLV {
         } else {
             //Fix by Mhodgson: FLVWriter constructor allows for passing of file object
             writer = new FLVWriter(file, true);
+            // add the writer post processors to the appending writer
+            if (writePostProcessors != null) {
+                for (Class<IPostProcessor> postProcessor : writePostProcessors) {
+                    try {
+                        writer.addPostProcessor(postProcessor.newInstance());
+                    } catch (Exception e) {
+                        log.warn("Post processor: {} instance creation failed", postProcessor, e);
+                    }
+                }
+            }
         }
         return writer;
     }
