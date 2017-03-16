@@ -923,11 +923,13 @@ public class FLVWriter implements ITagWriter {
                             postProcessor.init(filePath);
                             // execute and block
                             executor.submit(postProcessor).get();
-                        } catch (Exception e) {
-                            log.warn("Exception during post process on: {}", filePath);
+                        } catch (Throwable t) {
+                            log.warn("Exception during post process on: {}", filePath, t);
                         }
                     }
                     postProcessors.clear();
+                } else {
+                    log.debug("No post processors configured");
                 }
                 finalized.compareAndSet(false, true);
             }
