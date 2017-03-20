@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author Tiago Jacobs (tiago@imdt.com.br)
  * @author Paul Gregoire (mondain@gmail.com)
  */
-public class AVCVideo implements IVideoStreamCodec {
+public class AVCVideo extends AbstractVideo {
 
     private static Logger log = LoggerFactory.getLogger(AVCVideo.class);
 

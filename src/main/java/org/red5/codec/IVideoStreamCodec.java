@@ -19,7 +19,6 @@
 package org.red5.codec;
 
 import org.apache.mina.core.buffer.IoBuffer;
-import org.red5.codec.IVideoStreamCodec.FrameData;
 
 /**
  * Represents a Video codec and its associated decoder configuration.

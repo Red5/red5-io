@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * @author Joachim Bauch (jojo@struktur.de)
  * @author Paul Gregoire (mondain@gmail.com)
  */
-public class ScreenVideo2 implements IVideoStreamCodec {
+public class ScreenVideo2 extends AbstractVideo {
 
     private Logger log = LoggerFactory.getLogger(ScreenVideo2.class);
 
@@ -137,12 +137,6 @@ public class ScreenVideo2 implements IVideoStreamCodec {
         boolean result = ((first & 0x0f) == VideoCodec.SCREEN_VIDEO2.getId());
         data.rewind();
         return result;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean canDropFrames() {
-        return false;
     }
 
     /*
@@ -286,23 +280,6 @@ public class ScreenVideo2 implements IVideoStreamCodec {
 
         result.rewind();
         return result;
-    }
-
-    @Override
-    public IoBuffer getDecoderConfiguration() {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getNumInterframes() {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FrameData getInterframe(int idx) {
-        return null;
     }
 
 }
