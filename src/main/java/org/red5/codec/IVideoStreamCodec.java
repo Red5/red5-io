@@ -19,6 +19,7 @@
 package org.red5.codec;
 
 import org.apache.mina.core.buffer.IoBuffer;
+import org.red5.codec.IVideoStreamCodec.FrameData;
 
 /**
  * Represents a Video codec and its associated decoder configuration.
@@ -66,11 +67,28 @@ public interface IVideoStreamCodec {
     public boolean addData(IoBuffer data);
 
     /**
+     * Update the state of the codec with the passed data.
+     * 
+     * @param data
+     *            data to tell the codec we're adding
+     * @param timestamp time associated with the data
+     * @return true for success. false for error
+     */
+    public boolean addData(IoBuffer data, int timestamp);
+
+    /**
      * Returns keyframe data.
      * 
      * @return the data for a keyframe
      */
     public IoBuffer getKeyframe();
+
+    /**
+     * Returns all the keyframe data.
+     * 
+     * @return array of keyframe data
+     */
+    public FrameData[] getKeyframes();
 
     /**
      * Returns information used to configure the decoder.
