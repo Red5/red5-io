@@ -175,6 +175,9 @@ public class AVCVideo extends AbstractVideo {
     /** {@inheritDoc} */
     @Override
     public IoBuffer getKeyframe() {
+        if (keyframes.isEmpty()) {
+            return null;
+        }
         return keyframes.get(0).getFrame();
     }
 
