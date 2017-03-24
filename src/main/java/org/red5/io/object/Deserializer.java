@@ -39,21 +39,19 @@ import org.slf4j.LoggerFactory;
 public class Deserializer {
 
     private static final Logger log = LoggerFactory.getLogger(Deserializer.class);
-    static Set<String> BLACK_LIST = null;
+
+    private static Set<String> BLACK_LIST;
 
     private Deserializer() {
     }
 
     public synchronized static void loadBlackList() throws IOException {
-        if (BLACK_LIST != null) {
-            return;
-        }
         try (InputStream is = Deserializer.class.getClassLoader().getResourceAsStream("org/red5/io/object/black-list.properties")) {
             Properties bl = new Properties();
             bl.load(is);
             Set<String> set = new HashSet<>();
             for (Entry<?, ?> e : bl.entrySet()) {
-                set.add((String)e.getKey());
+                set.add((String) e.getKey());
             }
             BLACK_LIST = Collections.unmodifiableSet(set);
         }
@@ -73,7 +71,7 @@ public class Deserializer {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T> T deserialize(Input in, Type target) {
         if (BLACK_LIST == null) {
-            log.warn("Black list is not yet initialized");
+            log.info("Black list is not yet initialized");
             try {
                 loadBlackList();
             } catch (IOException e) {
@@ -153,6 +151,21 @@ public class Deserializer {
                 break;
         }
         return (T) result;
+    }
+
+    /**
+     * Checks to see if a given class is blacklisted or not.
+     * 
+     * @param className class name/package
+     * @return true if not blacklisted and false if it is blacklisted
+     */
+    public static boolean classAllowed(String className) {
+        for (String name: BLACK_LIST) {
+            if (className.startsWith(name)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
