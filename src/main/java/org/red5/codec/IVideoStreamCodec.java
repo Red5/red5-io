@@ -66,11 +66,28 @@ public interface IVideoStreamCodec {
     public boolean addData(IoBuffer data);
 
     /**
+     * Update the state of the codec with the passed data.
+     * 
+     * @param data
+     *            data to tell the codec we're adding
+     * @param timestamp time associated with the data
+     * @return true for success. false for error
+     */
+    public boolean addData(IoBuffer data, int timestamp);
+
+    /**
      * Returns keyframe data.
      * 
      * @return the data for a keyframe
      */
     public IoBuffer getKeyframe();
+
+    /**
+     * Returns all the keyframe data.
+     * 
+     * @return array of keyframe data
+     */
+    public FrameData[] getKeyframes();
 
     /**
      * Returns information used to configure the decoder.

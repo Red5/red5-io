@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.red5</groupId>
         <artifactId>red5-parent</artifactId>
-        <version>1.0.9-M2</version>
+        <version>1.0.9-M5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>red5-io</artifactId>
@@ -323,7 +323,7 @@
             <version>${ehcache.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.mp4parser</groupId>
+            <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
             <version>${isoparser.version}</version>
         </dependency>

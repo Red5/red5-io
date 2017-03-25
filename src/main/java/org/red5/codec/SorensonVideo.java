@@ -22,7 +22,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.mina.core.buffer.IoBuffer;
-import org.red5.io.IoConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @author Joachim Bauch (jojo@struktur.de)
  * @author Paul Gregoire (mondain@gmail.com)
  */
-public class SorensonVideo implements IVideoStreamCodec, IoConstants {
+public class SorensonVideo extends AbstractVideo {
 
     private Logger log = LoggerFactory.getLogger(SorensonVideo.class);
 
@@ -60,7 +59,7 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
     /**
      * Storage for frames buffered since last key frame
      */
-    private final CopyOnWriteArrayList<FrameData> interframes = new CopyOnWriteArrayList<FrameData>();
+    private final CopyOnWriteArrayList<FrameData> interframes = new CopyOnWriteArrayList<>();
 
     /**
      * Number of frames buffered since last key frame
@@ -159,11 +158,6 @@ public class SorensonVideo implements IVideoStreamCodec, IoConstants {
             result.rewind();
             return result;
         }
-        return null;
-    }
-
-    @Override
-    public IoBuffer getDecoderConfiguration() {
         return null;
     }
 
