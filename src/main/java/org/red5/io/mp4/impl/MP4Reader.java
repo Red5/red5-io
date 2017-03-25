@@ -21,6 +21,9 @@ package org.red5.io.mp4.impl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -35,6 +38,52 @@ import java.util.concurrent.Semaphore;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.mina.core.buffer.IoBuffer;
+import org.mp4parser.Box;
+import org.mp4parser.Container;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
+import org.mp4parser.boxes.apple.AppleWaveBox;
+import org.mp4parser.boxes.iso14496.part1.objectdescriptors.AudioSpecificConfig;
+import org.mp4parser.boxes.iso14496.part1.objectdescriptors.DecoderConfigDescriptor;
+import org.mp4parser.boxes.iso14496.part1.objectdescriptors.DecoderSpecificInfo;
+import org.mp4parser.boxes.iso14496.part1.objectdescriptors.ESDescriptor;
+import org.mp4parser.boxes.iso14496.part12.AbstractMediaHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.ChunkOffset64BitBox;
+import org.mp4parser.boxes.iso14496.part12.ChunkOffsetBox;
+import org.mp4parser.boxes.iso14496.part12.CompositionTimeToSample;
+import org.mp4parser.boxes.iso14496.part12.HandlerBox;
+import org.mp4parser.boxes.iso14496.part12.MediaBox;
+import org.mp4parser.boxes.iso14496.part12.MediaDataBox;
+import org.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.MediaInformationBox;
+import org.mp4parser.boxes.iso14496.part12.MovieBox;
+import org.mp4parser.boxes.iso14496.part12.MovieExtendsBox;
+import org.mp4parser.boxes.iso14496.part12.MovieFragmentBox;
+import org.mp4parser.boxes.iso14496.part12.MovieFragmentHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.MovieFragmentRandomAccessBox;
+import org.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
+import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
+import org.mp4parser.boxes.iso14496.part12.SampleSizeBox;
+import org.mp4parser.boxes.iso14496.part12.SampleTableBox;
+import org.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
+import org.mp4parser.boxes.iso14496.part12.SoundMediaHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.SyncSampleBox;
+import org.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
+import org.mp4parser.boxes.iso14496.part12.TrackBox;
+import org.mp4parser.boxes.iso14496.part12.TrackExtendsBox;
+import org.mp4parser.boxes.iso14496.part12.TrackFragmentBox;
+import org.mp4parser.boxes.iso14496.part12.TrackFragmentHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.TrackRunBox;
+import org.mp4parser.boxes.iso14496.part12.VideoMediaHeaderBox;
+import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
+import org.mp4parser.boxes.iso14496.part15.AvcConfigurationBox;
+import org.mp4parser.boxes.iso14496.part15.AvcDecoderConfigurationRecord;
+import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
+import org.mp4parser.boxes.sampleentry.VisualSampleEntry;
+import org.mp4parser.tools.Path;
 import org.red5.io.IStreamableFile;
 import org.red5.io.ITag;
 import org.red5.io.ITagReader;
@@ -47,63 +96,16 @@ import org.red5.io.utils.HexDump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
-import com.coremedia.iso.boxes.Box;
-import com.coremedia.iso.boxes.ChunkOffset64BitBox;
-import com.coremedia.iso.boxes.ChunkOffsetBox;
-import com.coremedia.iso.boxes.CompositionTimeToSample;
-import com.coremedia.iso.boxes.Container;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.SampleToChunkBox.Entry;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.SyncSampleBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.coremedia.iso.boxes.VideoMediaHeaderBox;
-import com.coremedia.iso.boxes.apple.AppleWaveBox;
-import com.coremedia.iso.boxes.fragment.MovieExtendsBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentHeaderBox;
-import com.coremedia.iso.boxes.fragment.MovieFragmentRandomAccessBox;
-import com.coremedia.iso.boxes.fragment.TrackExtendsBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentBox;
-import com.coremedia.iso.boxes.fragment.TrackFragmentHeaderBox;
-import com.coremedia.iso.boxes.fragment.TrackRunBox;
-import com.coremedia.iso.boxes.mdat.MediaDataBox;
-import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
-import com.coremedia.iso.boxes.sampleentry.VisualSampleEntry;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.boxes.adobe.ActionMessageFormat0SampleEntryBox;
-import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderSpecificInfo;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ESDescriptor;
-import com.googlecode.mp4parser.util.Path;
-import com.mp4parser.iso14496.part15.AvcConfigurationBox;
-import com.mp4parser.iso14496.part15.AvcDecoderConfigurationRecord;
-
 /**
  * This reader is used to read the contents of an MP4 file. <br>
  * NOTE: This class is not implemented as thread-safe, the caller should ensure the thread-safety. <br>
  * New NetStream notifications <br>
  * Two new notifications facilitate the implementation of the playback components:
  * <ul>
- * <li>NetStream.Play.FileStructureInvalid: This event is sent if the player detects an MP4 with an invalid file structure. Flash Player cannot play files that have invalid file structures.</li>
- * <li>NetStream.Play.NoSupportedTrackFound: This event is sent if the player does not detect any supported tracks. If there aren't any supported video, audio or data tracks found, Flash Player does not play the file.</li>
+ * <li>NetStream.Play.FileStructureInvalid: This event is sent if the player detects an MP4 with an invalid file structure. Flash Player
+ * cannot play files that have invalid file structures.</li>
+ * <li>NetStream.Play.NoSupportedTrackFound: This event is sent if the player does not detect any supported tracks. If there aren't any
+ * supported video, audio or data tracks found, Flash Player does not play the file.</li>
  * </ul>
  * 
  * @author The Red5 Project
@@ -134,7 +136,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * File dataSource / channel
      */
-    private FileDataSourceImpl dataSource;
+    private SeekableByteChannel dataSource;
 
     /**
      * Provider of boxes
@@ -192,10 +194,6 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     private int avcProfile;
 
     private String formattedDuration;
-
-    //private long moovOffset;
-
-    private long mdatOffset;
 
     //samples to chunk mappings
     private List<SampleToChunkBox.Entry> videoSamplesToChunks;
@@ -269,7 +267,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
         }
         if (f.exists() && f.canRead()) {
             // create a datasource / channel
-            dataSource = new FileDataSourceImpl(f);
+            dataSource = Files.newByteChannel(Paths.get(f.toURI()));
             // instance an iso file from mp4parser
             isoFile = new IsoFile(dataSource);
             //decode all the info that we want from the atoms
@@ -435,14 +433,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
             List<MediaDataBox> mdats = isoFile.getBoxes(MediaDataBox.class);
             if (mdats != null && !mdats.isEmpty()) {
                 log.debug("mdat count: {}", mdats.size());
-                MediaDataBox mdat = mdats.get(0);
-                if (mdat != null) {
-                    mdatOffset = mdat.getOffset();
-                }
             }
-            //log.debug("Offsets - moov: {} mdat: {}", moovOffset, mdatOffset);
-            log.debug("Offset - mdat: {}", mdatOffset);
-
             // handle fragmentation
             boolean fragmented = false;
             // detect whether or not this movie contains fragments first
@@ -454,7 +445,7 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                     dumpBox(moof);
                     MovieFragmentHeaderBox mfhd = moof.getBoxes(MovieFragmentHeaderBox.class).get(0);
                     if (mfhd != null) {
-                        log.debug("Sequence: {} path: {}", mfhd.getSequenceNumber(), mfhd.getPath());
+                        log.debug("Sequence: {}", mfhd.getSequenceNumber());
                     }
                     List<TrackFragmentBox> trafs = moof.getBoxes(TrackFragmentBox.class);
                     for (TrackFragmentBox traf : trafs) {
@@ -467,10 +458,10 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                     }
                     //List<Long> syncSamples = moof.getSyncSamples(sdtp);
                     if (compositionTimes == null) {
-                        compositionTimes = new ArrayList<CompositionTimeToSample.Entry>();
+                        compositionTimes = new ArrayList<>();
                     }
-                    LinkedList<Integer> dataOffsets = new LinkedList<Integer>();
-                    LinkedList<Long> sampleSizes = new LinkedList<Long>();
+                    LinkedList<Integer> dataOffsets = new LinkedList<>();
+                    LinkedList<Long> sampleSizes = new LinkedList<>();
                     List<TrackRunBox> truns = moof.getTrackRunBoxes();
                     log.info("Fragment contains {} TrackRunBox entries", truns.size());
                     for (TrackRunBox trun : truns) {
@@ -844,7 +835,6 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
      *            timescale
      */
     private void processAudioBox(SampleTableBox stbl, long scale) {
-
         processAudioStbl(stbl, scale);
     }
 
@@ -931,11 +921,6 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
      */
     private long getCurrentPosition() {
         try {
-            //if we are at the end of the file drop back to mdat offset
-            if (dataSource.position() == dataSource.size()) {
-                log.debug("Reached end of file, going back to data offset");
-                dataSource.position(mdatOffset);
-            }
             return dataSource.position();
         } catch (Exception e) {
             log.error("Error getCurrentPosition", e);
@@ -1142,9 +1127,11 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     /**
      * Tag sequence MetaData, Video config, Audio config, remaining audio and video
      * 
-     * Packet prefixes: 17 00 00 00 00 = Video extra data (first video packet) 17 01 00 00 00 = Video keyframe 27 01 00 00 00 = Video interframe af 00 ... 06 = Audio extra data (first audio packet) af 01 = Audio frame
+     * Packet prefixes: 17 00 00 00 00 = Video extra data (first video packet) 17 01 00 00 00 = Video keyframe 27 01 00 00 00 = Video
+     * interframe af 00 ... 06 = Audio extra data (first audio packet) af 01 = Audio frame
      * 
-     * Audio extra data(s): af 00 = Prefix 11 90 4f 14 = AAC Main = aottype 0 // 11 90 12 10 = AAC LC = aottype 1 13 90 56 e5 a5 48 00 = HE-AAC SBR = aottype 2 06 = Suffix
+     * Audio extra data(s): af 00 = Prefix 11 90 4f 14 = AAC Main = aottype 0 // 11 90 12 10 = AAC LC = aottype 1 13 90 56 e5 a5 48 00 =
+     * HE-AAC SBR = aottype 2 06 = Suffix
      * 
      * Still not absolutely certain about this order or the bytes - need to verify later
      */
@@ -1298,7 +1285,8 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
     }
 
     /**
-     * Performs frame analysis and generates metadata for use in seeking. All the frames are analyzed and sorted together based on time and offset.
+     * Performs frame analysis and generates metadata for use in seeking. All the frames are analyzed and sorted together based on time and
+     * offset.
      */
     public void analyzeFrames() {
         log.debug("Analyzing frames - video samples/chunks: {}", videoSamplesToChunks);
@@ -1318,11 +1306,11 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                 compositeTimeEntry = compositionTimes.remove(0);
             }
             for (int i = 0; i < videoSamplesToChunks.size(); i++) {
-                Entry record = videoSamplesToChunks.get(i);
+                SampleToChunkBox.Entry record = videoSamplesToChunks.get(i);
                 long firstChunk = record.getFirstChunk();
                 long lastChunk = videoChunkOffsets.length;
                 if (i < videoSamplesToChunks.size() - 1) {
-                    Entry nextRecord = videoSamplesToChunks.get(i + 1);
+                    SampleToChunkBox.Entry nextRecord = videoSamplesToChunks.get(i + 1);
                     lastChunk = nextRecord.getFirstChunk() - 1;
                 }
                 for (long chunk = firstChunk; chunk <= lastChunk; chunk++) {
@@ -1353,8 +1341,6 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                         }
                         //size of the sample
                         int size = (int) videoSamples[sample - 1];
-                        // exclude data that is not within the mdat box
-                        //						if ((moovOffset < mdatOffset && pos > mdatOffset) || (moovOffset > mdatOffset && pos < moovOffset)) {
                         //create a frame
                         MP4Frame frame = new MP4Frame();
                         frame.setKeyFrame(keyframe);
@@ -1383,9 +1369,6 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                         // add the frame
                         frames.add(frame);
                         log.debug("Sample #{} {}", sample, frame);
-                        //						} else {
-                        //							log.warn("Skipping video frame with invalid position");
-                        //						}
                         //inc and dec stuff
                         pos += size;
                         sampleCount--;
@@ -1400,11 +1383,11 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
             //add the audio frames / samples / chunks		
             sample = 1;
             for (int i = 0; i < audioSamplesToChunks.size(); i++) {
-                Entry record = audioSamplesToChunks.get(i);
+                SampleToChunkBox.Entry record = audioSamplesToChunks.get(i);
                 long firstChunk = record.getFirstChunk();
                 long lastChunk = audioChunkOffsets.length;
                 if (i < audioSamplesToChunks.size() - 1) {
-                    Entry nextRecord = audioSamplesToChunks.get(i + 1);
+                    SampleToChunkBox.Entry nextRecord = audioSamplesToChunks.get(i + 1);
                     lastChunk = nextRecord.getFirstChunk() - 1;
                 }
                 for (long chunk = firstChunk; chunk <= lastChunk; chunk++) {
@@ -1453,19 +1436,14 @@ public class MP4Reader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                         }
                         // set audio sample size
                         size = (int) (size != 0 ? size : audioSampleSize);
-                        // exclude data that is not within the mdat box
-                        if (pos >= mdatOffset) {
-                            //create a frame
-                            MP4Frame frame = new MP4Frame();
-                            frame.setOffset(pos);
-                            frame.setSize(size);
-                            frame.setTime(ts);
-                            frame.setType(TYPE_AUDIO);
-                            frames.add(frame);
-                            //log.debug("Sample #{} {}", sample, frame);
-                        } else {
-                            log.warn("Skipping audio frame with invalid position");
-                        }
+                        //create a frame
+                        MP4Frame frame = new MP4Frame();
+                        frame.setOffset(pos);
+                        frame.setSize(size);
+                        frame.setTime(ts);
+                        frame.setType(TYPE_AUDIO);
+                        frames.add(frame);
+                        //log.debug("Sample #{} {}", sample, frame);
                         // update counts
                         pos += size;
                         sampleCount--;

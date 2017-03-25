@@ -21,6 +21,9 @@ package org.red5.io.m4a.impl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -34,6 +37,34 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.mina.core.buffer.IoBuffer;
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.apple.AppleWaveBox;
+import org.mp4parser.boxes.iso14496.part1.objectdescriptors.AudioSpecificConfig;
+import org.mp4parser.boxes.iso14496.part1.objectdescriptors.DecoderConfigDescriptor;
+import org.mp4parser.boxes.iso14496.part1.objectdescriptors.DecoderSpecificInfo;
+import org.mp4parser.boxes.iso14496.part1.objectdescriptors.ESDescriptor;
+import org.mp4parser.boxes.iso14496.part12.AbstractMediaHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.ChunkOffset64BitBox;
+import org.mp4parser.boxes.iso14496.part12.ChunkOffsetBox;
+import org.mp4parser.boxes.iso14496.part12.HandlerBox;
+import org.mp4parser.boxes.iso14496.part12.MediaBox;
+import org.mp4parser.boxes.iso14496.part12.MediaDataBox;
+import org.mp4parser.boxes.iso14496.part12.MediaHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.MediaInformationBox;
+import org.mp4parser.boxes.iso14496.part12.MovieBox;
+import org.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.SampleDependencyTypeBox;
+import org.mp4parser.boxes.iso14496.part12.SampleDescriptionBox;
+import org.mp4parser.boxes.iso14496.part12.SampleSizeBox;
+import org.mp4parser.boxes.iso14496.part12.SampleTableBox;
+import org.mp4parser.boxes.iso14496.part12.SampleToChunkBox;
+import org.mp4parser.boxes.iso14496.part12.SoundMediaHeaderBox;
+import org.mp4parser.boxes.iso14496.part12.TimeToSampleBox;
+import org.mp4parser.boxes.iso14496.part12.TrackBox;
+import org.mp4parser.boxes.iso14496.part12.TrackHeaderBox;
+import org.mp4parser.boxes.iso14496.part14.ESDescriptorBox;
+import org.mp4parser.boxes.sampleentry.AudioSampleEntry;
+import org.mp4parser.boxes.sampleentry.SampleEntry;
 import org.red5.io.IStreamableFile;
 import org.red5.io.ITag;
 import org.red5.io.ITagReader;
@@ -46,39 +77,9 @@ import org.red5.io.utils.HexDump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
-import com.coremedia.iso.boxes.ChunkOffset64BitBox;
-import com.coremedia.iso.boxes.ChunkOffsetBox;
-import com.coremedia.iso.boxes.HandlerBox;
-import com.coremedia.iso.boxes.MediaBox;
-import com.coremedia.iso.boxes.MediaHeaderBox;
-import com.coremedia.iso.boxes.MediaInformationBox;
-import com.coremedia.iso.boxes.MovieBox;
-import com.coremedia.iso.boxes.MovieHeaderBox;
-import com.coremedia.iso.boxes.SampleDependencyTypeBox;
-import com.coremedia.iso.boxes.SampleDescriptionBox;
-import com.coremedia.iso.boxes.SampleSizeBox;
-import com.coremedia.iso.boxes.SampleTableBox;
-import com.coremedia.iso.boxes.SampleToChunkBox;
-import com.coremedia.iso.boxes.SampleToChunkBox.Entry;
-import com.coremedia.iso.boxes.SoundMediaHeaderBox;
-import com.coremedia.iso.boxes.TimeToSampleBox;
-import com.coremedia.iso.boxes.TrackBox;
-import com.coremedia.iso.boxes.TrackHeaderBox;
-import com.coremedia.iso.boxes.apple.AppleWaveBox;
-import com.coremedia.iso.boxes.mdat.MediaDataBox;
-import com.coremedia.iso.boxes.sampleentry.AudioSampleEntry;
-import com.coremedia.iso.boxes.sampleentry.SampleEntry;
-import com.googlecode.mp4parser.FileDataSourceImpl;
-import com.googlecode.mp4parser.boxes.mp4.ESDescriptorBox;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.AudioSpecificConfig;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderConfigDescriptor;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.DecoderSpecificInfo;
-import com.googlecode.mp4parser.boxes.mp4.objectdescriptors.ESDescriptor;
-
 /**
- * A Reader is used to read the contents of a M4A file. NOTE: This class is not implemented as threading-safe. The caller should make sure the threading-safety.
+ * A Reader is used to read the contents of a M4A file. NOTE: This class is not implemented as threading-safe. The caller should make sure
+ * the threading-safety.
  * 
  * @author The Red5 Project
  * @author Paul Gregoire, (mondain@gmail.com)
@@ -93,7 +94,7 @@ public class M4AReader implements IoConstants, ITagReader {
     /**
      * File dataSource / channel
      */
-    private FileDataSourceImpl dataSource;
+    private SeekableByteChannel dataSource;
 
     /**
      * Provider of boxes
@@ -120,10 +121,8 @@ public class M4AReader implements IoConstants, ITagReader {
 
     private String formattedDuration;
 
-    private long mdatOffset;
-
     //samples to chunk mappings
-    private List<Entry> audioSamplesToChunks;
+    private List<SampleToChunkBox.Entry> audioSamplesToChunks;
 
     //samples 
     private long[] audioSamples;
@@ -141,12 +140,12 @@ public class M4AReader implements IoConstants, ITagReader {
 
     private int prevFrameSize = 0;
 
-    private List<MP4Frame> frames = new ArrayList<MP4Frame>();
+    private List<MP4Frame> frames = new ArrayList<>();
 
     /**
      * Container for metadata and any other tags that should be sent prior to media data.
      */
-    private LinkedList<ITag> firstTags = new LinkedList<ITag>();
+    private LinkedList<ITag> firstTags = new LinkedList<>();
 
     private final Semaphore lock = new Semaphore(1, true);
 
@@ -170,7 +169,7 @@ public class M4AReader implements IoConstants, ITagReader {
         String fileName = f.getName();
         if (fileName.endsWith("m4a") || fileName.endsWith("mp4")) {
             // create a datasource / channel
-            dataSource = new FileDataSourceImpl(f);
+            dataSource = Files.newByteChannel(Paths.get(f.toURI()));
             // instance an iso file from mp4parser
             isoFile = new IsoFile(dataSource);
             //decode all the info that we want from the atoms
@@ -299,12 +298,7 @@ public class M4AReader implements IoConstants, ITagReader {
             List<MediaDataBox> mdats = isoFile.getBoxes(MediaDataBox.class);
             if (mdats != null && !mdats.isEmpty()) {
                 log.debug("mdat count: {}", mdats.size());
-                MediaDataBox mdat = mdats.get(0);
-                if (mdat != null) {
-                    mdatOffset = mdat.getOffset();
-                }
             }
-            log.debug("Offset - mdat: {}", mdatOffset);
         } catch (Exception e) {
             log.error("Exception decoding header / atoms", e);
         }
@@ -499,11 +493,6 @@ public class M4AReader implements IoConstants, ITagReader {
      */
     private long getCurrentPosition() {
         try {
-            //if we are at the end of the file drop back to mdat offset
-            if (dataSource.position() == dataSource.size()) {
-                log.debug("Reached end of file, going back to data offset");
-                dataSource.position(mdatOffset);
-            }
             return dataSource.position();
         } catch (Exception e) {
             log.error("Error getCurrentPosition", e);
@@ -608,7 +597,8 @@ public class M4AReader implements IoConstants, ITagReader {
      * 
      * Packet prefixes: af 00 ... 06 = Audio extra data (first audio packet) af 01 = Audio frame
      * 
-     * Audio extra data(s): af 00 = Prefix 11 90 4f 14 = AAC Main = aottype 0 12 10 = AAC LC = aottype 1 13 90 56 e5 a5 48 00 = HE-AAC SBR = aottype 2 06 = Suffix
+     * Audio extra data(s): af 00 = Prefix 11 90 4f 14 = AAC Main = aottype 0 12 10 = AAC LC = aottype 1 13 90 56 e5 a5 48 00 = HE-AAC SBR =
+     * aottype 2 06 = Suffix
      * 
      * Still not absolutely certain about this order or the bytes - need to verify later
      */
@@ -699,7 +689,8 @@ public class M4AReader implements IoConstants, ITagReader {
     }
 
     /**
-     * Performs frame analysis and generates metadata for use in seeking. All the frames are analyzed and sorted together based on time and offset.
+     * Performs frame analysis and generates metadata for use in seeking. All the frames are analyzed and sorted together based on time and
+     * offset.
      */
     public void analyzeFrames() {
         log.debug("Analyzing frames");
@@ -710,11 +701,11 @@ public class M4AReader implements IoConstants, ITagReader {
             Long pos = null;
             //add the audio frames / samples / chunks		
             for (int i = 0; i < audioSamplesToChunks.size(); i++) {
-                Entry record = audioSamplesToChunks.get(i);
+                SampleToChunkBox.Entry record = audioSamplesToChunks.get(i);
                 long firstChunk = record.getFirstChunk();
                 long lastChunk = audioChunkOffsets.length;
                 if (i < audioSamplesToChunks.size() - 1) {
-                    Entry nextRecord = audioSamplesToChunks.get(i + 1);
+                    SampleToChunkBox.Entry nextRecord = audioSamplesToChunks.get(i + 1);
                     lastChunk = nextRecord.getFirstChunk() - 1;
                 }
                 for (long chunk = firstChunk; chunk <= lastChunk; chunk++) {
@@ -763,19 +754,14 @@ public class M4AReader implements IoConstants, ITagReader {
                         }
                         // set audio sample size
                         size = (int) (size != 0 ? size : audioSampleSize);
-                        // exclude data that is not within the mdat box
-                        if (pos >= mdatOffset) {
-                            //create a frame
-                            MP4Frame frame = new MP4Frame();
-                            frame.setOffset(pos);
-                            frame.setSize(size);
-                            frame.setTime(ts);
-                            frame.setType(TYPE_AUDIO);
-                            frames.add(frame);
-                            //log.debug("Sample #{} {}", sample, frame);
-                        } else {
-                            log.warn("Skipping audio frame with invalid position");
-                        }
+                        //create a frame
+                        MP4Frame frame = new MP4Frame();
+                        frame.setOffset(pos);
+                        frame.setSize(size);
+                        frame.setTime(ts);
+                        frame.setType(TYPE_AUDIO);
+                        frames.add(frame);
+                        //log.debug("Sample #{} {}", sample, frame);
                         // update counts
                         pos += size;
                         sampleCount--;
