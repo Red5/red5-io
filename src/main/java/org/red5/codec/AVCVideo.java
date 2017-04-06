@@ -87,6 +87,11 @@ public class AVCVideo extends AbstractVideo {
     @Override
     public void reset() {
         decoderConfiguration = new FrameData();
+        softReset();
+    }
+
+    // reset all except decoder configuration
+    private void softReset() {
         keyframes.clear();
         interframes.clear();
         numInterframes.set(0);
@@ -131,15 +136,14 @@ public class AVCVideo extends AbstractVideo {
                         log.trace("Decoder configuration found");
                         // Store AVCDecoderConfigurationRecord data
                         decoderConfiguration.setData(data);
+                        softReset();
                     } else {
                         // get the time stamp and compare with the current value
                         if (timestamp != keyframeTimestamp) {
                             // new keyframe
                             keyframeTimestamp = timestamp;
                             // if its a new keyframe, clear keyframe and interframe collections
-                            numInterframes.set(0);
-                            interframes.clear();
-                            keyframes.clear();
+                            softReset();
                         }
                         // store keyframe
                         keyframes.add(new FrameData(data));
