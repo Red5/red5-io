@@ -324,7 +324,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
      *            Map to put resulting pair to
      */
     protected void readKeyValues(Map<String, Object> result) {
-        do {
+    	while (hasMoreProperties()) {
             String name = readPropertyName();
             log.debug("property: {}", name);
             Object property = Deserializer.deserialize(this, Object.class);
@@ -335,7 +335,7 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
             } else {
                 break;
             }
-        } while (hasMoreProperties());
+        }
     }
 
     @Override
