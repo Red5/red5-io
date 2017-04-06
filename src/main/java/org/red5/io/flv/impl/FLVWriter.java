@@ -23,7 +23,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.util.GregorianCalendar;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -650,7 +651,7 @@ public class FLVWriter implements ITagWriter {
         out.writeString("onMetaData");
         Map<Object, Object> params = new HashMap<>();
         params.put("server", "Red5");
-        params.put("creationdate", GregorianCalendar.getInstance().getTime().toString());
+        params.put("recordeddate", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT));
         params.put("duration", (Number) duration);
         if (videoCodecId != -1) {
             params.put("videocodecid", (videoCodecId == 7 ? "avc1" : videoCodecId));
@@ -747,7 +748,7 @@ public class FLVWriter implements ITagWriter {
         out.writeString("onMetaData");
         Map<Object, Object> params = new HashMap<Object, Object>();
         params.put("server", "Red5");
-        params.put("creationdate", GregorianCalendar.getInstance().getTime().toString());
+        params.put("recordeddate", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT));
         params.put("duration", (Number) duration);
         if (videoCodecId != -1) {
             params.put("videocodecid", (videoCodecId == 7 ? "avc1" : videoCodecId));
