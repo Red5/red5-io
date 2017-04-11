@@ -348,18 +348,22 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         // we must store the reference before we deserialize any items in it to ensure
         // that reference IDs are correct
         int reference = storeReference(mixedResult);
-        Boolean normalArray = true;
         while (hasMoreProperties()) {
             String key = getString();
-            log.debug("key: {}", key);
-            if (!NumberUtils.isParsable(key)) {
-                log.debug("key {} is causing non normal array", key);
-                normalArray = false;
-            }
             Object item = Deserializer.deserialize(this, Object.class);
             log.debug("item: {}", item);
             mixedResult.put(key, item);
         }
+
+        // `normalArray` indicates a continuous zero-based array
+        boolean normalArray = true;
+        for (int i = 0; i < maxNumber; i++) {
+            normalArray &= mixedResult.containsKey(String.valueOf(i));
+            if (!normalArray) {
+                break;
+            }
+        }
+
         if (mixedResult.size() <= maxNumber + 1 && normalArray) {
             // MixedArray actually is a regular array
             log.debug("mixed array is a regular array");
@@ -371,9 +375,11 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         } else {
             // convert initial indexes
             mixedResult.remove("length");
-            for (int i = 0; i < maxNumber; i++) {
-                final Object value = mixedResult.remove(String.valueOf(i));
-                mixedResult.put(i, value);
+            for (Object key: mixedResult.keySet()) {
+                if (key instanceof String && NumberUtils.isParsable((String)key)) {
+                    final Object value = mixedResult.remove((String)key);
+                    mixedResult.put(Integer.valueOf((String)key), value);
+                }
             }
             result = mixedResult;
         }
