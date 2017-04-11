@@ -186,6 +186,9 @@ public class FLVWriter implements ITagWriter {
     // state of flv finalization
     private AtomicBoolean finalized = new AtomicBoolean(false);
 
+    // iso 8601 date of recording
+    private String recordedDate;
+
     /**
      * Creates writer implementation with for a given file
      * 
@@ -201,6 +204,8 @@ public class FLVWriter implements ITagWriter {
             this.dataFile = new RandomAccessFile(dat, "rw");
         } catch (Exception e) {
             log.error("Failed to create FLV writer", e);
+        } finally {
+            recordedDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
         }
     }
 
@@ -247,6 +252,7 @@ public class FLVWriter implements ITagWriter {
                     dat.createNewFile();
                 }
                 this.dataFile = new RandomAccessFile(dat, "rw");
+                recordedDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
             }
         } catch (Exception e) {
             log.error("Failed to create FLV writer", e);
@@ -651,7 +657,7 @@ public class FLVWriter implements ITagWriter {
         out.writeString("onMetaData");
         Map<Object, Object> params = new HashMap<>();
         params.put("server", "Red5");
-        params.put("recordeddate", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT));
+        params.put("recordeddate", recordedDate);
         params.put("duration", (Number) duration);
         if (videoCodecId != -1) {
             params.put("videocodecid", (videoCodecId == 7 ? "avc1" : videoCodecId));
@@ -748,7 +754,7 @@ public class FLVWriter implements ITagWriter {
         out.writeString("onMetaData");
         Map<Object, Object> params = new HashMap<Object, Object>();
         params.put("server", "Red5");
-        params.put("recordeddate", ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT));
+        params.put("recordeddate", recordedDate);
         params.put("duration", (Number) duration);
         if (videoCodecId != -1) {
             params.put("videocodecid", (videoCodecId == 7 ? "avc1" : videoCodecId));

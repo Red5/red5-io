@@ -21,11 +21,14 @@
     </root>
 <!-- 
     <logger name="org.red5.io.flv.impl.FLVReader" level="INFO"/>
+    <logger name="org.red5.codec.AVCVideo" level="TRACE" />
+    <logger name="org.red5.io.flv.impl.FLVReader" level="INFO"/>
     <logger name="org.red5.io.object.Serializer" level="DEBUG" />
     <logger name="org.springframework" level="INFO" />
     <logger name="org.apache" level="INFO" />
     <logger name="ch.qos" level="WARN" />
-    <logger name="net.sf" level="WARN" />
  -->
     <logger name="org.quartz" level="OFF" />
+    <logger name="net.sf" level="WARN" />
+    <logger name="org.red5.io.flv" level="INFO"/>
 </configuration>

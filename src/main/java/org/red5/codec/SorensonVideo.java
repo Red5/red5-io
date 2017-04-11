@@ -139,12 +139,12 @@ public class SorensonVideo extends AbstractVideo {
         numInterframes.set(0);
         interframes.clear();
         // Store last keyframe
-        this.dataCount = data.limit();
-        if (this.blockSize < this.dataCount) {
-            this.blockSize = this.dataCount;
-            this.blockData = new byte[this.blockSize];
+        dataCount = data.limit();
+        if (blockSize < dataCount) {
+            blockSize = dataCount;
+            blockData = new byte[blockSize];
         }
-        data.get(this.blockData, 0, this.dataCount);
+        data.get(blockData, 0, dataCount);
         data.rewind();
         return true;
     }
@@ -152,9 +152,9 @@ public class SorensonVideo extends AbstractVideo {
     /** {@inheritDoc} */
     @Override
     public IoBuffer getKeyframe() {
-        if (this.dataCount > 0) {
-            IoBuffer result = IoBuffer.allocate(this.dataCount);
-            result.put(this.blockData, 0, this.dataCount);
+        if (dataCount > 0) {
+            IoBuffer result = IoBuffer.allocate(dataCount);
+            result.put(blockData, 0, dataCount);
             result.rewind();
             return result;
         }
@@ -175,4 +175,10 @@ public class SorensonVideo extends AbstractVideo {
         }
         return null;
     }
+
+    @Override
+    public FrameData[] getKeyframes() {
+        return dataCount > 0 ? new FrameData[] {new FrameData(getKeyframe())} : new FrameData[0];
+    }
+
 }

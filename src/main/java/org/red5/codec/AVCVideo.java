@@ -43,14 +43,6 @@ public class AVCVideo extends AbstractVideo {
     /** Video decoder configuration data */
     private FrameData decoderConfiguration;
 
-    /** Current timestamp for the stored keyframe */
-    private int keyframeTimestamp;
-
-    /**
-     * Storage for key frames
-     */
-    private final CopyOnWriteArrayList<FrameData> keyframes = new CopyOnWriteArrayList<>();
-
     /**
      * Storage for frames buffered since last key frame
      */
@@ -118,6 +110,7 @@ public class AVCVideo extends AbstractVideo {
     /** {@inheritDoc} */
     @Override
     public boolean addData(IoBuffer data, int timestamp) {
+        //log.trace("addData timestamp: {} remaining: {}", timestamp, data.remaining());
         if (data.hasRemaining()) {
             // mark
             int start = data.position();
@@ -126,20 +119,22 @@ public class AVCVideo extends AbstractVideo {
             if ((frameType & 0x0f) == VideoCodec.AVC.getId()) {
                 // check for keyframe
                 if ((frameType & 0xf0) == FLV_FRAME_KEY) {
-                    log.trace("Key frame found");
+                    //log.trace("Key frame");
                     byte AVCPacketType = data.get();
                     // rewind
                     data.rewind();
                     // sequence header / here comes a AVCDecoderConfigurationRecord
-                    log.debug("AVCPacketType: {}", AVCPacketType);
+                    //log.debug("AVCPacketType: {}", AVCPacketType);
                     if (AVCPacketType == 0) {
-                        log.trace("Decoder configuration found");
+                        //log.trace("Decoder configuration");
                         // Store AVCDecoderConfigurationRecord data
                         decoderConfiguration.setData(data);
                         softReset();
                     } else {
+                        //log.trace("Keyframe - keyframeTimestamp: {} {}", keyframeTimestamp, timestamp);
                         // get the time stamp and compare with the current value
                         if (timestamp != keyframeTimestamp) {
+                            //log.trace("New keyframe");
                             // new keyframe
                             keyframeTimestamp = timestamp;
                             // if its a new keyframe, clear keyframe and interframe collections
@@ -148,12 +143,13 @@ public class AVCVideo extends AbstractVideo {
                         // store keyframe
                         keyframes.add(new FrameData(data));
                     }
+                    //log.trace("Keyframes: {}", keyframes.size());
                 } else if (bufferInterframes) {
                     // rewind
                     data.rewind();
                     try {
                         int lastInterframe = numInterframes.getAndIncrement();
-                        log.trace("Buffering interframe #{}", lastInterframe);
+                        //log.trace("Buffering interframe #{}", lastInterframe);
                         if (lastInterframe < interframes.size()) {
                             interframes.get(lastInterframe).setData(data);
                         } else {
@@ -162,6 +158,7 @@ public class AVCVideo extends AbstractVideo {
                     } catch (Throwable e) {
                         log.error("Failed to buffer interframe", e);
                     }
+                    //log.trace("Interframes: {}", interframes.size());
                 }
             } else {
                 // not AVC data
@@ -174,21 +171,6 @@ public class AVCVideo extends AbstractVideo {
             data.position(start);
         }
         return true;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public IoBuffer getKeyframe() {
-        if (keyframes.isEmpty()) {
-            return null;
-        }
-        return keyframes.get(0).getFrame();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FrameData[] getKeyframes() {
-        return keyframes.toArray(new FrameData[0]);
     }
 
     /** {@inheritDoc} */

@@ -1,9 +1,19 @@
 package org.red5.codec;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.io.IoConstants;
 
 public class AbstractVideo implements IVideoStreamCodec, IoConstants {
+
+    /** Current timestamp for the stored keyframe */
+    protected int keyframeTimestamp;
+
+    /**
+     * Storage for key frames
+     */
+    protected final CopyOnWriteArrayList<FrameData> keyframes = new CopyOnWriteArrayList<>();
 
     @Override
     public String getName() {
@@ -39,14 +49,19 @@ public class AbstractVideo implements IVideoStreamCodec, IoConstants {
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public IoBuffer getKeyframe() {
-        return null;
+        if (keyframes.isEmpty()) {
+            return null;
+        }
+        return keyframes.get(0).getFrame();
     }
 
+    /** {@inheritDoc} */
     @Override
     public FrameData[] getKeyframes() {
-        return null;
+        return keyframes.toArray(new FrameData[0]);
     }
 
     @Override
