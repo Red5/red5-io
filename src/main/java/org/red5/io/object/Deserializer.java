@@ -71,7 +71,7 @@ public class Deserializer {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T> T deserialize(Input in, Type target) {
         if (BLACK_LIST == null) {
-            log.info("Black list is not yet initialized");
+            //log.info("Black list is not yet initialized");
             try {
                 loadBlackList();
             } catch (IOException e) {

@@ -1,15 +1,14 @@
 package org.red5.io.amf;
 
-import org.apache.mina.core.buffer.IoBuffer;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import org.apache.mina.core.buffer.IoBuffer;
+import org.junit.Test;
 
 /**
  * @author varga.bence@ustream.tv
@@ -27,7 +26,7 @@ public class InputTest
         Input input = new Input(IoBuffer.wrap(stream));
         Object actual = input.readMap();
 
-        List expected = new ArrayList<String>();
+        List<String> expected = new ArrayList<>();
         expected.add("hello");
         expected.add("world");
 
@@ -43,7 +42,7 @@ public class InputTest
         Input input = new Input(IoBuffer.wrap(stream));
         Object actual = input.readMap();
 
-        Map expected = new HashMap();
+        Map<Object, Object> expected = new HashMap<>();
         expected.put(1, "hello");
 
         assertEquals(expected, actual);
