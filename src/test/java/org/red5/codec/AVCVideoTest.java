@@ -190,15 +190,19 @@ public class AVCVideoTest {
             AVCVideo video = new AVCVideo();
             while (reader.hasMoreTags()) {
                 tag = reader.readTag();
-                log.debug("Tag: {} timestamp: {}", tag.getDataType(), tag.getTimestamp());
+                int timestamp = tag.getTimestamp();
+                log.debug("Tag: {} timestamp: {}", tag.getDataType(), timestamp);
                 if (tag.getDataType() == 9) {
                     IoBuffer buf = tag.getBody();
                     if (video.canHandleData(buf)) {
                         video.addData(buf, tag.getTimestamp());
                     }
                 }
+                // when the audio comes in for ts 2176, check for the 2 proceeding sliced keyframes
+                if (timestamp == 2176) {
+                    assertTrue(video.getKeyframes().length == 2);
+                }
             }
-            assertTrue(video.getKeyframes().length == 2);
             reader.close();
             log.info("Finished reading: {}\n", file.getName());
         } catch (IOException e) {
