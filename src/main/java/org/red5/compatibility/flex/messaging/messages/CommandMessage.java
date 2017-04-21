@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import org.red5.io.amf3.ByteArray;
 import org.red5.io.amf3.IDataInput;
+import org.red5.io.amf3.IDataOutput;
 import org.red5.io.utils.RandomGUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +84,7 @@ public class CommandMessage extends AsyncMessage {
             short reservedPosition = 0;
             if (i == 0) {
                 if ((flags & OPERATION_FLAG) != 0) {
-                    Integer obj = in.readInt();
+                    Integer obj = (Integer) in.readObject();
                     log.debug("Operation object: {} name: {}", obj, obj.getClass().getName());
                     this.operation = obj.intValue();
                 }
@@ -109,4 +110,19 @@ public class CommandMessage extends AsyncMessage {
         log.debug("Operation: {}", operation);
     }
 
+    @Override
+    public void writeExternal(IDataOutput out) {
+        super.writeExternal(out);
+
+        short flags = 0;
+
+        if (this.operation != Constants.UNKNOWN_OPERATION) {
+            flags = (short) (flags | OPERATION_FLAG);
+        }
+        out.writeByte((byte) flags);
+
+        if (this.operation != Constants.UNKNOWN_OPERATION) {
+            out.writeObject(new Integer(this.operation));
+        }
+    }
 }

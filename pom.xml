@@ -318,10 +318,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache-core</artifactId>
             <version>${ehcache.version}</version>
@@ -330,6 +326,17 @@
             <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
             <version>${isoparser.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-junit</artifactId>
+            <version>2.0.0.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

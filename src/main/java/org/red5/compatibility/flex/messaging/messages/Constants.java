@@ -26,9 +26,10 @@ package org.red5.compatibility.flex.messaging.messages;
  */
 public class Constants {
 
-    /** Operation id of register command. */
+    /** Operation id of subscribe command. */
     public static final int SUBSCRIBE_OPERATION = 0;
 
+    /** Operation id of unsubscribe command. */
     public static final int UNSUBSCRIBE_OPERATION = 1;
 
     /** Operation id of poll command. */
