@@ -252,7 +252,7 @@ public class AbstractMessage implements Message, Serializable {
                     headers = ((ObjectMap) obj);
                 }
                 if ((flags & 0x10) != 0) {
-                    Object obj = input.readUTF();
+                    Object obj = input.readObject();
                     log.debug("Message id object: {} name: {}", obj, obj.getClass().getName());
 
                     messageId = ((String) obj);
@@ -362,16 +362,16 @@ public class AbstractMessage implements Message, Serializable {
             output.writeObject(body);
         }
         if ((clientId != null) && (clientIdBytes == null)) {
-            output.writeUTF(clientId);
+            output.writeObject(clientId);
         }
         if (destination != null) {
-            output.writeUTF(destination);
+            output.writeObject(destination);
         }
         if (headers != null) {
             output.writeObject(headers);
         }
         if ((messageId != null) && (messageIdBytes == null)) {
-            output.writeUTF(this.messageId);
+            output.writeObject(this.messageId);
         }
         if (timestamp != 0L) {
             output.writeObject(Long.valueOf(timestamp));

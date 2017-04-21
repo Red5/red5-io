@@ -120,7 +120,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
 
     protected void putInteger(long value) {
         if ((value >= -268435456) && (value <= 268435455)) {
-            value &= 536870911;
+            value &= 0x1FFFFFFF;
         }
         if (value < 128) {
             buf.put((byte) value);
@@ -265,13 +265,51 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     /** {@inheritDoc} */
     @Override
     public void writeArray(Object array) {
+        Class<?> componentType = array.getClass().getComponentType();
+        if (componentType.equals(Character.TYPE)) {
+            // write the char[] as a string
+            writeString(new String((char[]) array));
+        }
+        else if (componentType.equals(Byte.TYPE)) {
+            writePrimitiveByteArray((byte[]) array);
+        }
+        else {
+            writePrimitiveArrayFallback(array);
+        }
+    }
+
+    /**
+     * Use the specialized BYTEARRAY type.
+     */
+    private void writePrimitiveByteArray(byte[] bytes) {
+        writeAMF3();
+        this.buf.put(AMF3.TYPE_BYTEARRAY);
+
+        if (hasReference(bytes)) {
+            putInteger(getReferenceId(bytes) << 1);
+            return;
+        }
+        storeReference(bytes);
+        
+        int length = bytes.length;
+        putInteger(length << 1 | 0x1);
+
+        this.buf.put(bytes);
+    }
+
+    /**
+     * Use the general ARRAY type, writing the primitive array as an array of objects (the boxed primitives) instead.
+     */
+    private void writePrimitiveArrayFallback(Object array) {
         writeAMF3();
         buf.put(AMF3.TYPE_ARRAY);
+        
         if (hasReference(array)) {
             putInteger(getReferenceId(array) << 1);
             return;
         }
         storeReference(array);
+        
         amf3_mode += 1;
         int count = Array.getLength(array);
         putInteger(count << 1 | 1);

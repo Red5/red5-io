@@ -41,20 +41,11 @@ public class CommandMessageExt extends CommandMessage implements IExternalizable
 
     @Override
     public void writeExternal(IDataOutput out) {
-        //if (this.message != null)
-        //this.message.writeExternal(output);
-        //else
-        //super.writeExternal(output);		
-        if (message != null) {
-            short flags = 0;
-            if (this.operation != 0) {
-                flags = (short) (flags | OPERATION_FLAG);
-            }
-            out.writeByte((byte) flags);
-            if (this.operation != 0) {
-                out.writeInt(operation);
-            }
+        if (this.message != null) {
+            this.message.writeExternal(out);
+        }
+        else {
+            super.writeExternal(out);
         }
     }
-
 }

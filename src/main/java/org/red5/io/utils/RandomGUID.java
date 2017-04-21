@@ -18,6 +18,9 @@
 
 package org.red5.io.utils;
 
+import java.nio.ByteBuffer;
+import java.util.UUID;
+
 public class RandomGUID extends Object {
 
     private static final String hexChars = "0123456789ABCDEF";
@@ -81,4 +84,14 @@ public class RandomGUID extends Object {
         return String.format("%s-%s-%s-%s-%s", new Object[] { str.substring(0, 8), str.substring(8, 12), str.substring(12, 16), str.substring(16, 20), str.substring(20) });
     }
 
+    public static String create() {
+        UUID id = UUID.randomUUID();
+
+        byte[] bytes = ByteBuffer.allocate(16)
+                .putLong(id.getLeastSignificantBits())
+                .putLong(id.getMostSignificantBits())
+                .array();
+
+        return fromByteArray(bytes);
+    }
 }
