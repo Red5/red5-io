@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -46,9 +45,9 @@ import org.red5.io.object.Deserializer;
 import org.red5.io.object.RecordSet;
 import org.red5.io.object.RecordSetPage;
 import org.red5.io.utils.ArrayUtils;
+import org.red5.io.utils.ConversionUtils;
 import org.red5.io.utils.ObjectMap;
 import org.red5.io.utils.XMLUtils;
-import org.red5.io.utils.ConversionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -343,46 +342,20 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
         // the maximum number used in this mixed array
         int maxNumber = buf.getInt();
         log.debug("Read start mixed array: {}", maxNumber);
-        Object result;
-        final Map<Object, Object> mixedResult = new LinkedHashMap<Object, Object>(maxNumber);
-        // we must store the reference before we deserialize any items in it to ensure
-        // that reference IDs are correct
-        int reference = storeReference(mixedResult);
+        ObjectMap<Object, Object> result = new ObjectMap<Object, Object>();
+        // we must store the reference before we deserialize any items in it to ensure that reference IDs are correct
+        int reference = storeReference(result);
         while (hasMoreProperties()) {
             String key = getString();
             Object item = Deserializer.deserialize(this, Object.class);
             log.debug("item: {}", item);
-            mixedResult.put(key, item);
-        }
-
-        // `normalArray` indicates a continuous zero-based array
-        boolean normalArray = true;
-        for (int i = 0; i < maxNumber; i++) {
-            normalArray &= mixedResult.containsKey(String.valueOf(i));
-            if (!normalArray) {
-                break;
+            if (!NumberUtils.isParsable(key)) {
+                result.put(key, item);
+            } else {
+                result.put(Integer.valueOf(key), item);
             }
         }
-
-        if (mixedResult.size() <= maxNumber + 1 && normalArray) {
-            // MixedArray actually is a regular array
-            log.debug("mixed array is a regular array");
-            final List<Object> listResult = new ArrayList<Object>(maxNumber);
-            for (int i = 0; i < maxNumber; i++) {
-                listResult.add(i, mixedResult.get(String.valueOf(i)));
-            }
-            result = listResult;
-        } else {
-            // convert initial indexes
-            mixedResult.remove("length");
-            for (Object key: mixedResult.keySet()) {
-                if (key instanceof String && NumberUtils.isParsable((String)key)) {
-                    final Object value = mixedResult.remove((String)key);
-                    mixedResult.put(Integer.valueOf((String)key), value);
-                }
-            }
-            result = mixedResult;
-        }
+        result.remove("length");
         // replace the original reference with the final result
         storeReference(reference, result);
         return result;
