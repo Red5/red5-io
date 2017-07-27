@@ -414,7 +414,7 @@ public class FLVWriter implements ITagWriter {
                                 soundType = (id & ITag.MASK_SOUND_TYPE) > 0;
                                 log.debug("Sound type: {}", soundType);
                             }
-                        } else if (!audioConfigWritten.get() && (((bodyBuf[0] & 0xff) & ITag.MASK_SOUND_FORMAT) >> 4) == AudioCodec.AAC.getId()) {
+                        } else if (!audioConfigWritten.get() && audioCodecId == AudioCodec.AAC.getId()) {
                             // this is aac data, so a config chunk should be written before any media data
                             if (bodyBuf[1] == 0) {
                                 // when this config is written set the flag
@@ -441,7 +441,7 @@ public class FLVWriter implements ITagWriter {
                                     return false;
                                 }
                             }
-                        } else if (!videoConfigWritten.get() && (((bodyBuf[0] & 0xff) & ITag.MASK_VIDEO_CODEC)) == VideoCodec.AVC.getId()) {
+                        } else if (!videoConfigWritten.get() && videoCodecId == VideoCodec.AVC.getId()) {
                             // this is avc/h264 data, so a config chunk should be written before any media data
                             if (bodyBuf[1] == 0) {
                                 // when this config is written set the flag
