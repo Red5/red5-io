@@ -23,11 +23,18 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -71,11 +78,6 @@ public class FLVWriter implements ITagWriter {
      * Length of the flv tag in bytes
      */
     private final static int TAG_HEADER_LENGTH = 11;
-
-    /**
-     * Position of the meta data tag in our file.
-     */
-    private final static int META_POSITION = 13;
 
     /**
      * For now all recorded streams carry a stream id of 0.
@@ -163,14 +165,14 @@ public class FLVWriter implements ITagWriter {
     private int audioDataSize = 0;
 
     /**
-     * Flv file.
+     * Flv output destination.
      */
-    private RandomAccessFile file;
+    private SeekableByteChannel fileChannel;
 
     /**
-     * File to which stream data is stored without an flv header or metadata.
+     * Destination to which stream data is stored without an flv header.
      */
-    private RandomAccessFile dataFile;
+    private SeekableByteChannel dataChannel;
 
     // path to the original file passed to the writer
     private String filePath;
@@ -187,7 +189,7 @@ public class FLVWriter implements ITagWriter {
     private AtomicBoolean finalized = new AtomicBoolean(false);
 
     // iso 8601 date of recording
-    private String recordedDate;
+    private String recordedDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
 
     /**
      * Creates writer implementation with for a given file
@@ -199,13 +201,9 @@ public class FLVWriter implements ITagWriter {
         this.filePath = filePath;
         log.debug("Writing to: {}", filePath);
         try {
-            // temporary data file for storage of stream data
-            File dat = new File(filePath + ".ser");
-            this.dataFile = new RandomAccessFile(dat, "rw");
+            createDataFile();
         } catch (Exception e) {
             log.error("Failed to create FLV writer", e);
-        } finally {
-            recordedDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
         }
     }
 
@@ -221,38 +219,21 @@ public class FLVWriter implements ITagWriter {
      */
     public FLVWriter(File file, boolean append) {
         filePath = file.getAbsolutePath();
+        this.append = append;
         log.debug("Writing to: {}", filePath);
         try {
-            this.append = append;
+            createDataFile();
             if (append) {
+                // rename existing file.flv to file.old
+                Path target = Files.move(Paths.get(filePath), Paths.get(filePath.replace(".flv", ".old")), StandardCopyOption.REPLACE_EXISTING);
                 // if we are appending get the last tags timestamp to use as offset
-                timeOffset = FLVReader.getDuration(file);
+                timeOffset = FLVReader.getDuration(target.toFile());
                 // set duration to last timestamp value
                 duration = timeOffset;
-                log.debug("Duration: {}", timeOffset);
-                // grab the file we will append to
-                this.dataFile = new RandomAccessFile(file, "rw");
-                if (!file.exists() || !file.canRead() || !file.canWrite()) {
-                    log.warn("File does not exist or cannot be accessed");
-                } else {
-                    log.trace("File size: {} last modified: {}", file.length(), file.lastModified());
-                    // update the bytes written so we write to the correct starting position
-                    bytesWritten = file.length();
-                }
-                // if duration is 0 then we probably have larger issues with this file
-                if (duration == 0) {
-                    // seek to where metadata would normally start
-                    dataFile.seek(META_POSITION);
-                }
-            } else {
-                // temporary data file for storage of stream data
-                File dat = new File(filePath + ".ser");
-                if (dat.exists()) {
-                    dat.delete();
-                    dat.createNewFile();
-                }
-                this.dataFile = new RandomAccessFile(dat, "rw");
-                recordedDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
+                log.debug("Duration: {}", duration);
+
+                // TODO update this with the prev recorded date from possibly existing metadata
+                //recordedDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
             }
         } catch (Exception e) {
             log.error("Failed to create FLV writer", e);
@@ -267,30 +248,22 @@ public class FLVWriter implements ITagWriter {
      */
     @Override
     public void writeHeader() throws IOException {
+        // create a buffer
+        ByteBuffer buf = ByteBuffer.allocate(HEADER_LENGTH + 4); // FLVHeader (9 bytes) + PreviousTagSize0 (4 bytes)
+        // instance an flv header
         FLVHeader flvHeader = new FLVHeader();
         flvHeader.setFlagAudio(audioCodecId != -1 ? true : false);
         flvHeader.setFlagVideo(videoCodecId != -1 ? true : false);
-        // create a buffer
-        ByteBuffer header = ByteBuffer.allocate(HEADER_LENGTH + 4); // FLVHeader (9 bytes) + PreviousTagSize0 (4 bytes)
-        flvHeader.write(header);
+        // write the flv header in the buffer
+        flvHeader.write(buf);
         // the final version of the file will go here
-        this.file = new RandomAccessFile(filePath, "rw");
+        createOutputFile();
         // write header to output channel
-        file.setLength(HEADER_LENGTH + 4);
-        if (header.hasArray()) {
-            log.debug("Header bytebuffer has a backing array");
-            file.write(header.array());
-        } else {
-            log.debug("Header bytebuffer does not have a backing array");
-            byte[] tmp = new byte[HEADER_LENGTH + 4];
-            header.get(tmp);
-            file.write(tmp);
-        }
-        bytesWritten = file.length();
+        bytesWritten = fileChannel.write(buf);
         assert ((HEADER_LENGTH + 4) - bytesWritten == 0);
         log.debug("Header size: {} bytes written: {}", (HEADER_LENGTH + 4), bytesWritten);
-        header.clear();
-        header = null;
+        buf.clear();
+        buf = null;
     }
 
     /**
@@ -325,27 +298,15 @@ public class FLVWriter implements ITagWriter {
                 log.debug("Incoming previous tag size: {} does not match current value for last tag size: {}", previousTagSize, lastTagSize);
             }
             // ensure that the channel is still open
-            if (dataFile != null) {
-                log.debug("Current file position: {}", dataFile.getChannel().position());
+            if (dataChannel != null) {
+                log.debug("Current file position: {}", dataChannel.position());
                 // get the data type
                 byte dataType = tag.getDataType();
                 // when tag is ImmutableTag which is in red5-server-common.jar, tag.getBody().reset() will throw InvalidMarkException because 
                 // ImmutableTag.getBody() returns a new IoBuffer instance everytime.
                 IoBuffer tagBody = tag.getBody();
-                // get the current file offset
-                long fileOffset = dataFile.getFilePointer();
-                log.debug("Current file offset: {} expected offset: {}", fileOffset, prevBytesWritten);
-                if (fileOffset < prevBytesWritten) {
-                    log.debug("Seeking to expected offset");
-                    // it's necessary to seek to the length of the file
-                    // so that we can append new tags
-                    dataFile.seek(prevBytesWritten);
-                    log.debug("New file position: {}", dataFile.getChannel().position());
-                }
                 // set a var holding the entire tag size including the previous tag length
                 int totalTagSize = TAG_HEADER_LENGTH + bodySize + 4;
-                // resize
-                dataFile.setLength(dataFile.length() + totalTagSize);
                 // create a buffer for this tag
                 ByteBuffer tagBuffer = ByteBuffer.allocate(totalTagSize);
                 // get the timestamp
@@ -483,8 +444,8 @@ public class FLVWriter implements ITagWriter {
                 if (log.isDebugEnabled()) {
                 }
                 // write the tag
-                dataFile.write(tagBuffer.array());
-                bytesWritten = dataFile.length();
+                dataChannel.write(tagBuffer);
+                bytesWritten = dataChannel.position();
                 if (log.isTraceEnabled()) {
                     log.trace("Tag written, check value: {} (should be 0)", (bytesWritten - prevBytesWritten) - totalTagSize);
                 }
@@ -549,22 +510,10 @@ public class FLVWriter implements ITagWriter {
             int bodySize = data.limit();
             log.debug("Tag body size: {}", bodySize);
             // ensure that the channel is still open
-            if (dataFile != null) {
-                log.debug("Current file position: {}", dataFile.getChannel().position());
-                // get the current file offset
-                long fileOffset = dataFile.getFilePointer();
-                log.debug("Current file offset: {} expected offset: {}", fileOffset, prevBytesWritten);
-                if (fileOffset < prevBytesWritten) {
-                    log.debug("Seeking to expected offset");
-                    // it's necessary to seek to the length of the file
-                    // so that we can append new tags
-                    dataFile.seek(prevBytesWritten);
-                    log.debug("New file position: {}", dataFile.getChannel().position());
-                }
+            if (dataChannel != null) {
+                log.debug("Current file position: {}", dataChannel.position());
                 // set a var holding the entire tag size including the previous tag length
                 int totalTagSize = TAG_HEADER_LENGTH + bodySize + 4;
-                // resize
-                dataFile.setLength(dataFile.length() + totalTagSize);
                 // create a buffer for this tag
                 ByteBuffer tagBuffer = ByteBuffer.allocate(totalTagSize);
                 // Data Type
@@ -594,8 +543,8 @@ public class FLVWriter implements ITagWriter {
                     //log.debug("\n{}", sb);
                 }
                 // write the tag
-                dataFile.write(tagBuffer.array());
-                bytesWritten = dataFile.length();
+                dataChannel.write(tagBuffer);
+                bytesWritten = dataChannel.position();
                 if (log.isTraceEnabled()) {
                     log.trace("Tag written, check value: {} (should be 0)", (bytesWritten - prevBytesWritten) - totalTagSize);
                 }
@@ -629,12 +578,40 @@ public class FLVWriter implements ITagWriter {
     @Override
     public boolean writeStream(byte[] b) {
         try {
-            dataFile.write(b);
+            dataChannel.write(ByteBuffer.wrap(b));
             return true;
         } catch (IOException e) {
             log.error("", e);
         }
         return false;
+    }
+
+    /**
+     * Create the stream output file; the flv itself.
+     * 
+     * @throws IOException
+     */
+    private void createOutputFile() throws IOException {
+        // temporary data file for storage of stream data
+        Path path = Paths.get(filePath);
+        if (Files.deleteIfExists(path)) {
+            log.debug("Previous flv file existed and was removed");
+        }
+        this.fileChannel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+    }
+
+    /**
+     * Create the stream data file.
+     * 
+     * @throws IOException
+     */
+    private void createDataFile() throws IOException {
+        // temporary data file for storage of stream data
+        Path path = Paths.get(filePath + ".ser");
+        if (Files.deleteIfExists(path)) {
+            log.debug("Previous flv data file existed and was removed");
+        }
+        this.dataChannel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE, StandardOpenOption.READ);
     }
 
     /**
@@ -648,10 +625,12 @@ public class FLVWriter implements ITagWriter {
      *            Id of the audio codec used while recording.
      * @throws IOException
      *             if the tag could not be written
+     * @throws ExecutionException
+     * @throws InterruptedException
      */
-    private void writeMetadataTag(double duration, int videoCodecId, int audioCodecId) throws IOException {
+    private void writeMetadataTag(double duration, int videoCodecId, int audioCodecId) throws IOException, InterruptedException, ExecutionException {
         log.debug("writeMetadataTag - duration: {} video codec: {} audio codec: {}", new Object[] { duration, videoCodecId, audioCodecId });
-        IoBuffer buf = IoBuffer.allocate(1024);
+        IoBuffer buf = IoBuffer.allocate(256);
         buf.setAutoExpand(true);
         Output out = new Output(buf);
         out.writeString("onMetaData");
@@ -696,8 +675,6 @@ public class FLVWriter implements ITagWriter {
         log.debug("Metadata size: {}", bodySize);
         // set a var holding the entire tag size including the previous tag length
         int totalTagSize = TAG_HEADER_LENGTH + bodySize + 4;
-        // resize
-        file.setLength(file.length() + totalTagSize);
         // create a buffer for this tag
         ByteBuffer tagBuffer = ByteBuffer.allocate(totalTagSize);
         // get the timestamp
@@ -731,104 +708,14 @@ public class FLVWriter implements ITagWriter {
         // flip so we can process from the beginning
         tagBuffer.flip();
         // write the tag
-        file.write(tagBuffer.array());
-        bytesWritten = file.length();
-        tagBuffer.clear();
-        buf.clear();
-    }
-
-    /**
-     * update flv file meta data tag
-     * 
-     * @param flvFile
-     * @param duration
-     * @param videoCodecId
-     * @param audioCodecId
-     * @throws IOException
-     */
-    private void updateMetadataTag(RandomAccessFile flvFile, double duration, int videoCodecId, int audioCodecId) throws IOException {
-        log.debug("updateMetadataTag - duration: {} video codec: {} audio codec: {}", new Object[] { duration, videoCodecId, audioCodecId });
-        IoBuffer buf = IoBuffer.allocate(512);
-        buf.setAutoExpand(true);
-        Output out = new Output(buf);
-        out.writeString("onMetaData");
-        Map<Object, Object> params = new HashMap<Object, Object>();
-        params.put("server", "Red5");
-        params.put("recordeddate", recordedDate);
-        params.put("duration", (Number) duration);
-        if (videoCodecId != -1) {
-            params.put("videocodecid", (videoCodecId == 7 ? "avc1" : videoCodecId));
-            if (videoDataSize > 0) {
-                params.put("videodatarate", 8 * videoDataSize / 1024 / duration); //from bytes to kilobits
-            }
-        } else {
-            // place holder
-            params.put("novideocodec", 0);
-        }
-        if (audioCodecId != -1) {
-            params.put("audiocodecid", (audioCodecId == 10 ? "mp4a" : audioCodecId));
-            if (audioCodecId == AudioCodec.AAC.getId()) {
-                params.put("audiosamplerate", 44100);
-                params.put("audiosamplesize", 16);
-            } else if (audioCodecId == AudioCodec.SPEEX.getId()) {
-                params.put("audiosamplerate", 16000);
-                params.put("audiosamplesize", 16);
-            } else {
-                params.put("audiosamplerate", soundRate);
-                params.put("audiosamplesize", soundSize);
-            }
-            params.put("stereo", soundType);
-            if (audioDataSize > 0) {
-                params.put("audiodatarate", 8 * audioDataSize / 1024 / duration); //from bytes to kilobits		
-            }
-        } else {
-            // place holder
-            params.put("noaudiocodec", 0);
-        }
-        // this is actual only supposed to be true if the last video frame is a keyframe
-        params.put("canSeekToEnd", true);
-        out.writeMap(params);
-        buf.flip();
-        int bodySize = buf.limit();
-        log.debug("Metadata size: {}", bodySize);
-        // set a var holding the entire tag size including the previous tag length
-        int totalTagSize = TAG_HEADER_LENGTH + bodySize + 4;
-
-        // create a buffer for this tag
-        ByteBuffer tagBuffer = ByteBuffer.allocate(totalTagSize);
-        // get the timestamp
-        int timestamp = 0;
-        // create an array big enough
-        byte[] bodyBuf = new byte[bodySize];
-        // put the bytes into the array
-        buf.get(bodyBuf);
-        // Data Type
-        IOUtils.writeUnsignedByte(tagBuffer, ITag.TYPE_METADATA); //1
-        // Body Size - Length of the message. Number of bytes after StreamID to end of tag 
-        // (Equal to length of the tag - 11) 
-        IOUtils.writeMediumInt(tagBuffer, bodySize); //3
-        // Timestamp
-        IOUtils.writeExtendedMediumInt(tagBuffer, timestamp); //4
-        // Stream id
-        tagBuffer.put(DEFAULT_STREAM_ID); //3
         if (log.isTraceEnabled()) {
-            log.trace("Tag buffer (after tag header) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+            log.trace("Writing metadata starting at position: {}", bytesWritten);
         }
-        // get the body
-        tagBuffer.put(bodyBuf);
+        // add to the total bytes written
+        bytesWritten += fileChannel.write(tagBuffer);
         if (log.isTraceEnabled()) {
-            log.trace("Tag buffer (after body) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
+            log.trace("Updated position: {}", bytesWritten);
         }
-        // we add the tag size
-        tagBuffer.putInt(TAG_HEADER_LENGTH + bodySize);
-        if (log.isTraceEnabled()) {
-            log.trace("Tag buffer (after prev tag size) limit: {} remaining: {}", tagBuffer.limit(), tagBuffer.remaining());
-        }
-        // flip so we can process from the beginning
-        tagBuffer.flip();
-        // override the meta tag
-        flvFile.seek(META_POSITION);
-        flvFile.write(tagBuffer.array());
         tagBuffer.clear();
         buf.clear();
     }
@@ -875,52 +762,81 @@ public class FLVWriter implements ITagWriter {
                     log.debug("Flv info file not found");
                 }
                 tmpFile = null;
-                if (!append) {
-                    // write the file header
-                    writeHeader();
-                    // write the metadata with the final duration
-                    writeMetadataTag(duration * 0.001d, videoCodecId, audioCodecId);
-                    // ensure we have the data file (*.ser)
-                    if (dataFile == null) {
-                        dataFile = new RandomAccessFile(filePath + ".ser", "r");
-                    }
-                    // set the data file the beginning 
-                    dataFile.seek(0);
-                    // transfer / write data file into final flv
-                    bytesTransferred = file.getChannel().transferFrom(dataFile.getChannel(), bytesWritten, dataFile.length());
-                } else {
-                    updateMetadataTag(dataFile, duration * 0.001d, videoCodecId, audioCodecId);
-                    bytesTransferred = 1;//avoid to start a job to finish up on close() method 
-                }
-                // close and remove the ser file if write was successful
-                if (dataFile != null && bytesTransferred > 0) {
-                    // close the file
-                    dataFile.close();
-                    dataFile = null;
-                    // delete the data files only if the bytes were transferred to the flv destination
-                    if (bytesTransferred > 0) {
-                        File dat = new File(filePath + ".ser");
-                        if (dat.exists()) {
-                            dat.delete();
-                        }
-                        File inf = new File(filePath + ".info");
-                        if (inf.exists()) {
-                            inf.delete();
+                // write the file header
+                writeHeader();
+                // write the metadata with the final duration
+                writeMetadataTag(duration * 0.001d, videoCodecId, audioCodecId);
+                // create a transfer buffer
+                ByteBuffer dst = ByteBuffer.allocate(1024);
+                // when appending, read original stream data first and put it at the front
+                if (append) {
+                    Path prevFlv = Paths.get(filePath.replace(".flv", ".old"));
+                    if (Files.exists(prevFlv)) {
+                        SeekableByteChannel prevChannel = Files.newByteChannel(prevFlv, StandardOpenOption.READ);
+                        // skip the flv header and size
+                        prevChannel.position(HEADER_LENGTH + 4);
+                        int read = -1, wrote;
+                        do {
+                            read = prevChannel.read(dst);
+                            log.trace("Read: {} bytes", read);
+                            if (read > 0) {
+                                dst.flip();
+                                wrote = fileChannel.write(dst);
+                                log.trace("Wrote: {} bytes", wrote);
+                                bytesTransferred += wrote;
+                            }
+                            dst.compact();
+                        } while (read > 0);
+                        dst.clear();
+                        prevChannel.close();
+                        if (!Files.deleteIfExists(prevFlv)) {
+                            // delete failed? do we care?
                         }
                     } else {
-                        log.warn("FLV serial file not deleted due to transfer error");
+                        log.warn("Previous flv to be appended was not found");
                     }
                 }
+                // get starting position of the channel where latest stream data was written
+                long pos = dataChannel.position();
+                log.trace("Data available: {} bytes", pos);
+                // set the data file the beginning 
+                dataChannel.position(0L);
+                // transfer / write data file into final flv
+                int read = -1, wrote;
+                do {
+                    read = dataChannel.read(dst);
+                    log.trace("Read: {} bytes", read);
+                    if (read > 0) {
+                        dst.flip();
+                        wrote = fileChannel.write(dst);
+                        log.trace("Wrote: {} bytes", wrote);
+                        bytesTransferred += wrote;
+                    }
+                    dst.compact();
+                } while (read > 0);
+                dst.clear();
+                dataChannel.close();
+                // close and remove the ser file if write was successful
+                if (bytesTransferred > 0) {
+                    if (!Files.deleteIfExists(Paths.get(filePath + ".info"))) {
+                        log.warn("FLV info file not deleted");
+                    }
+                    if (!Files.deleteIfExists(Paths.get(filePath + ".ser"))) {
+                        log.warn("FLV serial file not deleted");
+                    }
+                }
+                log.debug("FLV bytes written: {} final position: {}", (bytesWritten + bytesTransferred), fileChannel.position());
             } catch (Exception e) {
                 log.warn("Finalization of flv file failed; new finalize job will be spawned", e);
             } finally {
-                if (file != null) {
+                if (fileChannel != null) {
                     // close the file
                     try {
-                        file.close();
+                        fileChannel.close();
                     } catch (Exception e) {
                     }
                 }
+                finalized.compareAndSet(false, true);
                 // run post process
                 if (postProcessors != null) {
                     for (IPostProcessor postProcessor : postProcessors) {
@@ -938,7 +854,6 @@ public class FLVWriter implements ITagWriter {
                 } else {
                     log.debug("No post processors configured");
                 }
-                finalized.compareAndSet(false, true);
             }
         } else {
             log.trace("Finalization already completed");
@@ -1126,17 +1041,11 @@ public class FLVWriter implements ITagWriter {
         public void run() {
             log.debug("Finalizer run");
             try {
-                // clear incomplete files ref
-                file = null;
-                // create an instance of the incomplete file
-                File tmp = new File(filePath);
-                // delete the file
-                boolean deleted = tmp.delete();
+                // delete the incomplete file if it exists
+                boolean deleted = Files.deleteIfExists(Paths.get(filePath));
                 log.info("Deleted ({}) incomplete file: {}", deleted, filePath);
-                // clear ref
-                tmp = null;
                 // quick sleep, cheap delay
-                Thread.sleep(2000L);
+                Thread.sleep(1000L);
             } catch (Exception e) {
                 log.error("Error on cleanup of flv", e);
             }
