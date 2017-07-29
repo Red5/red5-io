@@ -51,6 +51,7 @@ import org.slf4j.LoggerFactory;
  * @author The Red5 Project
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
  */
+@SuppressWarnings("deprecation")
 public abstract class AbstractIOTest {
 
     protected Logger log = LoggerFactory.getLogger(AbstractIOTest.class);

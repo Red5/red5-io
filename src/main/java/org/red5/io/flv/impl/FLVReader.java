@@ -912,25 +912,13 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                 break;
             default:
                 log.debug("Invalid data type detected ({}), reading ahead\n current position: {} limit: {}", dataType, in.position(), in.limit());
-                // loop a few times to see if we find a usable data type
-                //                int i = 0;
-                //                while (dataType != 8 && dataType != 9 && dataType != 18) {
-                //                    // only allow 10 loops
-                //                    if (i++ > 10) {
-                //                        return null;
-                //                    }
-                //                    // move ahead and see if we get a valid datatype		
-                //                    dataType = in.get();
-                //                }
                 throw new UnsupportedDataTypeException("Invalid data type detected (" + dataType + ")");
         }
         int bodySize = IOUtils.readUnsignedMediumInt(in);
         int timestamp = IOUtils.readExtendedMediumInt(in);
+        int streamId = IOUtils.readUnsignedMediumInt(in);
         if (log.isDebugEnabled()) {
-            int streamId = IOUtils.readUnsignedMediumInt(in);
             log.debug("Data type: {} timestamp: {} stream id: {} body size: {} previous tag size: {}", new Object[] { dataType, timestamp, streamId, bodySize, previousTagSize });
-        } else {
-            in.skip(3);
         }
         return new Tag(dataType, timestamp, bodySize, null, previousTagSize);
     }

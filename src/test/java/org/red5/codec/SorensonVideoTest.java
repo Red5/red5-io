@@ -30,6 +30,7 @@ import org.red5.codec.IVideoStreamCodec.FrameData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("deprecation")
 public class SorensonVideoTest {
 
     private static Logger log = LoggerFactory.getLogger(SorensonVideoTest.class);

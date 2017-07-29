@@ -123,6 +123,17 @@ public class IOUtils {
      *            Unsigned medium int source
      * @return int value
      */
+    public final static int readUnsignedMediumInt(ByteBuffer in) {
+        return ((in.get() & 0xff) << 16) + ((in.get() & 0xff) << 8) + (in.get() & 0xff);
+    }
+
+    /**
+     * Reads unsigned medium integer (3 bytes)
+     * 
+     * @param in
+     *            Unsigned medium int source
+     * @return int value
+     */
     public final static int readUnsignedMediumInt(IoBuffer in) {
         return ((in.get() & 0xff) << 16) + ((in.get() & 0xff) << 8) + (in.get() & 0xff);
     }

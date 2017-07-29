@@ -179,6 +179,10 @@ public class FLV implements IFLV {
         }
     }
 
+    public LinkedList<Class<IPostProcessor>> getWritePostProcessors() {
+        return writePostProcessors;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -318,46 +322,15 @@ public class FLV implements IFLV {
      */
     @Override
     public ITagWriter getWriter() throws IOException {
-        if (file.exists()) {
-            file.delete();
-        }
-        file.createNewFile();
-        ITagWriter writer = new FLVWriter(file, false);
-        if (writePostProcessors != null) {
-            for (Class<IPostProcessor> postProcessor : writePostProcessors) {
-                try {
-                    writer.addPostProcessor(postProcessor.newInstance());
-                } catch (Exception e) {
-                    log.warn("Post processor: {} instance creation failed", postProcessor, e);
-                }
-            }
-        }
-        return writer;
+        log.info("getWriter: {}", file);
+        return new FLVWriter(file.toPath(), false);
     }
 
     /** {@inheritDoc} */
     @Override
     public ITagWriter getAppendWriter() throws IOException {
-        ITagWriter writer = null;
-        // If the file doesn't exist, we can't append to it, so return a writer
-        if (!file.exists()) {
-            log.info("File does not exist, calling writer. This will create a new file.");
-            writer = getWriter();
-        } else {
-            //Fix by Mhodgson: FLVWriter constructor allows for passing of file object
-            writer = new FLVWriter(file, true);
-            // add the writer post processors to the appending writer
-            if (writePostProcessors != null) {
-                for (Class<IPostProcessor> postProcessor : writePostProcessors) {
-                    try {
-                        writer.addPostProcessor(postProcessor.newInstance());
-                    } catch (Exception e) {
-                        log.warn("Post processor: {} instance creation failed", postProcessor, e);
-                    }
-                }
-            }
-        }
-        return writer;
+        log.info("getAppendWriter: {}", file);
+        return new FLVWriter(file.toPath(), true);
     }
 
     /**
@@ -372,6 +345,7 @@ public class FLV implements IFLV {
     @SuppressWarnings({ "rawtypes" })
     @Override
     public void setMetaData(IMetaData meta) throws IOException {
+        log.info("setMetaData: {}", meta);
         if (metaService == null) {
             metaService = new MetaService(file);
         }
