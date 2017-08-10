@@ -116,35 +116,43 @@ public class AVCVideo extends AbstractVideo {
             int start = data.position();
             // get frame type
             byte frameType = data.get();
+            byte avcType = data.get();
             if ((frameType & 0x0f) == VideoCodec.AVC.getId()) {
                 // check for keyframe
                 if ((frameType & 0xf0) == FLV_FRAME_KEY) {
                     //log.trace("Key frame");
-                    byte AVCPacketType = data.get();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Keyframe - AVC type: {}", avcType);
+                    }
                     // rewind
                     data.rewind();
-                    // sequence header / here comes a AVCDecoderConfigurationRecord
-                    //log.debug("AVCPacketType: {}", AVCPacketType);
-                    if (AVCPacketType == 0) {
-                        //log.trace("Decoder configuration");
-                        // Store AVCDecoderConfigurationRecord data
-                        decoderConfiguration.setData(data);
-                        softReset();
-                    } else {
-                        //log.trace("Keyframe - keyframeTimestamp: {} {}", keyframeTimestamp, timestamp);
-                        // get the time stamp and compare with the current value
-                        if (timestamp != keyframeTimestamp) {
-                            //log.trace("New keyframe");
-                            // new keyframe
-                            keyframeTimestamp = timestamp;
-                            // if its a new keyframe, clear keyframe and interframe collections
+                    switch (avcType) {
+                        case 1: // keyframe
+                            //log.trace("Keyframe - keyframeTimestamp: {} {}", keyframeTimestamp, timestamp);
+                            // get the time stamp and compare with the current value
+                            if (timestamp != keyframeTimestamp) {
+                                //log.trace("New keyframe");
+                                // new keyframe
+                                keyframeTimestamp = timestamp;
+                                // if its a new keyframe, clear keyframe and interframe collections
+                                softReset();
+                            }
+                            // store keyframe
+                            keyframes.add(new FrameData(data));
+                            break;
+                        case 0: // configuration
+                            //log.trace("Decoder configuration");
+                            // Store AVCDecoderConfigurationRecord data
+                            decoderConfiguration.setData(data);
                             softReset();
-                        }
-                        // store keyframe
-                        keyframes.add(new FrameData(data));
+                            break;
                     }
                     //log.trace("Keyframes: {}", keyframes.size());
                 } else if (bufferInterframes) {
+                    //log.trace("Interframe");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Interframe - AVC type: {}", avcType);
+                    }
                     // rewind
                     data.rewind();
                     try {

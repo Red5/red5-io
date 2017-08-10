@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.red5</groupId>
         <artifactId>red5-parent</artifactId>
-        <version>1.0.10-M3</version>
+        <version>1.0.10-M4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>red5-io</artifactId>
@@ -152,11 +152,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>${tika.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
             <version>${tika.version}</version>
             <exclusions>
@@ -257,8 +252,24 @@
                     <groupId>net.sourceforge.jmatio</groupId>
                 </exclusion>
                 <exclusion>
+                    <artifactId>jmatio</artifactId>
+                    <groupId>org.tallison</groupId>
+                </exclusion>
+                <exclusion>
                     <artifactId>json</artifactId>
                     <groupId>org.json</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>json</artifactId>
+                    <groupId>com.tdunning</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>gson</artifactId>
+                    <groupId>com.google.code.gson</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
                 <exclusion>
                     <artifactId>json-simple</artifactId>
@@ -283,6 +294,10 @@
                 <exclusion>
                     <artifactId>isoparser</artifactId>
                     <groupId>com.googlecode.mp4parser</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>sentiment-analysis-parser</artifactId>
+                    <groupId>edu.usc.ir</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
