@@ -38,7 +38,6 @@ import org.red5.io.flv.impl.FLVReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("deprecation")
 public class AVCVideoTest {
 
     private static Logger log = LoggerFactory.getLogger(AVCVideoTest.class);
