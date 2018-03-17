@@ -210,9 +210,12 @@ public abstract class AbstractIOTest {
         mapIn.put("testNumber", 34d); //numbers are stored as double
         mapIn.put("testString", "wicked awesome");
         mapIn.put("testBean", new SimpleJavaBean());
+        mapIn.put("21.0.1", "version");
+        mapIn.put("2.1", "version2");
         Serializer.serialize(out, mapIn);
         dumpOutput();
         Map<?, ?> mapOut = Deserializer.deserialize(in, Map.class);
+		log.info("mapOut: {}", mapOut);
         assertNotNull(mapOut);
         assertEquals(mapIn.size(), mapOut.size());
         for (Map.Entry<String, Object> entry : mapIn.entrySet()) {

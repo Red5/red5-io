@@ -176,6 +176,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     /** {@inheritDoc} */
     @Override
     public void writeMap(Map<Object, Object> map) {
+		//log.info("writeMap: {}", map);
         if (!checkWriteReference(map)) {
             storeReference(map);
             buf.put(AMF.TYPE_MIXED_ARRAY);
@@ -195,6 +196,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
             // TODO: Need to support an incoming key named length
             for (Map.Entry<Object, Object> entry : map.entrySet()) {
                 final String key = entry.getKey().toString();
+    			//log.info("key: {} item: {}", key, entry.getValue());
                 if ("length".equals(key)) {
                     continue;
                 }
