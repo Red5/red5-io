@@ -216,6 +216,25 @@ public class FLVWriter implements ITagWriter {
     }
 
     /**
+     * Creates writer implementation with for a given file
+     *
+     * @param repair
+     *        repair the .ser file
+     *
+     * @param filePath
+     *            path to existing file
+     */
+    public FLVWriter(boolean repair, String filePath) {
+        this.filePath = filePath;
+        try {
+            createRepairDataFile();
+        } catch (Exception e) {
+            log.error("Failed to create FLV writer", e);
+        }
+    }
+
+
+    /**
      * Creates writer implementation with given file and flag indicating whether or not to append.
      *
      * FLV.java uses this constructor so we have access to the file object
@@ -688,6 +707,20 @@ public class FLVWriter implements ITagWriter {
         }
         this.dataChannel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE, StandardOpenOption.READ);
     }
+
+    /**
+     * Create the stream data file for repair.
+     *
+     * @throws IOException
+     */
+    private void createRepairDataFile() throws IOException {
+        // temporary data file for storage of stream data
+        Path path = Paths.get(filePath + ".ser");
+
+        // Create a data channel that is read-only
+        this.dataChannel = Files.newByteChannel(path, StandardOpenOption.READ);
+    }
+
 
     /**
      * Write "onMetaData" tag to the file.
@@ -1174,12 +1207,12 @@ public class FLVWriter implements ITagWriter {
                 if (inf.exists() && inf.canRead()) {
                     inf = null;
                     // create a writer
-                    writer = new FLVWriter(flvPath);
+                    writer = new FLVWriter(true, flvPath);
                 } else {
                     log.debug("Info file was not found or could not be read, using dummy data");
                     System.err.println("Info file was not found or could not be read, using dummy data");
                     // create a writer
-                    writer = new FLVWriter(flvPath);
+                    writer = new FLVWriter(true, flvPath);
                     int acid = audioId == null ? 11 : audioId, vcid = videoId == null ? 7 : videoId;
                     writer.setAudioCodecId(acid); // default: speex
                     writer.setVideoCodecId(vcid); // default: h.264
