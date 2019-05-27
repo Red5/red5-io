@@ -86,6 +86,22 @@ public class ConversionUtils {
     }
 
     /**
+     * Returns true for base types or arrays of base type.
+     * 
+     * @param obj
+     * @return true if base-type or array and false otherwise
+     */
+    public static boolean isBaseTypeOrArray(Object obj) {
+        final Class<?> c = obj.getClass();
+        if (c.isPrimitive() || c.equals(String.class) || c.isArray()) {
+            return true;
+        } else if (wrapperMap.containsKey(c)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Convert source to given class
      * 
      * @param source
@@ -110,10 +126,6 @@ public class ConversionUtils {
             // Don't convert NaN values
             return source;
         }
-        //		if (BaseConnection.class.isAssignableFrom(source.getClass()) && !target.equals(IConnection.class)) {
-        //			log.debug("Conversion failure - source: {} target: {}", source.getClass(), target);
-        //			throw new ConversionException("Source is not assignable and target is not equal to IConnection");
-        //		}
         if (target.isInstance(source)) {
             return source;
         }
