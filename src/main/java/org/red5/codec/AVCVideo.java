@@ -56,7 +56,7 @@ public class AVCVideo extends AbstractVideo {
     /**
      * Whether or not to buffer interframes
      */
-    private boolean bufferInterframes = true;
+    private boolean bufferInterframes = false;
 
     /** Constructs a new AVCVideo. */
     public AVCVideo() {
