@@ -107,9 +107,9 @@ public class HexCharset extends Charset {
      * Every charset contains itself.
      * 
      * <p>
-     * This method computes an approximation of the containment relation: If it returns <tt>true</tt> then the given charset is known to be contained by this charset; if it returns <tt>false</tt>, however, then it is not necessarily the case that the given charset is not contained in this charset.
+     * This method computes an approximation of the containment relation: If it returns true then the given charset is known to be contained by this charset; if it returns false, however, then it is not necessarily the case that the given charset is not contained in this charset.
      * 
-     * @return <tt>true</tt> if, and only if, the given charset is contained in this charset
+     * @return true if, and only if, the given charset is contained in this charset
      */
     @Override
     public boolean contains(Charset cs) {

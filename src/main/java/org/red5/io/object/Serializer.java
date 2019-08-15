@@ -248,7 +248,7 @@ public class Serializer {
      *            Output object
      * @param arrType
      *            Array or collection type
-     * @return <tt>true</tt> if the object has been written, otherwise <tt>false</tt>
+     * @return true if the object has been written, otherwise false
      */
     @SuppressWarnings("all")
     protected static boolean writeArrayType(Output out, Object arrType) {
@@ -293,7 +293,7 @@ public class Serializer {
      *            Output writer
      * @param xml
      *            XML
-     * @return boolean <tt>true</tt> if object was successfully written, <tt>false</tt> otherwise
+     * @return boolean true if object was successfully written, false otherwise
      */
     protected static boolean writeXMLType(Output out, Object xml) {
         log.trace("writeXMLType");
@@ -325,7 +325,7 @@ public class Serializer {
      *            Output writer
      * @param obj
      *            Object type to write
-     * @return <tt>true</tt> if the object has been written, otherwise <tt>false</tt>
+     * @return true if the object has been written, otherwise false
      */
     @SuppressWarnings("all")
     protected static boolean writeObjectType(Output out, Object obj) {
@@ -348,7 +348,7 @@ public class Serializer {
      *            Output writer
      * @param obj
      *            Custom data
-     * @return <tt>true</tt> if the object has been written, otherwise <tt>false</tt>
+     * @return true if the object has been written, otherwise false
      */
     protected static boolean writeCustomType(Output out, Object obj) {
         if (out.isCustom(obj)) {
@@ -369,7 +369,7 @@ public class Serializer {
      *            The field to be serialized
      * @param getter
      *            Getter method for field
-     * @return <tt>true</tt> if the field should be serialized, otherwise <tt>false</tt>
+     * @return true if the field should be serialized, otherwise false
      */
     public static boolean serializeField(String keyName, Field field, Method getter) {
         log.trace("serializeField - keyName: {} field: {} method: {}", new Object[] { keyName, field, getter });

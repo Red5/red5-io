@@ -36,7 +36,7 @@ import org.red5.io.client.IRemotingClient;
  * </ul>
  *
  * <p>
- * For last mode, use <tt>page size</tt> property to specify maximum number of rows on one page
+ * For last mode, use page size property to specify maximum number of rows on one page
  * </p>
  * 
  * @author The Red5 Project

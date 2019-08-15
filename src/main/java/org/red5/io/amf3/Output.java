@@ -30,10 +30,10 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import net.sf.ehcache.Element;
-
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.mina.core.buffer.IoBuffer;
+import org.ehcache.Cache;
+import org.ehcache.Cache.Entry;
 import org.red5.annotations.Anonymous;
 import org.red5.compatibility.flex.messaging.io.ObjectProxy;
 import org.red5.io.amf.AMF;
@@ -60,7 +60,7 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     protected static Logger log = LoggerFactory.getLogger(Output.class);
 
     /**
-     * Set to a value above <tt>0</tt> to disable writing of the AMF3 object tag.
+     * Set to a value above 0 to disable writing of the AMF3 object tag.
      */
     private int amf3_mode;
 
@@ -141,14 +141,15 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected static byte[] encodeString(String string) {
-        Element element = getStringCache().get(string);
-        byte[] encoded = (element == null ? null : (byte[]) element.getObjectValue());
+        Cache.Entry<String, byte[]> element = (Entry<String, byte[]>) getStringCache().get(string);
+        byte[] encoded = (element == null ? null : (byte[]) element.getValue());
         if (encoded == null) {
             ByteBuffer buf = AMF.CHARSET.encode(string);
             encoded = new byte[buf.limit()];
             buf.get(encoded);
-            getStringCache().put(new Element(string, encoded));
+            getStringCache().put(string, encoded);
         }
         return encoded;
     }

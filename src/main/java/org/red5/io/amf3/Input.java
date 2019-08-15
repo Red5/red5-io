@@ -175,7 +175,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
     }
 
     /**
-     * Set to a value above <tt>0</tt> to enforce AMF3 decoding mode.
+     * Set to a value above 0 to enforce AMF3 decoding mode.
      */
     private int amf3_mode;
 

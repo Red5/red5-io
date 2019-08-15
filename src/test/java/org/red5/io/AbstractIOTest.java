@@ -132,7 +132,6 @@ public abstract class AbstractIOTest {
         assertEquals(beanOut, beanOut.getRefToSelf());
         assertEquals(beanIn.getNameOfBean(), beanOut.getNameOfBean());
         resetOutput();
-
     }
 
     @Test
@@ -214,7 +213,7 @@ public abstract class AbstractIOTest {
         Serializer.serialize(out, mapIn);
         dumpOutput();
         Map<?, ?> mapOut = Deserializer.deserialize(in, Map.class);
-		log.info("mapOut: {}", mapOut);
+        log.info("mapOut: {}", mapOut);
         assertNotNull(mapOut);
         assertEquals(mapIn.size(), mapOut.size());
         for (Map.Entry<String, Object> entry : mapIn.entrySet()) {
@@ -240,7 +239,7 @@ public abstract class AbstractIOTest {
     //@Test //This test failed, not sure why :(
     public void testNumberLong() {
         log.debug("\ntestNumberLong");
-        for (Number n : new Number[]{Long.MIN_VALUE, rnd.nextLong(), -666L, 0L, 666L, Long.MAX_VALUE}) {
+        for (Number n : new Number[] { Long.MIN_VALUE, rnd.nextLong(), -666L, 0L, 666L, Long.MAX_VALUE }) {
             Serializer.serialize(out, n);
             dumpOutput();
             Number rn = Deserializer.deserialize(in, Number.class);
@@ -248,11 +247,11 @@ public abstract class AbstractIOTest {
             resetOutput();
         }
     }
-    
+
     @Test
     public void testNumberInteger() {
         log.debug("\ntestNumberInteger");
-        for (Number n : new Number[]{Integer.MIN_VALUE, Integer.MAX_VALUE, 1024, rnd.nextInt(Integer.MAX_VALUE)}) {
+        for (Number n : new Number[] { Integer.MIN_VALUE, Integer.MAX_VALUE, 1024, rnd.nextInt(Integer.MAX_VALUE) }) {
             Serializer.serialize(out, n);
             dumpOutput();
             Number rn = Deserializer.deserialize(in, Number.class);
@@ -260,23 +259,23 @@ public abstract class AbstractIOTest {
             resetOutput();
         }
     }
-    
+
     @Test
     public void testNumberFloat() {
         log.debug("\ntestNumberFloat");
-        for (Number n : new Number[]{Float.MIN_VALUE, Float.MIN_NORMAL, Float.MAX_VALUE, rnd.nextFloat(), 666.6666f}) {
+        for (Number n : new Number[] { Float.MIN_VALUE, Float.MIN_NORMAL, Float.MAX_VALUE, rnd.nextFloat(), 666.6666f }) {
             Serializer.serialize(out, n);
             dumpOutput();
             Number rn = Deserializer.deserialize(in, Number.class);
-            assertEquals("Deserialized Float should be the same", (Float)n, (Float)rn.floatValue());
+            assertEquals("Deserialized Float should be the same", (Float) n, (Float) rn.floatValue());
             resetOutput();
         }
     }
-    
+
     @Test
     public void testNumberDouble() {
         log.debug("\ntestNumberDouble");
-        for (Number n : new Number[]{1.056d, Double.MIN_VALUE, Double.MAX_VALUE, new Double(899.45678d), rnd.nextDouble()}) {
+        for (Number n : new Number[] { 1.056d, Double.MIN_VALUE, Double.MAX_VALUE, new Double(899.45678d), rnd.nextDouble() }) {
             Serializer.serialize(out, n);
             dumpOutput();
             Number rn = Deserializer.deserialize(in, Number.class);
@@ -284,7 +283,7 @@ public abstract class AbstractIOTest {
             resetOutput();
         }
     }
-    
+
     @Test
     public void testNumber() {
         log.debug("\ntestNumber");
@@ -377,7 +376,6 @@ public abstract class AbstractIOTest {
         assertEquals(inStr, outStr);
         resetOutput();
     }
-
 
     @Test
     public void testLongString1() {

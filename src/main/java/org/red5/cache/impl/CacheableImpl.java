@@ -69,13 +69,13 @@ public class CacheableImpl implements ICacheable {
         }
         cached = true;
         if (log.isDebugEnabled()) {
-            log.debug("Buffer size: " + buffer.capacity());
+            log.debug("Buffer size: {}", buffer.capacity());
         }
         buffer = null;
     }
 
     public void addRequest() {
-        log.info("Adding request for: " + name);
+        log.info("Adding request for: {}", name);
     }
 
     /** {@inheritDoc} */
