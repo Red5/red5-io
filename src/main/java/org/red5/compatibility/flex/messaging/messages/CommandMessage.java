@@ -122,7 +122,7 @@ public class CommandMessage extends AsyncMessage {
         out.writeByte((byte) flags);
 
         if (this.operation != Constants.UNKNOWN_OPERATION) {
-            out.writeObject(new Integer(this.operation));
+            out.writeObject(Integer.valueOf(this.operation));
         }
     }
 }

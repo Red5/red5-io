@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.Configuration;
@@ -52,12 +51,14 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
 
     protected static Logger log = LoggerFactory.getLogger(EhCacheImpl.class);
 
+    @SuppressWarnings("unused")
     private final static String defaultCacheName = "default";
 
     private static CacheManager cm;
 
     private static Ehcache<String, ICacheable> cache;
 
+    @SuppressWarnings("unused")
     private List<CacheConfiguration<String, ICacheable>> configs;
 
     private String diskStore = System.getProperty("java.io.tmpdir");
@@ -82,7 +83,6 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
         return applicationContext;
     }
 
-    @SuppressWarnings({ "unchecked", "unused" })
     public void init() {
         log.info("Loading ehcache");
         // log.debug("Appcontext: " + applicationContext.toString());
@@ -92,42 +92,8 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
             // instance the manager
             cm = CacheManagerBuilder.newCacheManager(configuration);
             cm.init();
-            /*
-            // add the configs to a configuration
-            for (CacheConfiguration<String, ICacheable> conf : configs) {
-                // set disk expiry
-                //conf.setDiskExpiryThreadIntervalSeconds(diskExpiryThreadIntervalSeconds);
-                // set eviction policy
-                //conf.setMemoryStoreEvictionPolicy(memoryStoreEvictionPolicy);
-                if (null == cache) {
-                    // get first cache name and use as default
-                    cm.createCache(defaultCacheName, conf);
-                } else {
-                    cm.createCache(conf.getValueType(), conf);
-                }
-            }
-            //instance the helper
-            ConfigurationHelper helper = new ConfigurationHelper(cm, configuration);
-            //create the default cache
-            cache = helper.createDefaultCache();
-            */
             // init the default
             cache.init();
-            /*
-            // create the un-init'd caches
-            Set<Ehcache<String, ICacheable>> caches = helper.createCaches();
-            if (log.isDebugEnabled()) {
-                log.debug("Number of caches: {} default: {}", caches.size(), (cache != null ? 1 : 0));
-            }
-            for (Ehcache<String, ICacheable> nonDefaultCache : caches) {
-                nonDefaultCache.init();
-                //set first cache to be main local member
-                if (null == nonDefaultCache) {
-                    log.debug("Default cache name: {}", defaultCacheName);
-                    nonDefaultCache = cm.getCache(defaultCacheName);
-                }
-            }
-            */
         } catch (Exception e) {
             log.warn("Error on cache init", e);
         }
@@ -158,7 +124,6 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
     public Iterator<String> getObjectNames() {
         final Set<String> names = new HashSet<>();
@@ -233,7 +198,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      * @return Value for property 'memoryStoreEvictionPolicy'.
      */
     //public String getMemoryStoreEvictionPolicy() {
-        //return memoryStoreEvictionPolicy;
+    //return memoryStoreEvictionPolicy;
     //}
 
     /**
@@ -252,7 +217,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      * @return Value for property 'diskExpiryThreadIntervalSeconds'.
      */
     //public int getDiskExpiryThreadIntervalSeconds() {
-        //return diskExpiryThreadIntervalSeconds;
+    //return diskExpiryThreadIntervalSeconds;
     //}
 
     /**

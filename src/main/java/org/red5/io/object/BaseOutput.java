@@ -33,7 +33,7 @@ public class BaseOutput {
         /**
          * Wrapped object
          */
-        Object object;
+        final Object object;
 
         /**
          * Creates wrapper for object
@@ -77,7 +77,7 @@ public class BaseOutput {
      *
      */
     protected BaseOutput() {
-        refMap = new HashMap<IdentityWrapper, Short>();
+        refMap = new HashMap<>();
     }
 
     /**

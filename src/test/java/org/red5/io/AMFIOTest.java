@@ -207,7 +207,7 @@ public class AMFIOTest extends AbstractIOTest {
         assertEquals(command, "_result");
         assertEquals(DataTypes.CORE_NUMBER, in0.readDataType());
         Number transactionId = in0.readNumber();
-        assertTrue(new Double(1.0d).equals(transactionId.doubleValue()));
+        assertTrue(Double.valueOf(1.0d).equals(transactionId.doubleValue()));
         assertEquals(DataTypes.CORE_OBJECT, in0.readDataType());
         
         @SuppressWarnings("rawtypes")

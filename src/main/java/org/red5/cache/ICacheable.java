@@ -18,6 +18,8 @@
 
 package org.red5.cache;
 
+import java.io.Serializable;
+
 import org.apache.mina.core.buffer.IoBuffer;
 
 /**
@@ -28,7 +30,7 @@ import org.apache.mina.core.buffer.IoBuffer;
  * @author The Red5 Project
  * @author Paul Gregoire (mondain@gmail.com)
  */
-public interface ICacheable {
+public interface ICacheable extends Serializable {
 
     /**
      * Returns <code>true</code> if the object is cached, <code>false</code> otherwise.

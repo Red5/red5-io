@@ -22,7 +22,6 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.red5.cache.ICacheable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Provides an implementation of a cacheable object.
@@ -32,9 +31,9 @@ import org.springframework.context.ApplicationContext;
  */
 public class CacheableImpl implements ICacheable {
 
-    protected static Logger log = LoggerFactory.getLogger(CacheableImpl.class);
+    private static final long serialVersionUID = 1539954562379472856L;
 
-    protected ApplicationContext applicationContext;
+    protected static Logger log = LoggerFactory.getLogger(CacheableImpl.class);
 
     private byte[] bytes;
 
@@ -43,10 +42,10 @@ public class CacheableImpl implements ICacheable {
     private boolean cached;
 
     public CacheableImpl(Object obj) {
-        IoBuffer tmp = IoBuffer.allocate(1024, true);
-        tmp.setAutoExpand(true);
+        IoBuffer tmp = IoBuffer.allocate(128).setAutoExpand(true);
         tmp.putObject(obj);
-        bytes = new byte[tmp.capacity()];
+        tmp.flip();
+        bytes = new byte[tmp.remaining()];
         tmp.get(bytes);
         cached = true;
         tmp.free();
@@ -58,15 +57,9 @@ public class CacheableImpl implements ICacheable {
             log.debug("Buffer is direct: {} capacity: {}", buffer.isDirect(), buffer.capacity());
             log.debug("Buffer limit: {} remaining: {} position: {}", new Object[] { buffer.limit(), buffer.remaining(), buffer.position() });
         }
-        bytes = new byte[buffer.capacity()];
+        bytes = new byte[buffer.remaining()];
         buffer.rewind();
-        int i = 0;
-        while (i < buffer.limit()) {
-            buffer.position(i);
-            while (buffer.remaining() > 0) {
-                bytes[i++] = buffer.get();
-            }
-        }
+        buffer.get(bytes);
         cached = true;
         if (log.isDebugEnabled()) {
             log.debug("Buffer size: {}", buffer.capacity());

@@ -43,7 +43,7 @@ public class ConversionUtilsTest {
 
     @Test
     public void testBasic() {
-        Object result = ConversionUtils.convert(new Integer(42), String.class);
+        Object result = ConversionUtils.convert(Integer.valueOf(42), String.class);
         if (!(result instanceof String)) {
             fail("Should be a string");
         }
@@ -95,7 +95,7 @@ public class ConversionUtilsTest {
     public void testConvertObjectArrayToStringArray() {
         Object[] source = new Object[3];
 
-        source[0] = new Integer(21);
+        source[0] = Integer.valueOf(21);
         source[1] = Boolean.FALSE;
         source[2] = "Woot";
 
@@ -115,7 +115,7 @@ public class ConversionUtilsTest {
     @Test
     public void testConvertToSet() {
         Object[] source = new Object[3];
-        source[0] = new Integer(21);
+        source[0] = Integer.valueOf(21);
         source[1] = Boolean.FALSE;
         source[2] = "Woot";
         Object result = ConversionUtils.convert(source, Set.class);

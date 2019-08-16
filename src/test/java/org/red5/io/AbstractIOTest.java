@@ -193,7 +193,7 @@ public abstract class AbstractIOTest {
             Object in = listIn.get(i);
             // no integers in AMF0 so convert expected to double
             if (encoding == 0 && in instanceof Integer) {
-                in = new Double(((Number) in).doubleValue());
+                in = ((Number) in).doubleValue();
             }
             Object out = listOut.get(i);
             assertEquals(in, out);
@@ -275,7 +275,7 @@ public abstract class AbstractIOTest {
     @Test
     public void testNumberDouble() {
         log.debug("\ntestNumberDouble");
-        for (Number n : new Number[] { 1.056d, Double.MIN_VALUE, Double.MAX_VALUE, new Double(899.45678d), rnd.nextDouble() }) {
+        for (Number n : new Number[] { 1.056d, Double.MIN_VALUE, Double.MAX_VALUE, Double.valueOf(899.45678d), rnd.nextDouble() }) {
             Serializer.serialize(out, n);
             dumpOutput();
             Number rn = Deserializer.deserialize(in, Number.class);

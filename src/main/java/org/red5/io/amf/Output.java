@@ -40,6 +40,8 @@ import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ConfigurationBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.red5.annotations.Anonymous;
+import org.red5.cache.ICacheable;
+import org.red5.cache.impl.CacheableImpl;
 import org.red5.io.amf3.ByteArray;
 import org.red5.io.object.BaseOutput;
 import org.red5.io.object.ICustomSerializable;
@@ -48,6 +50,7 @@ import org.red5.io.object.Serializer;
 import org.red5.io.utils.XMLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.w3c.dom.Document;
 
 /**
@@ -61,10 +64,10 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
 
     protected static Logger log = LoggerFactory.getLogger(Output.class);
 
-    private static Cache<String, byte[]> stringCache;
+    private static Cache<String, ICacheable> stringCache;
 
     @SuppressWarnings("rawtypes")
-    private static Cache<Class, Map> serializeCache;
+    private static Cache<Class, HashMap> serializeCache;
 
     @SuppressWarnings("rawtypes")
     private static Cache<Class, HashMap> fieldCache;
@@ -84,7 +87,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
                 cacheManager = CacheManagerBuilder.newCacheManager(configuration);
                 cacheManager.init();
                 // String/byte[]
-                CacheConfigurationBuilder<String, byte[]> configBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, byte[].class, ResourcePoolsBuilder.heap(1000));
+                CacheConfigurationBuilder<String, ICacheable> configBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, ICacheable.class, ResourcePoolsBuilder.heap(1000));
                 cacheManager.createCache("org.red5.io.amf.Output.stringCache", configBuilder);
                 // Class/HashMap<String, Method>
                 CacheConfigurationBuilder<Class, HashMap> configBuilder2 = CacheConfigurationBuilder.newCacheConfigurationBuilder(Class.class, HashMap.class, ResourcePoolsBuilder.heap(200));
@@ -93,7 +96,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
                 CacheConfigurationBuilder<Class, HashMap> configBuilder3 = CacheConfigurationBuilder.newCacheConfigurationBuilder(Class.class, HashMap.class, ResourcePoolsBuilder.heap(200));
                 cacheManager.createCache("org.red5.io.amf.Output.fieldCache", configBuilder3);
                 // String/Map<String, Boolean>
-                CacheConfigurationBuilder<Class, Map> configBuilder4 = CacheConfigurationBuilder.newCacheConfigurationBuilder(Class.class, Map.class, ResourcePoolsBuilder.heap(200));
+                CacheConfigurationBuilder<Class, HashMap> configBuilder4 = CacheConfigurationBuilder.newCacheConfigurationBuilder(Class.class, HashMap.class, ResourcePoolsBuilder.heap(200));
                 cacheManager.createCache("org.red5.io.amf.Output.serializeCache", configBuilder4);
                 /*
                 if (System.getProperty("red5.root") != null) {
@@ -372,14 +375,13 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     @SuppressWarnings("unchecked")
     protected boolean serializeField(Class<?> objectClass, String keyName, Field field, Method getter) {
         // to prevent, NullPointerExceptions, get the element first and check if it's null
-        Cache.Entry<Class<?>, Map<String, Boolean>> element = (Cache.Entry<Class<?>, Map<String, Boolean>>) getSerializeCache().get(objectClass);
-        Map<String, Boolean> serializeMap = (element == null ? null : (Map<String, Boolean>) element.getValue());
+        Map<String, Boolean> serializeMap = (Map<String, Boolean>) getSerializeCache().get(objectClass);
         if (serializeMap == null) {
             serializeMap = new HashMap<>();
             getSerializeCache().put(objectClass, serializeMap);
         }
         boolean serialize;
-        if (getSerializeCache().containsKey(keyName)) {
+        if (serializeMap.containsKey(keyName)) {
             serialize = serializeMap.get(keyName);
         } else {
             serialize = Serializer.serializeField(keyName, field, getter);
@@ -390,9 +392,8 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
 
     @SuppressWarnings("unchecked")
     protected Field getField(Class<?> objectClass, String keyName) {
-        //again, to prevent null pointers, check if the element exists first.
-        Cache.Entry<Class<?>, HashMap<String, Field>> element = (Cache.Entry<Class<?>, HashMap<String, Field>>) getFieldCache().get(objectClass);
-        Map<String, Field> fieldMap = (element == null ? null : (Map<String, Field>) element.getValue());
+        // again, to prevent null pointers, check if the element exists first
+        HashMap<String, Field> fieldMap = (HashMap<String, Field>) getFieldCache().get(objectClass);
         if (fieldMap == null) {
             fieldMap = new HashMap<String, Field>();
             getFieldCache().put(objectClass, fieldMap);
@@ -419,9 +420,8 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
 
     @SuppressWarnings("unchecked")
     protected Method getGetter(Class<?> objectClass, BeanMap beanMap, String keyName) {
-        //check element to prevent null pointer
-        Cache.Entry<Class<?>, HashMap<String, Method>> element = (Cache.Entry<Class<?>, HashMap<String, Method>>) getGetterCache().get(objectClass);
-        Map<String, Method> getterMap = (element == null ? null : (Map<String, Method>) element.getValue());
+        // check element to prevent null pointer
+        Map<String, Method> getterMap = (Map<String, Method>) getGetterCache().get(objectClass);
         if (getterMap == null) {
             getterMap = new HashMap<String, Method>();
             getGetterCache().put(objectClass, getterMap);
@@ -553,13 +553,15 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
      */
     @SuppressWarnings("unchecked")
     protected static byte[] encodeString(String string) {
-        Cache.Entry<String, byte[]> element = (Cache.Entry<String, byte[]>) getStringCache().get(string);
-        byte[] encoded = (element == null ? null : (byte[]) element.getValue());
+        ICacheable element = (ICacheable) getStringCache().get(string);
+        byte[] encoded = (element == null ? null : element.getBytes());
         if (encoded == null) {
             ByteBuffer buf = AMF.CHARSET.encode(string);
-            encoded = new byte[buf.limit()];
+            encoded = new byte[buf.remaining()];
             buf.get(encoded);
-            getStringCache().put(string, encoded);
+            CacheableImpl cacheable = new CacheableImpl(encoded);
+            cacheable.setName(string);
+            getStringCache().put(string, cacheable);
         }
         return encoded;
     }
@@ -624,7 +626,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     @SuppressWarnings("rawtypes")
     protected static Cache getStringCache() {
         if (stringCache == null) {
-            stringCache = getCacheManager().getCache("org.red5.io.amf.Output.stringCache", String.class, byte[].class);
+            stringCache = getCacheManager().getCache("org.red5.io.amf.Output.stringCache", String.class, ICacheable.class);
         }
         return stringCache;
     }
@@ -632,7 +634,7 @@ public class Output extends BaseOutput implements org.red5.io.object.Output {
     @SuppressWarnings("rawtypes")
     protected static Cache getSerializeCache() {
         if (serializeCache == null) {
-            serializeCache = getCacheManager().getCache("org.red5.io.amf.Output.serializeCache", Class.class, Map.class);
+            serializeCache = getCacheManager().getCache("org.red5.io.amf.Output.serializeCache", Class.class, HashMap.class);
         }
         return serializeCache;
     }
