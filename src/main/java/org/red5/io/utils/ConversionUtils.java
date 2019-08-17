@@ -481,7 +481,7 @@ public class ConversionUtils {
         Object instance = null;
         try {
             Class<?> clazz = cl.loadClass(className);
-            instance = clazz.newInstance();
+            instance = clazz.getDeclaredConstructor().newInstance();
         } catch (Exception ex) {
             log.error("Error loading class: {}", className, ex);
         }
@@ -498,7 +498,7 @@ public class ConversionUtils {
     private static Object newInstance(Class<?> clazz) {
         Object instance = null;
         try {
-            instance = clazz.newInstance();
+            instance = clazz.getDeclaredConstructor().newInstance();
         } catch (Exception ex) {
             log.error("Error loading class: {}", clazz.getName(), ex);
         }

@@ -30,7 +30,7 @@ public class TestJavaBean {
 
     private int testPrimitiveNumber = 3;
 
-    private Integer testNumberObject = new Integer(33);
+    private Integer testNumberObject = Integer.valueOf(33);
 
     private String testString = "red5 rocks!";
 

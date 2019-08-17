@@ -965,7 +965,7 @@ public class FLVWriter implements ITagWriter {
                     if (writePostProcessors != null) {
                         for (Class<IPostProcessor> postProcessor : writePostProcessors) {
                             try {
-                                addPostProcessor(postProcessor.newInstance());
+                                addPostProcessor(postProcessor.getDeclaredConstructor().newInstance());
                             } catch (Exception e) {
                                 log.warn("Post processor: {} instance creation failed", postProcessor, e);
                             }

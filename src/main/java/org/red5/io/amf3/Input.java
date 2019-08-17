@@ -568,7 +568,7 @@ public class Input extends org.red5.io.amf.Input implements org.red5.io.object.I
             }
             Map resultMap;
             try {
-                resultMap = (Map) collection.newInstance();
+                resultMap = (Map) collection.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 resultMap = new HashMap(count);
             }
