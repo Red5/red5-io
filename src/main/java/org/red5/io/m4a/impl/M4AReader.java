@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.io.m4a.impl;
@@ -355,20 +344,11 @@ public class M4AReader implements IoConstants, ITagReader {
                     AudioSpecificConfig audioInfo = configDescriptor.getAudioSpecificInfo();
                     if (audioInfo != null) {
                         audioDecoderBytes = audioInfo.getConfigBytes();
-                        /* the first 5 (0-4) bits tell us about the coder used for aacaot/aottype
-                         * http://wiki.multimedia.cx/index.php?title=MPEG-4_Audio
-                         0 - NULL
-                         1 - AAC Main (a deprecated AAC profile from MPEG-2)
-                         2 - AAC LC or backwards compatible HE-AAC 
-                         3 - AAC Scalable Sample Rate
-                         4 - AAC LTP (a replacement for AAC Main, rarely used)
-                         5 - HE-AAC explicitly signaled (Non-backward compatible)
-                        23 - Low Delay AAC
-                        29 - HE-AACv2 explicitly signaled
-                        32 - MP3on4 Layer 1
-                        33 - MP3on4 Layer 2
-                        34 - MP3on4 Layer 3
-                        */
+                        /*
+                         * the first 5 (0-4) bits tell us about the coder used for aacaot/aottype http://wiki.multimedia.cx/index.php?title=MPEG-4_Audio 0 - NULL 1 - AAC Main (a deprecated AAC profile
+                         * from MPEG-2) 2 - AAC LC or backwards compatible HE-AAC 3 - AAC Scalable Sample Rate 4 - AAC LTP (a replacement for AAC Main, rarely used) 5 - HE-AAC explicitly signaled
+                         * (Non-backward compatible) 23 - Low Delay AAC 29 - HE-AACv2 explicitly signaled 32 - MP3on4 Layer 1 33 - MP3on4 Layer 2 34 - MP3on4 Layer 3
+                         */
                         byte audioCoderType = audioDecoderBytes[0];
                         //match first byte
                         switch (audioCoderType) {

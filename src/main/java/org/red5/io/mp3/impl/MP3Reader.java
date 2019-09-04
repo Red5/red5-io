@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.io.mp3.impl;
@@ -176,41 +165,15 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
                 }
             }
             /*
-                            //send album image if included
-                            List<Artwork> tagFieldList = idTag.getArtworkList();
-                            if (tagFieldList == null || tagFieldList.isEmpty()) {
-                                log.debug("No cover art was found");
-                            } else {
-                                Artwork imageField = tagFieldList.get(0);
-                                log.debug("Picture type: {}", imageField.getPictureType());
-                                FrameBodyAPIC imageFrameBody = new FrameBodyAPIC();
-                                imageFrameBody.setImageData(imageField.getBinaryData());
-                                if (!imageFrameBody.isImageUrl()) {
-                                    byte[] imageBuffer = (byte[]) imageFrameBody.getObjectValue(DataTypes.OBJ_PICTURE_DATA);
-                                    //set the cover image on the metadata
-                                    metaData.setCovr(imageBuffer);
-                                    // Create tag for onImageData event
-                                    IoBuffer buf = IoBuffer.allocate(imageBuffer.length);
-                                    buf.setAutoExpand(true);
-                                    Output out = new Output(buf);
-                                    out.writeString("onImageData");
-                                    Map<Object, Object> props = new HashMap<Object, Object>();
-                                    props.put("trackid", 1);
-                                    props.put("data", imageBuffer);
-                                    out.writeMap(props);
-                                    buf.flip();
-                                    //Ugh i hate flash sometimes!!
-                                    //Error #2095: flash.net.NetStream was unable to invoke callback onImageData.
-                                    ITag result = new Tag(IoConstants.TYPE_METADATA, 0, buf.limit(), null, 0);
-                                    result.setBody(buf);
-                                    //add to first frames
-                                    firstTags.add(result);
-                                }
-                            }
-                        } else {
-                            log.info("File did not contain ID3v2 data: {}", file.getName());
-                        }
-            */
+             * //send album image if included List<Artwork> tagFieldList = idTag.getArtworkList(); if (tagFieldList == null || tagFieldList.isEmpty()) { log.debug("No cover art was found"); }
+             * else { Artwork imageField = tagFieldList.get(0); log.debug("Picture type: {}", imageField.getPictureType()); FrameBodyAPIC imageFrameBody = new FrameBodyAPIC();
+             * imageFrameBody.setImageData(imageField.getBinaryData()); if (!imageFrameBody.isImageUrl()) { byte[] imageBuffer = (byte[])
+             * imageFrameBody.getObjectValue(DataTypes.OBJ_PICTURE_DATA); //set the cover image on the metadata metaData.setCovr(imageBuffer); // Create tag for onImageData event IoBuffer buf
+             * = IoBuffer.allocate(imageBuffer.length); buf.setAutoExpand(true); Output out = new Output(buf); out.writeString("onImageData"); Map<Object, Object> props = new HashMap<Object,
+             * Object>(); props.put("trackid", 1); props.put("data", imageBuffer); out.writeMap(props); buf.flip(); //Ugh i hate flash sometimes!! //Error #2095: flash.net.NetStream was unable
+             * to invoke callback onImageData. ITag result = new Tag(IoConstants.TYPE_METADATA, 0, buf.limit(), null, 0); result.setBody(buf); //add to first frames firstTags.add(result); } }
+             * } else { log.info("File did not contain ID3v2 data: {}", file.getName()); }
+             */
         } catch (Exception e) {
             log.error("MP3Reader {}", e);
         }

@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.io;
@@ -41,7 +30,7 @@ import org.red5.io.utils.IOUtils;
  * @author The Red5 Project
  * @author Luke Hubbard, Codegent Ltd (luke@codegent.com)
  * @author Art Clarke
-*/
+ */
 public class AMF3IOTest extends AbstractIOTest {
 
     IoBuffer buf;
@@ -78,13 +67,14 @@ public class AMF3IOTest extends AbstractIOTest {
     @Test
     public void testStreamData() {
         log.debug("\n Testing StreamData");
-        
+
         //0002000a6f6e437565506f696e74110a03
         //0002000c6f6e53747265616d53656e640200095b696e6465783a30
         //0002000c6f6e53747265616d53656e640200095b696e6465783a31
         //0002000c6f6e53747265616d53656e640200095b696e6465783a32
         log.debug("\n onMetaInfo");
-        buf.put(IOUtils.hexStringToByteArray("0002000a6f6e4d657461496e666f110a0b011153796e63546578740a01116c616e67756167650607656e6709646174610621546869732069732053796e6354657874011750726976617465446174610a010f6f776e6572496406033006064f56476870637942706379426959584e6c4e6a51675a57356a6232526c5a43427a64484a70626d630131436f6d6d65726369616c496e666f726d6174696f6e55524c0a01060625687474703a2f2f7265643570726f2e636f6d011b47656e6572616c4f626a6563740a0106066f56476870637942706379426e5a57356c636d46736158706c5a434276596d706c59335167596d467a5a545930494756755932396b5a57511166696c656e616d6506156d7946696c652e747874011155736572546578740a0106061b55736572546578745269636861010f436f6d6d656e740a01020604060610011d55736572446566696e656455524c0a01060633687474703a2f2f6769746875622e636f6d2f6d6f6e6461696e01"));
+        buf.put(IOUtils.hexStringToByteArray(
+                "0002000a6f6e4d657461496e666f110a0b011153796e63546578740a01116c616e67756167650607656e6709646174610621546869732069732053796e6354657874011750726976617465446174610a010f6f776e6572496406033006064f56476870637942706379426959584e6c4e6a51675a57356a6232526c5a43427a64484a70626d630131436f6d6d65726369616c496e666f726d6174696f6e55524c0a01060625687474703a2f2f7265643570726f2e636f6d011b47656e6572616c4f626a6563740a0106066f56476870637942706379426e5a57356c636d46736158706c5a434276596d706c59335167596d467a5a545930494756755932396b5a57511166696c656e616d6506156d7946696c652e747874011155736572546578740a0106061b55736572546578745269636861010f436f6d6d656e740a01020604060610011d55736572446566696e656455524c0a01060633687474703a2f2f6769746875622e636f6d2f6d6f6e6461696e01"));
         buf.flip();
         // skip the first byte
         assertEquals(0, buf.get());
@@ -105,7 +95,8 @@ public class AMF3IOTest extends AbstractIOTest {
         resetOutput();
         ///////////////////////////////////////////////
         log.debug("\n onMetaInfo #2");
-        buf.put(IOUtils.hexStringToByteArray("0002000a6f6e4d657461496e666f110a0b0131436f6d6d65726369616c496e666f726d6174696f6e55524c0a0109646174610625687474703a2f2f7265643570726f2e636f6d011155736572546578740a0102061b55736572546578745269636861011153796e63546578740a01116c616e67756167650607656e67020621546869732069732053796e6354657874011d55736572446566696e656455524c0a01020633687474703a2f2f6769746875622e636f6d2f6d6f6e6461696e011750726976617465446174610a0102064f56476870637942706379426959584e6c4e6a51675a57356a6232526c5a43427a64484a70626d630f6f776e65724964060330010f436f6d6d656e740a010c060e020618011b47656e6572616c4f626a6563740a0102066f56476870637942706379426e5a57356c636d46736158706c5a434276596d706c59335167596d467a5a545930494756755932396b5a57511166696c656e616d6506156d7946696c652e74787401"));
+        buf.put(IOUtils.hexStringToByteArray(
+                "0002000a6f6e4d657461496e666f110a0b0131436f6d6d65726369616c496e666f726d6174696f6e55524c0a0109646174610625687474703a2f2f7265643570726f2e636f6d011155736572546578740a0102061b55736572546578745269636861011153796e63546578740a01116c616e67756167650607656e67020621546869732069732053796e6354657874011d55736572446566696e656455524c0a01020633687474703a2f2f6769746875622e636f6d2f6d6f6e6461696e011750726976617465446174610a0102064f56476870637942706379426959584e6c4e6a51675a57356a6232526c5a43427a64484a70626d630f6f776e65724964060330010f436f6d6d656e740a010c060e020618011b47656e6572616c4f626a6563740a0102066f56476870637942706379426e5a57356c636d46736158706c5a434276596d706c59335167596d467a5a545930494756755932396b5a57511166696c656e616d6506156d7946696c652e74787401"));
         buf.flip();
         // skip the first byte
         assertEquals(0, buf.get());
@@ -115,7 +106,7 @@ public class AMF3IOTest extends AbstractIOTest {
         assertEquals("onMetaInfo", str);
         //Object object = Deserializer.deserialize(in, String.class);
         log.debug("onStreamSend: {}", str);
-        
+
         // reset for next test
         resetOutput();
         ///////////////////////////////////////////////
@@ -155,27 +146,27 @@ public class AMF3IOTest extends AbstractIOTest {
         // reset for next test
         resetOutput();
         ///////////////////////////////////////////////
-//        log.debug("\n onCuePoint");
-//        // OSMF CuePoint object
-//        buf.put(IOUtils.hexStringToByteArray("0002000a6f6e437565506f696e74110a03"));
-//        // AS3 Object with cuepoint properties
-//        buf.put(IOUtils.hexStringToByteArray("0002000a6f6e437565506f696e74110a0b01096e616d6506176e6176437565506f696e740974797065060b6576656e740974696d65040115706172616d65746572730a01176f7269656e746174696f6e045a01"));
-//        buf.flip();
-//        // skip the first byte
-//        assertEquals(0, buf.get());
-//        // validate data
-//        assertEquals(DataTypes.CORE_STRING, in.readDataType());
-//        str = in.readString();
-//        assertEquals("onCuePoint", str);
-//        //Object object = Deserializer.deserialize(in, String.class);
-//        log.debug("onCuePoint: {}", str);
-//        //assertEquals(DataTypes.CORE_OBJECT, in.readDataType());
-//        object = Deserializer.deserialize(in, MetaCue.class);
-//        log.debug("Obj: {}", object);
-//        // reset for next test
-//        resetOutput();
+        //        log.debug("\n onCuePoint");
+        //        // OSMF CuePoint object
+        //        buf.put(IOUtils.hexStringToByteArray("0002000a6f6e437565506f696e74110a03"));
+        //        // AS3 Object with cuepoint properties
+        //        buf.put(IOUtils.hexStringToByteArray("0002000a6f6e437565506f696e74110a0b01096e616d6506176e6176437565506f696e740974797065060b6576656e740974696d65040115706172616d65746572730a01176f7269656e746174696f6e045a01"));
+        //        buf.flip();
+        //        // skip the first byte
+        //        assertEquals(0, buf.get());
+        //        // validate data
+        //        assertEquals(DataTypes.CORE_STRING, in.readDataType());
+        //        str = in.readString();
+        //        assertEquals("onCuePoint", str);
+        //        //Object object = Deserializer.deserialize(in, String.class);
+        //        log.debug("onCuePoint: {}", str);
+        //        //assertEquals(DataTypes.CORE_OBJECT, in.readDataType());
+        //        object = Deserializer.deserialize(in, MetaCue.class);
+        //        log.debug("Obj: {}", object);
+        //        // reset for next test
+        //        resetOutput();
     }
-    
+
     @Test
     public void testEnum() {
         log.debug("\n Testing Enum");

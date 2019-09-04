@@ -43,9 +43,7 @@ public class FLVReaderTest {
     @Test
     public void testFLVReaderFile() {
         log.info("\n testFLVReaderFile");
-        String[] paths = new String[] { "target/test-classes/fixtures/h264_aac.flv", "target/test-classes/fixtures/h264_mp3.flv", 
-                "target/test-classes/fixtures/h264_speex.flv", "target/test-classes/fixtures/stray.flv", "target/test-classes/fixtures/NAPNAP.flv",
-                "target/test-classes/fixtures/dummy.flv" };
+        String[] paths = new String[] { "target/test-classes/fixtures/h264_aac.flv", "target/test-classes/fixtures/h264_mp3.flv", "target/test-classes/fixtures/h264_speex.flv", "target/test-classes/fixtures/stray.flv", "target/test-classes/fixtures/NAPNAP.flv", "target/test-classes/fixtures/dummy.flv" };
         try {
             for (String path : paths) {
                 File file = Paths.get(path).toFile();
@@ -98,7 +96,6 @@ public class FLVReaderTest {
             e.printStackTrace();
         }
     }
-
 
     @Test
     public void testFLVReaderFileGenerateMetaData() {

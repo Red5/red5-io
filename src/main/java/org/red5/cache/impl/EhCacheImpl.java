@@ -1,36 +1,17 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.cache.impl;
 
 import java.lang.ref.SoftReference;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.ehcache.CacheManager;
-import org.ehcache.config.CacheConfiguration;
-import org.ehcache.config.Configuration;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ConfigurationBuilder;
-import org.ehcache.core.Ehcache;
-import org.ehcache.core.events.CacheManagerListener;
 import org.red5.cache.ICacheStore;
 import org.red5.cache.ICacheable;
 import org.slf4j.Logger;
@@ -38,6 +19,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.config.Configuration;
+import net.sf.ehcache.config.ConfigurationHelper;
+import net.sf.ehcache.event.CacheManagerEventListener;
 
 /**
  * Provides an implementation of an object cache using EhCache.
@@ -51,22 +41,22 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
 
     protected static Logger log = LoggerFactory.getLogger(EhCacheImpl.class);
 
-    @SuppressWarnings("unused")
-    private final static String defaultCacheName = "default";
+    private static Ehcache cache;
 
-    private static CacheManager cm;
+    private List<CacheConfiguration> configs;
 
-    private static Ehcache<String, ICacheable> cache;
+    private String memoryStoreEvictionPolicy = "LRU";
 
-    @SuppressWarnings("unused")
-    private List<CacheConfiguration<String, ICacheable>> configs;
+    private int diskExpiryThreadIntervalSeconds = 120;
 
     private String diskStore = System.getProperty("java.io.tmpdir");
 
-    private CacheManagerListener cacheManagerEventListener;
+    private CacheManagerEventListener cacheManagerEventListener;
 
     // We store the application context in a ThreadLocal so we can access it later
     private static ApplicationContext applicationContext;
+
+    private CacheManager cm;
 
     /** {@inheritDoc} */
     @Override
@@ -87,13 +77,44 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
         log.info("Loading ehcache");
         // log.debug("Appcontext: " + applicationContext.toString());
         try {
-            // use the Configuration to create our caches
-            Configuration configuration = ConfigurationBuilder.newConfigurationBuilder().build();
             // instance the manager
-            cm = CacheManagerBuilder.newCacheManager(configuration);
-            cm.init();
-            // init the default
-            cache.init();
+            cm = CacheManager.getInstance();
+            // Use the Configuration to create our caches
+            Configuration configuration = new Configuration();
+            //set initial default cache name
+            @SuppressWarnings("unused")
+            String defaultCacheName = Cache.DEFAULT_CACHE_NAME;
+            //add the configs to a configuration
+            for (CacheConfiguration conf : configs) {
+                //set disk expiry
+                conf.setDiskExpiryThreadIntervalSeconds(diskExpiryThreadIntervalSeconds);
+                //set eviction policy
+                conf.setMemoryStoreEvictionPolicy(memoryStoreEvictionPolicy);
+                if (null == cache) {
+                    //get first cache name and use as default
+                    defaultCacheName = conf.getName();
+                    configuration.addDefaultCache(conf);
+                } else {
+                    configuration.addCache(conf);
+                }
+            }
+            //instance the helper
+            ConfigurationHelper helper = new ConfigurationHelper(cm, configuration);
+            //create the default cache
+            cache = helper.createDefaultCache();
+            //init the default
+            cache.initialise();
+            cache.bootstrap();
+            //create the un-init'd caches
+            @SuppressWarnings("unchecked")
+            Set<Cache> caches = helper.createCaches();
+            if (log.isDebugEnabled()) {
+                log.debug("Number of caches: " + caches.size() + " Default cache: " + (cache != null ? 1 : 0));
+            }
+            for (Cache nonDefaultCache : caches) {
+                nonDefaultCache.initialise();
+                nonDefaultCache.bootstrap();
+            }
         } catch (Exception e) {
             log.warn("Error on cache init", e);
         }
@@ -107,7 +128,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     public ICacheable get(String name) {
         ICacheable ic = null;
         try {
-            ic = cache.get(name);
+            ic = (ICacheable) cache.get(name).getObjectValue();
         } catch (NullPointerException npe) {
         }
         return ic;
@@ -117,20 +138,17 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     @Override
     public void put(String name, Object obj) {
         if (obj instanceof ICacheable) {
-            cache.put(name, (ICacheable) obj);
+            cache.put(new Element(name, obj));
         } else {
-            cache.put(name, new CacheableImpl(obj));
+            cache.put(new Element(name, new CacheableImpl(obj)));
         }
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
     public Iterator<String> getObjectNames() {
-        final Set<String> names = new HashSet<>();
-        cache.forEach(entry -> {
-            names.add(entry.getKey());
-        });
-        return names.iterator();
+        return cache.getKeys().iterator();
     }
 
     /** {@inheritDoc} */
@@ -144,13 +162,13 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     public boolean offer(String name, Object obj) {
         boolean result = false;
         try {
-            result = cache.containsKey(name);
-            // put an object into the cache
+            result = cache.isKeyInCache(name);
+            // Put an object into the cache
             if (!result) {
                 put(name, obj);
             }
-            // check again
-            result = cache.containsKey(name);
+            //check again
+            result = cache.isKeyInCache(name);
         } catch (NullPointerException npe) {
             if (log.isDebugEnabled()) {
                 log.warn("Name: {} Object: {}", name, obj.getClass().getName(), npe);
@@ -162,16 +180,13 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
     /** {@inheritDoc} */
     @Override
     public boolean remove(ICacheable obj) {
-        String name = obj.getName();
-        cache.remove(name);
-        return !cache.containsKey(name);
+        return cache.remove(obj.getName());
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean remove(String name) {
-        cache.remove(name);
-        return !cache.containsKey(name);
+        return cache.remove(name);
     }
 
     /**
@@ -180,7 +195,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      * @param configs
      *            Value to set for property 'cacheConfigs'.
      */
-    public void setCacheConfigs(List<CacheConfiguration<String, ICacheable>> configs) {
+    public void setCacheConfigs(List<CacheConfiguration> configs) {
         this.configs = configs;
     }
 
@@ -197,9 +212,9 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      *
      * @return Value for property 'memoryStoreEvictionPolicy'.
      */
-    //public String getMemoryStoreEvictionPolicy() {
-    //return memoryStoreEvictionPolicy;
-    //}
+    public String getMemoryStoreEvictionPolicy() {
+        return memoryStoreEvictionPolicy;
+    }
 
     /**
      * Setter for property 'memoryStoreEvictionPolicy'.
@@ -208,7 +223,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      *            Value to set for property 'memoryStoreEvictionPolicy'.
      */
     public void setMemoryStoreEvictionPolicy(String memoryStoreEvictionPolicy) {
-        //this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
+        this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
     }
 
     /**
@@ -216,9 +231,9 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      *
      * @return Value for property 'diskExpiryThreadIntervalSeconds'.
      */
-    //public int getDiskExpiryThreadIntervalSeconds() {
-    //return diskExpiryThreadIntervalSeconds;
-    //}
+    public int getDiskExpiryThreadIntervalSeconds() {
+        return diskExpiryThreadIntervalSeconds;
+    }
 
     /**
      * Setter for property 'diskExpiryThreadIntervalSeconds'.
@@ -227,7 +242,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      *            Value to set for property 'diskExpiryThreadIntervalSeconds'.
      */
     public void setDiskExpiryThreadIntervalSeconds(int diskExpiryThreadIntervalSeconds) {
-        //this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
+        this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
     }
 
     /**
@@ -254,7 +269,7 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      *
      * @return Value for property 'cacheManagerEventListener'.
      */
-    public CacheManagerListener getCacheManagerEventListener() {
+    public CacheManagerEventListener getCacheManagerEventListener() {
         return cacheManagerEventListener;
     }
 
@@ -264,18 +279,38 @@ public class EhCacheImpl implements ICacheStore, ApplicationContextAware {
      * @param cacheManagerEventListener
      *            Value to set for property 'cacheManagerEventListener'.
      */
-    public void setCacheManagerEventListener(CacheManagerListener cacheManagerEventListener) {
+    public void setCacheManagerEventListener(CacheManagerEventListener cacheManagerEventListener) {
         this.cacheManagerEventListener = cacheManagerEventListener;
+    }
+
+    /**
+     * Getter for property 'cacheHit'.
+     *
+     * @return Value for property 'cacheHit'.
+     */
+    public static long getCacheHit() {
+        return cache.getStatistics().cacheHitCount();
+    }
+
+    /**
+     * Getter for property 'cacheMiss'.
+     *
+     * @return Value for property 'cacheMiss'.
+     */
+    public static long getCacheMiss() {
+        return cache.getStatistics().cacheMissCount();
     }
 
     /** {@inheritDoc} */
     @Override
     public void destroy() {
         // Shut down the cache manager
-        try {
-            cm.close();
-        } catch (Exception e) {
-            log.warn("Error on cache shutdown", e);
+        if (cm != null) {
+            try {
+                cm.shutdown();
+            } catch (Exception e) {
+                log.warn("Error on cache shutdown", e);
+            }
         }
     }
 }

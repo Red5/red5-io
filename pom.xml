@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.red5</groupId>
         <artifactId>red5-parent</artifactId>
-        <version>1.2.1</version>
+        <version>1.2.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>red5-io</artifactId>
@@ -72,7 +72,14 @@
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
             <plugin>
+                <artifactId>maven-toolchains-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
@@ -125,216 +132,23 @@
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
             <version>${tika.version}</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>cxf-rt-rs-client</artifactId>
-                    <groupId>org.apache.cxf</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>cdm</artifactId>
-                    <groupId>edu.ucar</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>pdfbox</artifactId>
-                    <groupId>org.apache.pdfbox</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>opennlp-tools</artifactId>
-                    <groupId>org.apache.opennlp</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>junrar</artifactId>
-                    <groupId>com.github.junrar</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>grib</artifactId>
-                    <groupId>edu.ucar</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>sis-metadata</artifactId>
-                    <groupId>org.apache.sis.core</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>sis-utility</artifactId>
-                    <groupId>org.apache.sis.core</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>sis-netcdf</artifactId>
-                    <groupId>org.apache.sis.storage</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>vorbis-java-core</artifactId>
-                    <groupId>org.gagravarr</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>vorbis-java-tika</artifactId>
-                    <groupId>org.gagravarr</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>xz</artifactId>
-                    <groupId>org.tukaani</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>geoapi</artifactId>
-                    <groupId>org.opengis</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>httpservices</artifactId>
-                    <groupId>edu.ucar</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jackcess</artifactId>
-                    <groupId>com.healthmarketscience.jackcess</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jackcess-encrypt</artifactId>
-                    <groupId>com.healthmarketscience.jackcess</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>java-libpst</artifactId>
-                    <groupId>com.pff</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>netcdf4</artifactId>
-                    <groupId>edu.ucar</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>bcmail-jdk15on</artifactId>
-                    <groupId>org.bouncycastle</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>bcpkix-jdk15on</artifactId>
-                    <groupId>org.bouncycastle</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-csv</artifactId>
-                    <groupId>org.apache.commons</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-exec</artifactId>
-                    <groupId>org.apache.commons</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jhighlight</artifactId>
-                    <groupId>org.codelibs</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jmatio</artifactId>
-                    <groupId>net.sourceforge.jmatio</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jmatio</artifactId>
-                    <groupId>org.tallison</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>json</artifactId>
-                    <groupId>org.json</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>json</artifactId>
-                    <groupId>com.tdunning</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>gson</artifactId>
-                    <groupId>com.google.code.gson</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jackson-core</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>json-simple</artifactId>
-                    <groupId>com.googlecode.json-simple</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>poi</artifactId>
-                    <groupId>org.apache.poi</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>poi-ooxml</artifactId>
-                    <groupId>org.apache.poi</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>poi-scratchpad</artifactId>
-                    <groupId>org.apache.poi</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>rome</artifactId>
-                    <groupId>rome</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>isoparser</artifactId>
-                    <groupId>com.googlecode.mp4parser</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>sentiment-analysis-parser</artifactId>
-                    <groupId>edu.usc.ir</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-runtime</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.rometools</groupId>
-                    <artifactId>rome</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.epam</groupId>
-                    <artifactId>parso</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.openjson</groupId>
-                    <artifactId>openjson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.java.dev.jna</groupId>
-                    <artifactId>jna</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jsoup</groupId>
-                    <artifactId>jsoup</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.pdfbox</groupId>
-                    <artifactId>jbig2-imageio</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.jai-imageio</groupId>
-                    <artifactId>jai-imageio-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.pdfbox</groupId>
-                    <artifactId>pdfbox-tools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.ccil.cowan.tagsoup</groupId>
-                    <artifactId>tagsoup</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jdom</groupId>
-                    <artifactId>jdom2</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -347,6 +161,11 @@
             <artifactId>commons-codec</artifactId>
             <groupId>commons-codec</groupId>
             <version>${commons-codec.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>commons-io</artifactId>
+            <groupId>commons-io</groupId>
+            <version>${commons-io.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -370,13 +189,13 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.ehcache</groupId>
+            <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-runtime</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

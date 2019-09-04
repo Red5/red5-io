@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.io.flv.impl;
@@ -233,7 +222,6 @@ public class FLVWriter implements ITagWriter {
         }
     }
 
-
     /**
      * Creates writer implementation with given file and flag indicating whether or not to append.
      *
@@ -384,14 +372,8 @@ public class FLVWriter implements ITagWriter {
         try {
             lock.acquire();
             /*
-             * Tag header = 11 bytes
-             * |-|---|----|---|
-             *    0 = type
-             *  1-3 = data size
-             *  4-7 = timestamp
-             * 8-10 = stream id (always 0)
-             * Tag data = variable bytes
-             * Previous tag = 4 bytes (tag header size + tag data size)
+             * Tag header = 11 bytes |-|---|----|---| 0 = type 1-3 = data size 4-7 = timestamp 8-10 = stream id (always 0) Tag data = variable bytes Previous tag = 4 bytes (tag header size +
+             * tag data size)
              */
             log.trace("writeTag: {}", tag);
             long prevBytesWritten = bytesWritten;
@@ -591,14 +573,8 @@ public class FLVWriter implements ITagWriter {
         try {
             lock.acquire();
             /*
-             * Tag header = 11 bytes
-             * |-|---|----|---|
-             *    0 = type
-             *  1-3 = data size
-             *  4-7 = timestamp
-             * 8-10 = stream id (always 0)
-             * Tag data = variable bytes
-             * Previous tag = 4 bytes (tag header size + tag data size)
+             * Tag header = 11 bytes |-|---|----|---| 0 = type 1-3 = data size 4-7 = timestamp 8-10 = stream id (always 0) Tag data = variable bytes Previous tag = 4 bytes (tag header size +
+             * tag data size)
              */
             if (log.isTraceEnabled()) {
                 log.trace("writeTag - type: {} data: {}", dataType, data);
@@ -720,7 +696,6 @@ public class FLVWriter implements ITagWriter {
         // Create a data channel that is read-only
         this.dataChannel = Files.newByteChannel(path, StandardOpenOption.READ);
     }
-
 
     /**
      * Write "onMetaData" tag to the file.

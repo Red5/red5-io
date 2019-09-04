@@ -21,7 +21,7 @@ public class MessageSerializationTest {
     public void testCommandMessageExt() {
         CommandMessageExt original = new CommandMessageExt();
         fillCommandMessage(original);
-        
+
         CommandMessageExt result = serializeAndDeserialize(original, CommandMessageExt.class);
 
         assertThat(result, samePropertyValuesAs(original));
@@ -31,22 +31,22 @@ public class MessageSerializationTest {
     public void testCommandMessage() {
         CommandMessage original = new CommandMessage();
         fillCommandMessage(original);
-        
+
         CommandMessageExt resultExt = serializeAndDeserialize(new CommandMessageExt(original), CommandMessageExt.class);
 
         assertThat(resultExt, samePropertyValuesAs(original));
     }
-    
+
     @Test
     public void testAsyncMessage_stringBody() {
         AsyncMessage original = new AsyncMessage();
         fillAsyncMessage(original);
 
         AsyncMessage result = serializeAndDeserialize(original, AsyncMessage.class);
-        
+
         assertThat(result, samePropertyValuesAs(original));
     }
-    
+
     @Test
     public void testAsyncMessage_bytesBody() {
         AsyncMessage original = new AsyncMessage();
@@ -54,55 +54,55 @@ public class MessageSerializationTest {
         original.setBody(new byte[] { 1, 2, 0, -1, -2, 127, 0, -128, 0 });
 
         AsyncMessage result = serializeAndDeserialize(original, AsyncMessage.class);
-        
+
         // convert the body back to byte[] so we can compare to the original message
         ByteArray body = (ByteArray) result.getBody();
         result.setBody(toBytes(body));
-        
+
         assertThat(result, samePropertyValuesAs(original));
     }
-    
+
     @Test
     public void testAsyncMessage_byteArrayBody() {
         ByteArray originalBody = new ByteArray();
         originalBody.writeObject("Hello World!");
         originalBody.compress();
-        
+
         AsyncMessage original = new AsyncMessage();
         fillAsyncMessage(original);
         original.setBody(originalBody);
-        
+
         AsyncMessage result = serializeAndDeserialize(original, AsyncMessage.class);
-        
+
         assertThat(result, samePropertyValuesAs(original));
-        
+
         ByteArray resultBody = (ByteArray) result.getBody();
         resultBody.uncompress();
         Assert.assertEquals("Hello World!", resultBody.readObject());
     }
-    
+
     @Test
     public void testAsyncMessageExt_bytesBody() {
         AsyncMessageExt original = new AsyncMessageExt();
         fillAsyncMessage(original);
         original.setBody(new byte[] { 1, 2, 0, -1, -2, 127, 0, -128, 0 });
-        
+
         AsyncMessageExt result = serializeAndDeserialize(original, AsyncMessageExt.class);
-        
+
         // convert the body back to byte[] so we can compare to the original message
         ByteArray body = (ByteArray) result.getBody();
         result.setBody(toBytes(body));
-        
+
         assertThat(result, samePropertyValuesAs(original));
     }
-    
+
     @Test
     public void testRemotingMessage() {
         RemotingMessage original = new RemotingMessage();
         fillRemotingMessage(original);
 
         RemotingMessage result = serializeAndDeserialize(original, RemotingMessage.class);
-        
+
         assertThat(result, samePropertyValuesAs(original));
     }
 
@@ -142,15 +142,15 @@ public class MessageSerializationTest {
     private <T> T serializeAndDeserialize(T obj, Class<T> type) {
         IoBuffer data = IoBuffer.allocate(0);
         data.setAutoExpand(true);
-        
+
         Output output = new Output(data);
         output.enforceAMF3();
         Serializer.serialize(output, obj);
-        
+
         Input input = new Input(data.flip());
         input.enforceAMF3();
         Object result = Deserializer.deserialize(input, type);
-        
+
         return type.cast(result);
     }
 

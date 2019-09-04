@@ -20,7 +20,7 @@ public class InputTest {
     public void testOnStreamSendMap() {
         // 02 = string
         // 08 = mixed array (map) max number = 0
-        
+
         IoBuffer data = IoBuffer.wrap(IOUtils.hexStringToByteArray("02 00 0c 6f 6e 53 74 72 65 61 6d 53 65 6e 64 08 00000000 00 05 76 616c7565 02 00 01 31 00 00 09"));
         Input in0 = new Input(data);
         assertEquals(DataTypes.CORE_STRING, in0.readDataType());

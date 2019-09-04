@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.io.amf3;
@@ -30,10 +19,10 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import net.sf.ehcache.Element;
+
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.mina.core.buffer.IoBuffer;
-import org.ehcache.Cache;
-import org.ehcache.Cache.Entry;
 import org.red5.annotations.Anonymous;
 import org.red5.compatibility.flex.messaging.io.ObjectProxy;
 import org.red5.io.amf.AMF;
@@ -141,15 +130,14 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected static byte[] encodeString(String string) {
-        Cache.Entry<String, byte[]> element = (Entry<String, byte[]>) getStringCache().get(string);
-        byte[] encoded = (element == null ? null : (byte[]) element.getValue());
+        Element element = getStringCache().get(string);
+        byte[] encoded = (element == null ? null : (byte[]) element.getObjectValue());
         if (encoded == null) {
             ByteBuffer buf = AMF.CHARSET.encode(string);
             encoded = new byte[buf.limit()];
             buf.get(encoded);
-            getStringCache().put(string, encoded);
+            getStringCache().put(new Element(string, encoded));
         }
         return encoded;
     }
@@ -270,11 +258,9 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
         if (componentType.equals(Character.TYPE)) {
             // write the char[] as a string
             writeString(new String((char[]) array));
-        }
-        else if (componentType.equals(Byte.TYPE)) {
+        } else if (componentType.equals(Byte.TYPE)) {
             writePrimitiveByteArray((byte[]) array);
-        }
-        else {
+        } else {
             writePrimitiveArrayFallback(array);
         }
     }
@@ -291,7 +277,6 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
             return;
         }
         storeReference(bytes);
-        
         int length = bytes.length;
         putInteger(length << 1 | 0x1);
 
@@ -304,13 +289,11 @@ public class Output extends org.red5.io.amf.Output implements org.red5.io.object
     private void writePrimitiveArrayFallback(Object array) {
         writeAMF3();
         buf.put(AMF3.TYPE_ARRAY);
-        
         if (hasReference(array)) {
             putInteger(getReferenceId(array) << 1);
             return;
         }
         storeReference(array);
-        
         amf3_mode += 1;
         int count = Array.getLength(array);
         putInteger(count << 1 | 1);

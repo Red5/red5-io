@@ -16,10 +16,10 @@ public class InputTest {
 
     @Test
     public void testClassFilter() {
-        for (String name : new String[] {"java.util.Calendar", "java.sql.ResultSet"}) {
+        for (String name : new String[] { "java.util.Calendar", "java.sql.ResultSet" }) {
             assertTrue(String.format("Class creation should be allowed: '%s'", name), BaseInput.classAllowed(name));
         }
-        for (String name : new String[] {"org.springframework.jmx.support.JmxUtils"}) {
+        for (String name : new String[] { "org.springframework.jmx.support.JmxUtils" }) {
             assertFalse(String.format("Class creation should NOT be allowed: '%s'", name), BaseInput.classAllowed(name));
         }
     }

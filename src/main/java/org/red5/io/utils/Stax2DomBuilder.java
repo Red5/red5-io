@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.io.utils;
@@ -138,9 +127,7 @@ public class Stax2DomBuilder {
                         continue main_loop;
                     }
                     /*
-                     * Oh great. DOM is brain-dead in that ignorable white space
-                     * can not be added, even though it is legal, and often
-                     * reported by StAX/SAX impls...
+                     * Oh great. DOM is brain-dead in that ignorable white space can not be added, even though it is legal, and often reported by StAX/SAX impls...
                      */
                     if (current == doc) { // better just ignore, thus...
                         continue;
@@ -168,9 +155,7 @@ public class Stax2DomBuilder {
                 case XMLStreamConstants.ENTITY_DECLARATION:
                 case XMLStreamConstants.NOTATION_DECLARATION:
                     /*
-                     * Shouldn't really get these, but maybe some stream readers
-                     * do provide the info. If so, better ignore it -- DTD event
-                     * should have most/all we need.
+                     * Shouldn't really get these, but maybe some stream readers do provide the info. If so, better ignore it -- DTD event should have most/all we need.
                      */
                     continue main_loop;
 
@@ -202,8 +187,7 @@ public class Stax2DomBuilder {
                     }
 
                     /*
-                     * No need to check namespace bindings, unlikes with some
-                     * other frameworks (JDOM)
+                     * No need to check namespace bindings, unlikes with some other frameworks (JDOM)
                      */
 
                     // And then the attributes:
@@ -231,36 +215,28 @@ public class Stax2DomBuilder {
 
                 case XMLStreamConstants.START_DOCUMENT:
                     /*
-                     * This should only be received at the beginning of
-                     * document... so, should we indicate the problem or not?
+                     * This should only be received at the beginning of document... so, should we indicate the problem or not?
                      */
                     /*
-                     * For now, let it pass: maybe some (broken) readers pass
-                     * that info as first event in beginning of doc?
+                     * For now, let it pass: maybe some (broken) readers pass that info as first event in beginning of doc?
                      */
                     continue main_loop;
 
                 case XMLStreamConstants.DTD:
                     /*
-                     * !!! Note: StAX does not expose enough information about
-                     * doctype declaration (specifically, public and system
-                     * id!); (altough StAX2 would...)
-                     * 
-                     * Worse, DOM1/2 do not specify a way to create the DocType
-                     * node, even if StAX provided it. This is pretty silly, all
-                     * in all.
+                     * !!! Note: StAX does not expose enough information about doctype declaration (specifically, public and system id!); (altough StAX2 would...) Worse, DOM1/2 do not specify a way to
+                     * create the DocType node, even if StAX provided it. This is pretty silly, all in all.
                      */
                     continue main_loop;
 
-                    // Should never get these, from a stream reader:
+                // Should never get these, from a stream reader:
 
-                    /*
-                     * (commented out entries are just FYI; default catches them
-                     * all)
-                     */
+                /*
+                 * (commented out entries are just FYI; default catches them all)
+                 */
 
-                    // case XMLStreamConstants.ATTRIBUTE:
-                    // case XMLStreamConstants.NAMESPACE:
+                // case XMLStreamConstants.ATTRIBUTE:
+                // case XMLStreamConstants.NAMESPACE:
                 default:
                     throw new XMLStreamException("Unrecognized iterator event type: " + r.getEventType() + "; should not receive such types (broken stream reader?)");
             }
@@ -275,8 +251,7 @@ public class Stax2DomBuilder {
 
     protected String getQualified(String prefix, String localName) {
         /*
-         * This mostly/only helps with empty/text-only elements... might make
-         * sense to do 'real' caching...
+         * This mostly/only helps with empty/text-only elements... might make sense to do 'real' caching...
          */
         if (localName.equals(mLastLocalName) && prefix.endsWith(mLastPrefix)) {
             return mLastQName;
@@ -289,9 +264,7 @@ public class Stax2DomBuilder {
     protected void checkReaderSettings(XMLStreamReader r) throws XMLStreamException {
         Object o = r.getProperty(XMLInputFactory.IS_NAMESPACE_AWARE);
         /*
-         * StAX defaults to namespace aware, so let's use similar logics
-         * (although all compliant implementations really should return a valid
-         * value)
+         * StAX defaults to namespace aware, so let's use similar logics (although all compliant implementations really should return a valid value)
          */
         if ((o instanceof Boolean) && !((Boolean) o).booleanValue()) {
             mNsAware = false;

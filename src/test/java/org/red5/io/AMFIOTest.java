@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.io;
@@ -95,27 +84,15 @@ public class AMFIOTest extends AbstractIOTest {
     public void testAMF0Wiki2() throws Exception {
         log.debug("\ntestAMF0Wiki2");
         /*
-         * The AMF message starts with a 0x03 which denotes an RTMP packet with Header Type of 0, so 12 bytes are expected to follow. 
-         * It is of Message Type 0x14, which denotes a command in the form of a string of value "_result" and two serialized objects as arguments. 
-         * The message can be decoded as follows:
-         (command) "_result"
-         (transaction id) 1
-         (value)
-         [1] { fmsVer: "FMS/3,5,5,2004"
-               capabilities: 31.0
-               mode: 1.0 },
-         [2] { level: "status",
-               code: "NetConnection.Connect.Success",
-               description: "Connection succeeded",
-               data: (array) {
-                    version: "3,5,5,2004" },
-                    clientId: 1584259571.0,
-                    objectEncoding: 3.0 }
-         * Here one can see an array (in turquoise) as a value of the 'data' key which has one member. We can see the objectEncoding value to be 3.
-         * This means that subsequent messages are going to be sent with the 0x11 message type, which will imply an AMF3 encoding.
+         * The AMF message starts with a 0x03 which denotes an RTMP packet with Header Type of 0, so 12 bytes are expected to follow. It is of Message Type 0x14, which denotes a command in
+         * the form of a string of value "_result" and two serialized objects as arguments. The message can be decoded as follows: (command) "_result" (transaction id) 1 (value) [1] {
+         * fmsVer: "FMS/3,5,5,2004" capabilities: 31.0 mode: 1.0 }, [2] { level: "status", code: "NetConnection.Connect.Success", description: "Connection succeeded", data: (array) {
+         * version: "3,5,5,2004" }, clientId: 1584259571.0, objectEncoding: 3.0 } Here one can see an array (in turquoise) as a value of the 'data' key which has one member. We can see the
+         * objectEncoding value to be 3. This means that subsequent messages are going to be sent with the 0x11 message type, which will imply an AMF3 encoding.
          */
         // AMF packet
-        IoBuffer data = IoBuffer.wrap(IOUtils.hexStringToByteArray("03 00 00 00 00 01 05 14 00 00 00 00 02 00 07 5F 72 65 73 75 6C 74 00 3F F0 00 00 00 00 00 00 03 00 06 66 6D 73 56 65 72 02 00 0E 46 4D 53 2F 33 2C 35 2C 35 2C 32 30 30 34 00 0C 63 61 70 61 62 69 6C 69 74 69 65 73 00 40 3F 00 00 00 00 00 00 00 04 6D 6F 64 65 00 3F F0 00 00 00 00 00 00 00 00 09 03 00 05 6C 65 76 65 6C 02 00 06 73 74 61 74 75 73 00 04 63 6F 64 65 02 00 1D 4E 65 74 43 6F 6E 6E 65 63 74 69 6F 6E 2E 43 6F 6E 6E 65 63 74 2E 53 75 63 63 65 73 73 00 0B 64 65 73 63 72 69 70 74 69 6F 6E 02 00 15 43 6F 6E 6E 65 63 74 69 6F 6E 20 73 75 63 63 65 65 64 65 64 2E 00 04 64 61 74 61 08 00 00 00 01 00 07 76 65 72 73 69 6F 6E 02 00 0A 33 2C 35 2C 35 2C 32 30 30 34 00 00 09 00 08 63 6C 69 65 6E 74 69 64 00 41 D7 9B 78 7C C0 00 00 00 0E 6F 62 6A 65 63 74 45 6E 63 6F 64 69 6E 67 00 40 08 00 00 00 00 00 00 00 00 09"));
+        IoBuffer data = IoBuffer.wrap(IOUtils.hexStringToByteArray(
+                "03 00 00 00 00 01 05 14 00 00 00 00 02 00 07 5F 72 65 73 75 6C 74 00 3F F0 00 00 00 00 00 00 03 00 06 66 6D 73 56 65 72 02 00 0E 46 4D 53 2F 33 2C 35 2C 35 2C 32 30 30 34 00 0C 63 61 70 61 62 69 6C 69 74 69 65 73 00 40 3F 00 00 00 00 00 00 00 04 6D 6F 64 65 00 3F F0 00 00 00 00 00 00 00 00 09 03 00 05 6C 65 76 65 6C 02 00 06 73 74 61 74 75 73 00 04 63 6F 64 65 02 00 1D 4E 65 74 43 6F 6E 6E 65 63 74 69 6F 6E 2E 43 6F 6E 6E 65 63 74 2E 53 75 63 63 65 73 73 00 0B 64 65 73 63 72 69 70 74 69 6F 6E 02 00 15 43 6F 6E 6E 65 63 74 69 6F 6E 20 73 75 63 63 65 65 64 65 64 2E 00 04 64 61 74 61 08 00 00 00 01 00 07 76 65 72 73 69 6F 6E 02 00 0A 33 2C 35 2C 35 2C 32 30 30 34 00 00 09 00 08 63 6C 69 65 6E 74 69 64 00 41 D7 9B 78 7C C0 00 00 00 0E 6F 62 6A 65 63 74 45 6E 63 6F 64 69 6E 67 00 40 08 00 00 00 00 00 00 00 00 09"));
         byte headerByte = data.get();
         int headerValue, byteCount;
         if ((headerByte & 0x3f) == 0) {
@@ -172,27 +149,27 @@ public class AMFIOTest extends AbstractIOTest {
             case 0x00: // HEADER_NEW
             case 0x01: //HEADER_SAME_SOURCE
             case 0x02: //HEADER_TIMER_CHANGE
-//                if (remaining >= headerLength) {
-                    int timeValue = readUnsignedMediumInt(data);
-                    if (timeValue == 0xffffff) {
-                        headerLength += 4;
-                    }
-                    log.debug("Time value: {}", timeValue);
-                    headerSize = (byte) readUnsignedMediumInt(data);
-                    headerDataType = data.get();
-                    headerStreamId = readReverseInt(data);
-                    if (timeValue == 0xffffff) {
-                        timeValue = (int) (data.getUnsignedInt() & Integer.MAX_VALUE);
-//                        headerExtendedTimestamp = timeValue;
-                    }
-//                    headerTimerBase = timeValue;
-//                    headerTimerDelta = 0;
-//                }
+                //                if (remaining >= headerLength) {
+                int timeValue = readUnsignedMediumInt(data);
+                if (timeValue == 0xffffff) {
+                    headerLength += 4;
+                }
+                log.debug("Time value: {}", timeValue);
+                headerSize = (byte) readUnsignedMediumInt(data);
+                headerDataType = data.get();
+                headerStreamId = readReverseInt(data);
+                if (timeValue == 0xffffff) {
+                    timeValue = (int) (data.getUnsignedInt() & Integer.MAX_VALUE);
+                    //                        headerExtendedTimestamp = timeValue;
+                }
+                //                    headerTimerBase = timeValue;
+                //                    headerTimerDelta = 0;
+                //                }
                 break;
             case 0x03: //HEADER_CONTINUE
-//                if (lastHeader != null && lastHeader.getExtendedTimestamp() != 0) {
-//                    headerLength += 4;
-//                }
+                //                if (lastHeader != null && lastHeader.getExtendedTimestamp() != 0) {
+                //                    headerLength += 4;
+                //                }
                 break;
             default:
                 throw new Exception("Unexpected header size " + headerSize + " check for error");
@@ -209,7 +186,7 @@ public class AMFIOTest extends AbstractIOTest {
         Number transactionId = in0.readNumber();
         assertTrue(Double.valueOf(1.0d).equals(transactionId.doubleValue()));
         assertEquals(DataTypes.CORE_OBJECT, in0.readDataType());
-        
+
         @SuppressWarnings("rawtypes")
         ObjectMap param1 = (ObjectMap) in0.readObject();
         log.debug("Invoke: {}", param1);
@@ -248,9 +225,8 @@ public class AMFIOTest extends AbstractIOTest {
     @Test
     public void testAMF0Connect() {
         log.debug("\ntestAMF0Connect");
-        IoBuffer data = IoBuffer
-                .wrap(IOUtils
-                        .hexStringToByteArray("020007636f6e6e656374003ff00000000000000300036170700200086f666c6144656d6f0008666c61736856657202000e4c4e582032302c302c302c323836000673776655726c020029687474703a2f2f6c6f63616c686f73743a353038302f64656d6f732f6f666c615f64656d6f2e7377660005746355726c02001972746d703a2f2f6c6f63616c686f73742f6f666c6144656d6f0004667061640100000c6361706162696c697469657300406de00000000000000b617564696f436f646563730040abee0000000000000b766964656f436f6465637300406f800000000000000d766964656f46756e6374696f6e003ff000000000000000077061676555726c02002a687474703a2f2f6c6f63616c686f73743a353038302f64656d6f732f6f666c615f64656d6f2e68746d6c000009"));
+        IoBuffer data = IoBuffer.wrap(IOUtils.hexStringToByteArray(
+                "020007636f6e6e656374003ff00000000000000300036170700200086f666c6144656d6f0008666c61736856657202000e4c4e582032302c302c302c323836000673776655726c020029687474703a2f2f6c6f63616c686f73743a353038302f64656d6f732f6f666c615f64656d6f2e7377660005746355726c02001972746d703a2f2f6c6f63616c686f73742f6f666c6144656d6f0004667061640100000c6361706162696c697469657300406de00000000000000b617564696f436f646563730040abee0000000000000b766964656f436f6465637300406f800000000000000d766964656f46756e6374696f6e003ff000000000000000077061676555726c02002a687474703a2f2f6c6f63616c686f73743a353038302f64656d6f732f6f666c615f64656d6f2e68746d6c000009"));
         Input in0 = new Input(data);
         // action string
         Assert.assertEquals(DataTypes.CORE_STRING, in0.readDataType());

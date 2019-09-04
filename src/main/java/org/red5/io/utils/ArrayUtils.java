@@ -1,19 +1,8 @@
 /*
- * RED5 Open Source Media Server - https://github.com/Red5/
- * 
- * Copyright 2006-2016 by respective authors (see below). All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * RED5 Open Source Media Server - https://github.com/Red5/ Copyright 2006-2016 by respective authors (see below). All rights reserved. Licensed under the Apache License, Version
+ * 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+ * required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 
 package org.red5.io.utils;
@@ -41,7 +30,7 @@ public final class ArrayUtils {
         } else if (char.class.isAssignableFrom(type)) {
             return new char[count];
         } else if (null != type) {
-        	return Array.newInstance(type, count);
+            return Array.newInstance(type, count);
         } else {
             return new Object[count];
         }
@@ -100,7 +89,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toByteArray(Object array, Collection collection) {
-        byte[] ba = (byte[])array;
+        byte[] ba = (byte[]) array;
         int i = 0;
         for (Object o : collection) {
             byte b = ((Byte) o).byteValue();
@@ -116,7 +105,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toShortArray(Object array, Collection collection) {
-        short[] sa = (short[])array;
+        short[] sa = (short[]) array;
         int i = 0;
         for (Object o : collection) {
             short s = ((Short) o).shortValue();
@@ -132,7 +121,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toIntegerArray(Object array, Collection collection) {
-        int[] ia = (int[])array;
+        int[] ia = (int[]) array;
         int i = 0;
         for (Object o : collection) {
             int j = ((Integer) o).intValue();
@@ -148,7 +137,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toLongArray(Object array, Collection collection) {
-        long[] la = (long[])array;
+        long[] la = (long[]) array;
         int i = 0;
         for (Object o : collection) {
             long l = ((Long) o).longValue();
@@ -164,7 +153,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toFloatArray(Object array, Collection collection) {
-        float[] fa = (float[])array;
+        float[] fa = (float[]) array;
         int i = 0;
         for (Object o : collection) {
             float f = ((Float) o).floatValue();
@@ -180,7 +169,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toDoubleArray(Object array, Collection collection) {
-        double[] da = (double[])array;
+        double[] da = (double[]) array;
         int i = 0;
         for (Object o : collection) {
             double d;
@@ -201,7 +190,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toBooleanArray(Object array, Collection collection) {
-        boolean[] ba = (boolean[])array;
+        boolean[] ba = (boolean[]) array;
         int i = 0;
         for (Object o : collection) {
             boolean b = ((Boolean) o).booleanValue();
@@ -217,7 +206,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toCharacterArray(Object array, Collection collection) {
-        char[] ca = (char[])array;
+        char[] ca = (char[]) array;
         int i = 0;
         for (Object o : collection) {
             char c = ((Character) o).charValue();
@@ -233,7 +222,7 @@ public final class ArrayUtils {
 
     @SuppressWarnings({ "rawtypes" })
     private static Object toObjectArray(Object array, Collection collection) {
-    	Object[] oa = (Object[])array;
+        Object[] oa = (Object[]) array;
         int i = 0;
         for (Object o : collection) {
             oa[i++] = o;
