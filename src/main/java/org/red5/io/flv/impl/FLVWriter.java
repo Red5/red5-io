@@ -208,7 +208,7 @@ public class FLVWriter implements ITagWriter {
      * Creates writer implementation with for a given file
      *
      * @param repair
-     *        repair the .ser file
+     *            repair the .ser file
      *
      * @param filePath
      *            path to existing file
@@ -433,6 +433,20 @@ public class FLVWriter implements ITagWriter {
                                     log.debug("Rejecting AAC data since config has not yet been written");
                                     return false;
                                 }
+                            } else if (audioCodecId == AudioCodec.OPUS.getId()) {
+                                log.trace("OPUS audio type");
+                                soundRate = 48000;
+                                soundSize = 16;
+                                soundType = true;
+                                // this is opus data, so a config chunk should be written before any media data
+                                if (bodyBuf[1] == 0) {
+                                    // when this config is written set the flag
+                                    onWrittenSetAudioFlag = true;
+                                } else {
+                                    // reject packet since config hasnt been written yet
+                                    log.debug("Rejecting OPUS data since config has not yet been written");
+                                    return false;
+                                }
                             } else if (audioCodecId == AudioCodec.SPEEX.getId()) {
                                 log.trace("Speex audio type");
                                 soundRate = 5500; // actually 16kHz
@@ -452,6 +466,9 @@ public class FLVWriter implements ITagWriter {
                                     case ITag.FLAG_RATE_44_KHZ:
                                         soundRate = 44100;
                                         break;
+                                    case ITag.FLAG_RATE_48_KHZ:
+                                        soundRate = 48000;
+                                        break;
                                 }
                                 log.debug("Sound rate: {}", soundRate);
                                 switch ((id & ITag.MASK_SOUND_SIZE) >> 1) {
@@ -467,14 +484,25 @@ public class FLVWriter implements ITagWriter {
                                 soundType = (id & ITag.MASK_SOUND_TYPE) > 0;
                                 log.debug("Sound type: {}", soundType);
                             }
-                        } else if (!audioConfigWritten.get() && audioCodecId == AudioCodec.AAC.getId()) {
-                            // this is aac data, so a config chunk should be written before any media data
-                            if (bodyBuf[1] == 0) {
-                                // when this config is written set the flag
-                                onWrittenSetAudioFlag = true;
-                            } else {
-                                // reject packet since config hasnt been written yet
-                                return false;
+                        } else if (!audioConfigWritten.get()) {
+                            if (audioCodecId == AudioCodec.AAC.getId()) {
+                                // this is aac data, so a config chunk should be written before any media data
+                                if (bodyBuf[1] == 0) {
+                                    // when this config is written set the flag
+                                    onWrittenSetAudioFlag = true;
+                                } else {
+                                    // reject packet since config hasnt been written yet
+                                    return false;
+                                }
+                            } else if (audioCodecId == AudioCodec.OPUS.getId()) {
+                                // this is opus data, so a config chunk should be written before any media data
+                                if (bodyBuf[1] == 0) {
+                                    // when this config is written set the flag
+                                    onWrittenSetAudioFlag = true;
+                                } else {
+                                    // reject packet since config hasnt been written yet
+                                    return false;
+                                }
                             }
                         }
                     } else if (dataType == ITag.TYPE_VIDEO) {
@@ -493,16 +521,38 @@ public class FLVWriter implements ITagWriter {
                                     log.debug("Rejecting AVC data since config has not yet been written");
                                     return false;
                                 }
+                            } else if (videoCodecId == VideoCodec.HEVC.getId()) {
+                                // this is HEVC data, so a config chunk should be written before any media data
+                                if (bodyBuf[1] == 0) {
+                                    // when this config is written set the flag
+                                    onWrittenSetVideoFlag = true;
+                                } else {
+                                    // reject packet since config hasnt been written yet
+                                    log.debug("Rejecting HEVC data since config has not yet been written");
+                                    return false;
+                                }
                             }
-                        } else if (!videoConfigWritten.get() && videoCodecId == VideoCodec.AVC.getId()) {
-                            // this is avc/h264 data, so a config chunk should be written before any media data
-                            if (bodyBuf[1] == 0) {
-                                // when this config is written set the flag
-                                onWrittenSetVideoFlag = true;
-                            } else {
-                                // reject packet since config hasnt been written yet
-                                log.debug("Rejecting AVC data since config has not yet been written");
-                                return false;
+                        } else if (!videoConfigWritten.get()) {
+                            if (videoCodecId == VideoCodec.AVC.getId()) {
+                                // this is avc/h264 data, so a config chunk should be written before any media data
+                                if (bodyBuf[1] == 0) {
+                                    // when this config is written set the flag
+                                    onWrittenSetVideoFlag = true;
+                                } else {
+                                    // reject packet since config hasnt been written yet
+                                    log.debug("Rejecting AVC data since config has not yet been written");
+                                    return false;
+                                }
+                            } else if (videoCodecId == VideoCodec.HEVC.getId()) {
+                                // this is hevc data, so a config chunk should be written before any media data
+                                if (bodyBuf[1] == 0) {
+                                    // when this config is written set the flag
+                                    onWrittenSetVideoFlag = true;
+                                } else {
+                                    // reject packet since config hasnt been written yet
+                                    log.debug("Rejecting HEVC data since config has not yet been written");
+                                    return false;
+                                }
                             }
                         }
                     }
@@ -728,7 +778,7 @@ public class FLVWriter implements ITagWriter {
             log.debug("Stored duration: {}", params.get("duration"));
         }
         if (videoCodecId != -1) {
-            params.put("videocodecid", (videoCodecId == 7 ? "avc1" : videoCodecId));
+            params.put("videocodecid", (videoCodecId == 7 ? "avc1" : (videoCodecId == 12 ? "hevc" : videoCodecId)));
             if (videoDataSize > 0) {
                 params.put("videodatarate", 8 * videoDataSize / 1024 / duration); //from bytes to kilobits
             }
@@ -737,7 +787,7 @@ public class FLVWriter implements ITagWriter {
             params.put("novideocodec", 0);
         }
         if (audioCodecId != -1) {
-            params.put("audiocodecid", (audioCodecId == 10 ? "mp4a" : audioCodecId));
+            params.put("audiocodecid", (audioCodecId == 10 ? "mp4a" : (audioCodecId == 13 ? "opus" : audioCodecId)));
             if (audioCodecId == AudioCodec.AAC.getId()) {
                 params.put("audiosamplerate", 44100);
                 params.put("audiosamplesize", 16);

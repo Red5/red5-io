@@ -15,7 +15,7 @@ package org.red5.codec;
  */
 public enum VideoCodec {
 
-    JPEG((byte) 0x01), H263((byte) 0x02), SCREEN_VIDEO((byte) 0x03), VP6((byte) 0x04), VP6a((byte) 0x05), SCREEN_VIDEO2((byte) 0x06), AVC((byte) 0x07);
+    JPEG((byte) 0x01), H263((byte) 0x02), SCREEN_VIDEO((byte) 0x03), VP6((byte) 0x04), VP6a((byte) 0x05), SCREEN_VIDEO2((byte) 0x06), AVC((byte) 0x07), VP8((byte) 0x08), VP9((byte) 0x09), AV1((byte) 0x0a), HEVC((byte) 0x0c);
 
     private byte id;
 

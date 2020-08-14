@@ -668,6 +668,16 @@ public class FLVReader implements IoConstants, ITagReader, IKeyFrameDataAnalyzer
                         } else if (body.array()[1] == 0 && videoConfigRead.compareAndSet(false, true)) {
                             log.debug("AVC config read");
                         }
+                    } else if ((firstByte & ITag.MASK_VIDEO_CODEC) == VideoCodec.HEVC.getId()) {
+                        // read second byte to see if its config data
+                        if (body.array()[1] != 0 && !videoConfigRead.get()) {
+                            log.debug("Skipping HEVC since config has not beean read yet");
+                            body.clear();
+                            body.free();
+                            tag = null;
+                        } else if (body.array()[1] == 0 && videoConfigRead.compareAndSet(false, true)) {
+                            log.debug("HEVC config read");
+                        }
                     } else {
                         log.trace("Media without configuration read");
                     }
