@@ -139,7 +139,7 @@ public class HEVCVideo extends AbstractVideo {
                 } else if (bufferInterframes) {
                     //log.trace("Interframe");
                     if (log.isDebugEnabled()) {
-                        log.debug("Interframe - AVC type: {}", avcType);
+                        log.debug("Interframe - HEVC type: {}", avcType);
                     }
                     // rewind
                     data.rewind();

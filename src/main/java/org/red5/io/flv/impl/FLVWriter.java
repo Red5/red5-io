@@ -438,15 +438,6 @@ public class FLVWriter implements ITagWriter {
                                 soundRate = 48000;
                                 soundSize = 16;
                                 soundType = true;
-                                // this is opus data, so a config chunk should be written before any media data
-                                if (bodyBuf[1] == 0) {
-                                    // when this config is written set the flag
-                                    onWrittenSetAudioFlag = true;
-                                } else {
-                                    // reject packet since config hasnt been written yet
-                                    log.debug("Rejecting OPUS data since config has not yet been written");
-                                    return false;
-                                }
                             } else if (audioCodecId == AudioCodec.SPEEX.getId()) {
                                 log.trace("Speex audio type");
                                 soundRate = 5500; // actually 16kHz
@@ -487,15 +478,6 @@ public class FLVWriter implements ITagWriter {
                         } else if (!audioConfigWritten.get()) {
                             if (audioCodecId == AudioCodec.AAC.getId()) {
                                 // this is aac data, so a config chunk should be written before any media data
-                                if (bodyBuf[1] == 0) {
-                                    // when this config is written set the flag
-                                    onWrittenSetAudioFlag = true;
-                                } else {
-                                    // reject packet since config hasnt been written yet
-                                    return false;
-                                }
-                            } else if (audioCodecId == AudioCodec.OPUS.getId()) {
-                                // this is opus data, so a config chunk should be written before any media data
                                 if (bodyBuf[1] == 0) {
                                     // when this config is written set the flag
                                     onWrittenSetAudioFlag = true;
