@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * @author Wittawas Nakkasem (vittee@hotmail.com)
  * @author Vladimir Hmelyoff (vlhm@splitmedialabs.com)
  */
-public class AACAudio implements IAudioStreamCodec {
+public class AACAudio extends AbstractAudio {
 
     private static Logger log = LoggerFactory.getLogger(AACAudio.class);
 

@@ -45,6 +45,16 @@ public interface IAudioStreamCodec {
     public boolean addData(IoBuffer data);
 
     /**
+     * Add audio data with a time stamp and a flag identifying the content as AMF or not.
+     * 
+     * @param data
+     * @param timestamp
+     * @param amf if true, data is in AMF format otherwise its most likely from non-AMF source like RTP
+     * @return true if data is added and false otherwise
+     */
+    public boolean addData(IoBuffer data, int timestamp, boolean amf);
+
+    /**
      * Returns information used to configure the decoder.
      * 
      * @return the data for decoder setup.

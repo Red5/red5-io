@@ -15,17 +15,13 @@ import org.apache.mina.core.buffer.IoBuffer;
  * 
  * @author Paul Gregoire (mondain@gmail.com)
  */
-public class MP3Audio implements IAudioStreamCodec {
+public class MP3Audio extends AbstractAudio {
 
     static final String CODEC_NAME = "MP3";
 
     @Override
     public String getName() {
         return CODEC_NAME;
-    }
-
-    @Override
-    public void reset() {
     }
 
     @Override
@@ -38,16 +34,6 @@ public class MP3Audio implements IAudioStreamCodec {
         boolean result = (((first & 0xf0) >> 4) == AudioCodec.MP3.getId());
         data.rewind();
         return result;
-    }
-
-    @Override
-    public boolean addData(IoBuffer data) {
-        return false;
-    }
-
-    @Override
-    public IoBuffer getDecoderConfiguration() {
-        return null;
     }
 
 }

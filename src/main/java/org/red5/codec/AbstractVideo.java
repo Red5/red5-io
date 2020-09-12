@@ -45,6 +45,11 @@ public class AbstractVideo implements IVideoStreamCodec, IoConstants {
     }
 
     @Override
+    public boolean addData(IoBuffer data, int timestamp, boolean amf) {
+        return false;
+    }
+
+    @Override
     public IoBuffer getDecoderConfiguration() {
         return null;
     }

@@ -65,6 +65,16 @@ public interface IVideoStreamCodec {
     public boolean addData(IoBuffer data, int timestamp);
 
     /**
+     * Add video data with a time stamp and a flag identifying the content as AMF or not.
+     * 
+     * @param data
+     * @param timestamp
+     * @param amf if true, data is in AMF format otherwise its most likely from non-AMF source like RTP
+     * @return true if data is added and false otherwise
+     */
+    public boolean addData(IoBuffer data, int timestamp, boolean amf);
+
+    /**
      * Returns keyframe data.
      * 
      * @return the data for a keyframe

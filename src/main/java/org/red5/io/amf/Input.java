@@ -74,9 +74,9 @@ public class Input extends BaseInput implements org.red5.io.object.Input {
     public Input(IoBuffer buf) {
         super();
         this.buf = buf;
-        if (log.isTraceEnabled()) {
-            log.trace("Input: {}", Hex.encodeHexString(Arrays.copyOfRange(buf.array(), buf.position(), buf.limit())));
-        }
+        //if (log.isTraceEnabled()) {
+        //    log.trace("Input: {}", Hex.encodeHexString(Arrays.copyOfRange(buf.array(), buf.position(), buf.limit())));
+        //}
     }
 
     /**

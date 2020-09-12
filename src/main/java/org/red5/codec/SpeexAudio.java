@@ -15,17 +15,13 @@ import org.apache.mina.core.buffer.IoBuffer;
  * 
  * @author Paul Gregoire (mondain@gmail.com)
  */
-public class SpeexAudio implements IAudioStreamCodec {
+public class SpeexAudio extends AbstractAudio {
 
     static final String CODEC_NAME = "Speex";
 
     @Override
     public String getName() {
         return CODEC_NAME;
-    }
-
-    @Override
-    public void reset() {
     }
 
     @Override
@@ -38,16 +34,6 @@ public class SpeexAudio implements IAudioStreamCodec {
         boolean result = (((first & 0xf0) >> 4) == AudioCodec.SPEEX.getId());
         data.rewind();
         return result;
-    }
-
-    @Override
-    public boolean addData(IoBuffer data) {
-        return false;
-    }
-
-    @Override
-    public IoBuffer getDecoderConfiguration() {
-        return null;
     }
 
 }
