@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.red5</groupId>
         <artifactId>red5-parent</artifactId>
-        <version>1.2.3</version>
+        <version>1.2.6</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>red5-io</artifactId>
@@ -60,20 +60,22 @@
     </developers>
     <properties>
         <!-- Next 3 entries for JDK 8 only; remove for JDK 11 -->
+        <!--
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <java.release.level>8</java.release.level>
+    -->
     </properties>
     <repositories>
         <repository>
             <id>sonatype-snapshots</id>
             <name>Sonatype Snapshots</name>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
         <repository>
             <id>sonatype-releases</id>
             <name>Sonatype Releases</name>
-            <url>http://oss.sonatype.org/content/repositories/releases</url>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
     </repositories>
     <build>
@@ -84,12 +86,16 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version><!--$NO-MVN-MAN-VER$-->
                 <configuration>
+                    <!-- commented out for jdk 11
                     <source>1.8</source>
                     <target>1.8</target>
+                -->
                     <verbose>true</verbose>
                     <fork>true</fork>
                     <executable>/usr/lib/jvm/java-11-amazon-corretto/bin/javac</executable>
+                    <!-- commented out for jdk 11
                     <compilerVersion>1.8</compilerVersion>
+                -->
                 </configuration>
             </plugin>
             <plugin>
@@ -105,7 +111,7 @@
                 <configuration>
                     <toolchains>
                         <jdk>
-                            <version>[1.8,)</version>
+                            <version>[1.11,)</version>
                         </jdk>
                     </toolchains>
                 </configuration>
