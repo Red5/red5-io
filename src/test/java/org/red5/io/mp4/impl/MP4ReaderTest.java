@@ -11,14 +11,13 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
 import org.red5.io.ITag;
 import org.red5.io.flv.IKeyFrameDataAnalyzer.KeyFrameMeta;
-import org.red5.io.mp4.impl.MP4Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import junit.framework.TestCase;
 
 public class MP4ReaderTest extends TestCase {
 

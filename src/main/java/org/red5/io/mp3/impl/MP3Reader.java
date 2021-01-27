@@ -473,7 +473,6 @@ public class MP3Reader implements ITagReader, IKeyFrameDataAnalyzer {
             log.debug("Position: {}", channel.position());
             channel.position(0);
             // create an internal parsing stream
-            @SuppressWarnings("resource")
             MP3Stream stream = new MP3Stream(fis);
             // frame holder
             frameList = new LinkedList<>();

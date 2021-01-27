@@ -13,7 +13,6 @@ import junit.framework.TestCase;
 
 import org.junit.Test;
 import org.red5.io.ITag;
-import org.red5.io.m4a.impl.M4AReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

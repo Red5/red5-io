@@ -7,16 +7,14 @@
  */
 package org.red5.io.matroska;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import org.junit.Test;
-import org.red5.io.matroska.ConverterException;
-import org.red5.io.matroska.ParserUtils;
 import org.red5.io.matroska.dtd.StringTag;
 import org.red5.io.matroska.dtd.Tag;
 import org.red5.io.matroska.dtd.UnsignedIntegerTag;

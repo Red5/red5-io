@@ -17,9 +17,6 @@ import java.security.NoSuchAlgorithmException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.red5.io.sctp.SctpChannel;
-import org.red5.io.sctp.SctpException;
-import org.red5.io.sctp.SctpServerChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
