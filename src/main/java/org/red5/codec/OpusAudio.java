@@ -39,8 +39,9 @@ public class OpusAudio extends AbstractAudio {
     // default to 48kHz and stereo
     private int index = 0, channels = 2;
 
-    // ensure we store at least one config chunk
-    private volatile boolean needConfig = true;
+    // ensure we store at least one config chunk; default is false, since Opus doesnt require configuration
+    // 48k stereo is the default configuration.
+    private volatile boolean needConfig;
 
     @Override
     public String getName() {
