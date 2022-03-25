@@ -17,7 +17,6 @@ import org.red5.io.utils.RandomGUID;
 
 public class MessageSerializationTest {
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testCommandMessageExt() {
         CommandMessageExt original = new CommandMessageExt();
@@ -28,7 +27,6 @@ public class MessageSerializationTest {
         assertThat(result, samePropertyValuesAs(original));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testCommandMessage() {
         CommandMessage original = new CommandMessage();
@@ -39,7 +37,6 @@ public class MessageSerializationTest {
         assertThat(resultExt, samePropertyValuesAs(original));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testAsyncMessage_stringBody() {
         AsyncMessage original = new AsyncMessage();
@@ -50,7 +47,6 @@ public class MessageSerializationTest {
         assertThat(result, samePropertyValuesAs(original));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testAsyncMessage_bytesBody() {
         AsyncMessage original = new AsyncMessage();
@@ -66,7 +62,6 @@ public class MessageSerializationTest {
         assertThat(result, samePropertyValuesAs(original));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testAsyncMessage_byteArrayBody() {
         ByteArray originalBody = new ByteArray();
@@ -86,7 +81,6 @@ public class MessageSerializationTest {
         Assert.assertEquals("Hello World!", resultBody.readObject());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testAsyncMessageExt_bytesBody() {
         AsyncMessageExt original = new AsyncMessageExt();
@@ -102,7 +96,6 @@ public class MessageSerializationTest {
         assertThat(result, samePropertyValuesAs(original));
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testRemotingMessage() {
         RemotingMessage original = new RemotingMessage();
